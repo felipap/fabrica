@@ -7,7 +7,7 @@ import (
 	"github.com/justinas/nosurf"
 )
 
-func Csrf(w http.ResponseWriter, r *http.Request, c *router.Context) error {
+func Csrf(w router.ResponseWriter, r *http.Request, c *router.Context) error {
 	nextHandler := func(w http.ResponseWriter, r *http.Request) {
 		c.Data["Token"] = nosurf.Token(r)
 	}

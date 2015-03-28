@@ -1,12 +1,17 @@
-// taken from github.com/codegangsta/negroni
+// based on github.com/codegangsta/negroni
 package router
 
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 )
+
+/**
+ * TYPES and INTEFACES
+ */
 
 // ResponseWriter is a wrapper around http.ResponseWriter that provides extra information about
 // the response. It is recommended that middleware handlers use this construct to wrap a responsewriter
@@ -22,15 +27,42 @@ type ResponseWriter interface {
 	Size() int
 	// Before allows for a function to be called before the ResponseWriter has been written to. This is
 	// useful for setting headers or any other operations that must happen before a response has been written.
+	SetRenderer(TemplateRenderer)
 	Before(BeforeFunc)
+	RenderHTML(int, string, interface{}, ...HTMLOptions)
+	RenderJSON(int, interface{})
+	RenderJSONP(int, string, interface{})
+	RenderData(int, []byte)
 }
+
+/**
+ * TEMPLATE RENDERER
+ */
+
+type TemplateRenderer interface {
+	// based on github.com/unrolled/ren
+	HTML(http.ResponseWriter, int, string, interface{}, ...HTMLOptions)
+	JSON(http.ResponseWriter, int, interface{})
+	JSONP(http.ResponseWriter, int, string, interface{})
+	Data(http.ResponseWriter, int, []byte)
+}
+
+// HTMLOptions is a struct for overriding some rendering Options for specific HTML call.
+type HTMLOptions struct {
+	// Layout template name. Overrides Options.Layout.
+	Layout string
+}
+
+/**
+ * RESPONSE WRITER
+ */
 
 // BeforeFunc is a function that is called before the ResponseWriter has been written to.
 type BeforeFunc func(ResponseWriter)
 
 // NewResponseWriter creates a ResponseWriter that wraps an http.ResponseWriter
 func NewResponseWriter(rw http.ResponseWriter) ResponseWriter {
-	return &responseWriter{rw, 0, 0, nil}
+	return &responseWriter{rw, 0, 0, nil, nil}
 }
 
 type responseWriter struct {
@@ -38,7 +70,60 @@ type responseWriter struct {
 	status      int
 	size        int
 	beforeFuncs []BeforeFunc
+	renderer    TemplateRenderer
 }
+
+func (rw *responseWriter) SetRenderer(tr TemplateRenderer) {
+	rw.renderer = tr
+}
+
+/**
+ * RENDER extensions
+ */
+
+func (rw *responseWriter) RenderHTML(
+	status int, name string, binding interface{}, htmlOpt ...HTMLOptions) {
+	if rw.renderer == nil {
+		panic("renderer middleware hasn't been used")
+	}
+
+	defer func() {
+		if err := recover(); err != nil {
+			log.Fatalf("Render failed: %v", err)
+		}
+	}()
+
+	rw.renderer.HTML(rw, status, name, binding, htmlOpt...)
+}
+
+func (rw *responseWriter) RenderJSON(status int, v interface{}) {
+	if rw.renderer == nil {
+		panic("renderer middleware hasn't been used")
+	}
+
+	rw.renderer.JSON(rw, status, v)
+}
+
+func (rw *responseWriter) RenderJSONP(status int, callback string, v interface{}) {
+	if rw.renderer == nil {
+		panic("renderer middleware hasn't been used")
+	}
+
+	rw.renderer.JSONP(rw, status, callback, v)
+}
+
+// Data writes out the raw bytes as binary data.
+func (rw *responseWriter) RenderData(status int, v []byte) {
+	if rw.renderer == nil {
+		panic("renderer middleware hasn't been used")
+	}
+
+	rw.renderer.Data(rw, status, v)
+}
+
+/*
+ * NEGRONI's extensions
+ */
 
 func (rw *responseWriter) WriteHeader(s int) {
 	rw.callBefore()

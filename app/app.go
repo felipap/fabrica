@@ -25,7 +25,7 @@ func handleStatic(r *router.Router) {
 		http.StripPrefix(surl, http.FileServer(http.Dir(sroot))))
 	serveOnRoot := func(filename string) {
 		r.HandleFunc(filepath.Clean("/"+filename),
-			func(w http.ResponseWriter, r *http.Request, c *router.Context) error {
+			func(w router.ResponseWriter, r *http.Request, c *router.Context) error {
 				http.ServeFile(w, r, filepath.Join(sroot, filename))
 				return nil
 			})
@@ -41,6 +41,7 @@ func Setup(_app App) {
 
 	r.Use(middlewares.NewGzip())
 	r.UseFunc(middlewares.Csrf)
+	r.UseFunc(middlewares.Render)
 	r.UseHandler(secure.New().Handler)
 	// r.Use(middlewares.AddUser)
 

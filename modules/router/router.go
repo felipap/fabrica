@@ -39,38 +39,39 @@ func (router *Router) Use(m Middleware) {
 	router.middlewares = append(router.middlewares, m)
 }
 
-func (router *Router) UseFunc(m func(http.ResponseWriter, *http.Request, *Context) error) {
+func (router *Router) UseFunc(m func(ResponseWriter, *http.Request, *Context) error) {
 	router.Use(MiddlewareFunc(m))
 }
 
 func (router *Router) UseHandler(h func(http.Handler) http.Handler) {
-	router.UseFunc(func(w http.ResponseWriter, r *http.Request, c *Context) error {
+	router.UseFunc(func(w ResponseWriter, r *http.Request, c *Context) error {
 		nextHandler := func(w http.ResponseWriter, r *http.Request) {}
 		h(http.HandlerFunc(nextHandler)).ServeHTTP(w, r)
 		return nil
 	})
 }
 
-////
+//
 
 type Handler interface {
-	ServeHTTP(http.ResponseWriter, *http.Request, *Context) error
+	ServeHTTP(ResponseWriter, *http.Request, *Context) error
 }
 
 type WrappedHandler struct {
 	middlewares []Middleware
-	fn          func(http.ResponseWriter, *http.Request, *Context) error
+	fn          func(ResponseWriter, *http.Request, *Context) error
 }
 
 func NewWrappedHandler(router *Router,
-	fn func(http.ResponseWriter, *http.Request, *Context) error) *WrappedHandler {
+	fn func(ResponseWriter, *http.Request, *Context) error) *WrappedHandler {
 	return &WrappedHandler{router.middlewares, fn}
 }
 
-func (hf WrappedHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+func (hf WrappedHandler) ServeHTTP(_writer http.ResponseWriter, request *http.Request) {
 	// Save current middlewares, to be executed later, so
 	// that middlewares that were not added up until this
 	// point don't get executed with this route.
+	writer := NewResponseWriter(_writer)
 	context := NewContext(writer, request)
 
 	// Apply middlewares.
@@ -103,54 +104,6 @@ func (hf WrappedHandler) ServeHTTP(writer http.ResponseWriter, request *http.Req
 
 	context.Finish()
 }
-
-// func (wh *WrappedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-// 	wrapHandlerFunc(wh.router, wh.handler.ServeHTTP)(w, r)
-// }
-
-// Wraps a HandlerFunc (*Context) error in a usual
-// http.HandlerFunc, so it can be passed to mux.
-// func wrapHandlerFunc(r *Router, fn HandlerFunc) http.HandlerFunc {
-// 	// Save current middlewares, to be executed later, so
-// 	// that middlewares that were not added up until this
-// 	// point don't get executed with this route.
-// 	var ms = make([]Middleware, len(r.middlewares))
-// 	copy(ms[:], r.middlewares)
-
-// 	return func(writer http.ResponseWriter, request *http.Request) {
-// 		context := NewContext(writer, request)
-
-// 		// Apply middlewares.
-// 		// Stop if any of them throw an error.
-// 		// TODO? handle panic?
-// 		for _, m := range ms {
-// 			err := m.Pre(writer, request, context)
-// 			if err != nil {
-// 				log.Fatalf("Middleware failed!!! %v", err)
-// 			}
-// 			writer = context.Writer() // our little secret
-// 		}
-
-// 		// Execute handler.
-// 		// DECIDE: what happens in 404?
-// 		// TODO?: handle panic?
-// 		if err := fn(writer, request, context); err != nil {
-// 			log.Fatalf("Error! Fuck!")
-// 		}
-
-// 		// FILO please
-// 		for i, _ := range ms {
-// 			if t, ok := ms[len(ms)-i-1].(PosMiddleware); ok {
-// 				err := t.Pos(writer, request, context)
-// 				if err != nil {
-// 					log.Fatalf("POS failed!!! %v", err)
-// 				}
-// 			}
-// 		}
-
-// 		context.Finish()
-// 	}
-// }
 
 //
 
@@ -208,7 +161,7 @@ func (r *Route) Subrouter() *Router {
 }
 
 func (r *Route) HandlerFunc(
-	fn func(http.ResponseWriter, *http.Request, *Context) error) *Route {
+	fn func(ResponseWriter, *http.Request, *Context) error) *Route {
 	r.Handler(NewWrappedHandler(r.Router, fn))
 	return r
 }
@@ -216,7 +169,7 @@ func (r *Route) HandlerFunc(
 //
 
 func (r *Router) HandleFunc(path string,
-	fn func(http.ResponseWriter, *http.Request, *Context) error) *Route {
+	fn func(ResponseWriter, *http.Request, *Context) error) *Route {
 	return &Route{r.Router.HandleFunc(path, NewWrappedHandler(r, fn).ServeHTTP), r}
 }
 

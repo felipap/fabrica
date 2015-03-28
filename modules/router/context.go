@@ -5,84 +5,62 @@ package router
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/gorilla/sessions"
-	tmplrender "github.com/unrolled/render"
 )
 
-func randomString(length int) (str string) {
-	b := make([]byte, length)
-	rand.Read(b)
-	return base64.StdEncoding.EncodeToString(b)
-}
-
-var (
-	// https://github.com/boj/redistore
-	store  = sessions.NewCookieStore([]byte(randomString(32)))
-	render *tmplrender.Render
-)
+// https://github.com/boj/redistore
+var store = sessions.NewCookieStore([]byte(randomString(32)))
 
 type Context struct {
 	// User    *User
-	writer   http.ResponseWriter
-	request  *http.Request
-	Session  *sessions.Session
-	Renderer *tmplrender.Render
-	Vars     *RequestVars
-	Data     map[string]interface{}
+	writer  ResponseWriter
+	request *http.Request
+	Session *sessions.Session
+	Vars    *RequestVars
+	Data    map[string]interface{}
 }
 
-//
-
-func init() {
-	render = tmplrender.New(tmplrender.Options{
-		Directory:     "./app/templates",
-		Extensions:    []string{".html"},
-		IsDevelopment: true,
-	})
-}
-
-func NewContext(w http.ResponseWriter, r *http.Request) *Context {
+func NewContext(w ResponseWriter, r *http.Request) *Context {
 	/**
 	 * Fetch session and request-bound variables.
 	 */
 	session, _ := store.Get(r, "fabrica-session")
 
 	return &Context{
-		writer:   w,
-		request:  r,
-		Session:  session,
-		Renderer: render,
-		Vars:     NewRequestVars(r),
-		Data:     make(map[string]interface{}),
+		writer:  w,
+		request: r,
+		Session: session,
+		Vars:    NewRequestVars(r),
+		Data:    make(map[string]interface{}),
 	}
 }
 
-func (c *Context) Render(w http.ResponseWriter, status int, name string, binding interface{}, htmlOpt ...tmplrender.HTMLOptions) {
-	defer func() {
-		if err := recover(); err != nil {
-			log.Printf("FAILED TO RENDER! %v", err)
-		}
-	}()
-	c.Renderer.HTML(w, status, name, binding, htmlOpt...)
-}
-
+// I won't tell if you don't tell...
 func (c *Context) CheatAndSetWriter(w http.ResponseWriter) {
-	c.writer = w
+	c.writer = NewResponseWriter(w)
 }
 
-func (c *Context) Writer() http.ResponseWriter {
+func (c *Context) Writer() ResponseWriter {
 	return c.writer
 }
 
+//
+
 func (c *Context) Finish() {
-	// Purge request variables.
-	c.Vars.Clear()
-	// Save session
-	// c.Session.Save(&c.R, c.W)
+	c.Vars.Clear() // Purge request variables.
+	// c.Session.Save(&c.R, c.W) // Save session
+}
+
+//////////////////////////
+//////////////////////////
+
+func randomString(length int) (str string) {
+	b := make([]byte, length)
+	rand.Read(b)
+	return base64.StdEncoding.EncodeToString(b)
 }
 
 // import (
@@ -217,7 +195,7 @@ func (c *Context) RemoteAddr() string {
 
 // // HTML calls Render.HTML but allows less arguments.
 // func (ctx *Context) HTML(status int, name string, data ...interface{}) {
-//   ctx.renderHTML(status, _DEFAULT_TPL_SET_NAME, name, data...)
+//   ctx.macaHTML(status, _DEFAULT_TPL_SET_NAME, name, data...)
 // }
 
 // // HTML calls Render.HTMLSet but allows less arguments.

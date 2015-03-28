@@ -58,13 +58,13 @@ func NewGzip() *Gzip {
 	}
 }
 
-func (m *Gzip) Pos(w http.ResponseWriter, r *http.Request, c *router.Context) error {
+func (m *Gzip) Pos(w router.ResponseWriter, r *http.Request, c *router.Context) error {
 	w.Header().Del(headerContentLength)
 	m.gzipWriter.Close()
 	return nil
 }
 
-func (m *Gzip) Pre(w http.ResponseWriter, r *http.Request, c *router.Context) error {
+func (m *Gzip) Pre(w router.ResponseWriter, r *http.Request, c *router.Context) error {
 	if !strings.Contains(r.Header.Get(headerAcceptEncoding), encodingGzip) {
 		return nil
 	}
