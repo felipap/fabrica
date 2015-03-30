@@ -1,0 +1,122 @@
+
+[data-page="login"],
+[data-page="signup"] {
+
+  // background: #f6f6f6;
+  background: #fff;
+
+  .container {
+    font-size: 14px;
+    max-width: 400px;
+    text-align: left;
+    padding: 0;
+
+    h1 {
+      font-weight: 600;
+      color: #666;
+      font-size: 25px;
+      line-height: 1.1em;
+      margin: 0.83em 0 .5em 0;
+    }
+
+    p {
+      font-size: 16px;
+      margin: 1em 0;
+    }
+
+    a {
+      color: @CBLUE;
+      font-weight: 600;
+
+      &:hover {
+        color: darken(@CBLUE, 15%)
+      }
+
+      &:visited {
+      }
+    }
+  }
+
+  .Logo {
+    background: @CFABRICA;
+    font-family: museo-sans;
+    font-size: 1.2em;
+    font-weight: 800;
+    .user-select(none);
+    cursor: pointer;
+    color: white !important;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 16px 20px;
+    text-decoration: none !important;
+
+    &.delta {
+      background: @CDTHINKERS;
+    }
+  }
+
+
+  @media (min-width: 600px) {
+    .container {
+      position: relative;
+      top: 20px;
+      margin-left: 50px;
+    }
+
+    .Logo {
+      margin-bottom: 20px;
+    }
+  }
+
+  .LoginForm {
+    display: block;
+    font-size: 1em;
+    margin-bottom: 30px;
+
+    input {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      font-size: 18px;
+      padding: 0 1.2em;
+      border: 1px solid transparent;
+      background: #EEE;
+      font-weight: bold;
+      line-height: 3.2;
+      font-family: museo-sans;
+
+      &:focus {
+        .no-box-shadow;
+        .transition;
+        outline: 0;
+        border: 1px solid #DDD;
+      }
+    }
+
+    input[type=password].is-wrong {
+      background: mix(@CRED, #DDD);
+      &:focus {
+        border-color: @CRED;
+      }
+    }
+
+    button {
+      font-family: museo-sans;
+      .xbtn(white, @CBLUE);
+      margin-top: 10px;
+      padding: 15px 20px;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      text-transform: uppercase;
+    }
+  }
+
+  .Footer {
+    text-align: center;
+    font-size: .8em;
+    font-family: museo-sans;
+    color: #444;
+  }
+
+}

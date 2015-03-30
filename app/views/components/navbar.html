@@ -1,0 +1,88 @@
+
+<nav class="bar{{ ' '+navbarClass }}" role="navigation" id="navbar">
+<div class="navbar-content">
+	<div class="navbar-brand">
+		<a class="brand-icon" href="/">
+			<span>Fabrica</span>
+		</a>
+	</div>
+
+	<ul class="navbar-navigation">
+		<li {% if pageRoot == "home" %}class="active"{% endif %}>
+			<a class="button" href="/">
+				Painel
+			</a>
+		</li>
+		<li {% if pageRoot == "files" %}class="active"{% endif %}>
+			<a class="button" href="/arquivos">
+				Arquivos
+			</a>
+		</li>
+	</ul>
+	{% if user %}
+	<ul class="right">
+		<li id="ttip-karma" title="Sua Pontuação">
+			<button class="karma icon-btn" id="nav-karma" data-action="show-karma">
+				<span ref="nCount" class="count" data-info="user-karma">{{ user.stats.karma }}</span> <i class="icon-atom"></i>
+			</button>
+		</li><li id="ttip-bell" title="Notificações">
+			<button id="nav-bell" class="icon-btn bell" data-action="show-notifications">
+				<i class="icon-notifications"></i><sup class="count" data-info="unseen-notifs">0</sup>
+			</button>
+		</li>{#<li id="ttip-new-post" title="Escrever post">
+			<button class="icon-btn pencil" data-trigger="component" data-component="createPost" data-href="/novo">
+				<i class="icon-edit"></i>
+			</button>
+		</li>#}<li class="nav-dropdown" id="ttip-dd-menu">
+		 	<div id="drop3" data-toggle="dropdown" role="button" class="avatar-btn dropdown-toggle">
+				<div class="avatarDd" style="background-image: url('{{ user.avatarUrl }}')">
+				</div>
+			</div>
+			<ul class="dropdown-menu" role="menu" aria-labelledby="drop3">
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" href="{{ user.path }}">
+						<i class="icon-user2"></i> Meu Perfil
+					</a>
+				</li>
+				<li role="presentation">
+					<a role="menuitem"  tabindex="-1" href="{{ urls.settings }}">
+						<i class="icon-settings"></i> Configurações
+					</a>
+				</li>
+				{% if user.flags.editor %}
+				<li role="presentation">
+					<a role="menuitem"  tabindex="-1" href="/admin">
+						<i class="icon-apps"></i> Administração
+					</a>
+				</li>
+				{% endif %}
+				<li role="presentation">
+					<a role="menuitem" tabindex="-2" href="{{ urls.feedbackForm }}">
+						<i class="icon-report-problem"></i> Relatar Problema
+					</a>
+				</li>
+				<li role="presentation">
+					<a role="menuitem" tabindex="-2" href="{{ urls.about }}">
+						<i class="icon-info"></i> Sobre o Site
+					</a>
+				</li>
+				{#<li role="presentation" class="divider"></li>#}
+				<li role="presentation">
+					<a role="menuitem" tabindex="-1" data-ajax-post-href="{{ urls.logout }}" data-redirect-href="/">
+						<i class="icon-exit-to-app"></i> Sair
+					</a>
+				</li>
+			</ul>
+		</li>
+	</ul>
+	{% else %}
+	<ul class="right">
+		<li>
+			<a href="/entrar" class="button login">
+				Entrar
+			</a>
+		</li>
+	</ul>
+	{% endif %}
+</div>
+</nav>

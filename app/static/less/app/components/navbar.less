@@ -1,0 +1,501 @@
+
+/*---------------------------*\
+	#NAVBAR
+\*---------------------------*/
+
+#navbar {
+	position: relative;
+	z-index: 20;
+	background: #f6f6f6;
+	height: @navbar-height;
+	&:extend(.clearfix all); // Prevent floats from breaking the navbar
+	// .box-shadow(~'0 0 0 1px rgba(0,0,0,.05)');
+	// border-bottom: 1px solid #F0F0F0;
+	-webkit-backface-visibility: hidden; // Fix flicking when scrolling.
+
+	/**
+	 * Style bootstrap tooltips that are inside the navbar.
+	 */
+	.tooltip {
+		.tooltip-arrow {
+			border-bottom-color: #111;
+		}
+
+		.tooltip-inner {
+			border-radius: 0;
+			font-size: 12px;
+			background: #111;
+		}
+	}
+}
+
+/**
+ * For public pages.
+ */
+
+#navbar.public .navbar-brand {
+	left: 0;
+	// margin-left: 15px;
+	text-align: left;
+	// .brand {
+	// 	padding-left: 5px;
+	// }
+}
+
+#navbar.public {
+	position: fixed;
+	width: 100%;
+	background: rgba(0,0,0,.8);
+	.brand {
+		color: white;
+	}
+	ul > li > a.button {
+		background: fadeout(white, 90%);
+		color: white;
+		.transition;
+		&:hover {
+			background: fadeout(white, 80%);
+		}
+	}
+	ul.right > li:last-child > a.button {
+		margin-right: 0;
+	}
+}
+
+/**
+ * Wraps all navbar content.
+ * A legacy from bootstrap navbars. Useless?
+ */
+.navbar-content {
+	width: 100%;
+	margin: auto;
+	position: relative;
+	font-size: 14px;
+
+	button, .button {
+		height: @navbar-height;
+		line-height: @navbar-height;
+		font-weight: 500;
+		padding: 0 20px;
+		border-radius: 0;
+		font-size: 1em;
+		color: #444447;
+		vertical-align: top;
+		font-family: museo-sans;
+		// text-transform: uppercase;
+		background: transparent;
+		color: #777;
+		&:active {
+			.no-box-shadow;
+		}
+		&:hover {
+			opacity: .9;
+		}
+	}
+
+	.login {
+		background: mix(@CBLUE, #222, 30%);
+		color: white;
+	}
+}
+
+html.snpage .navbar-brand {
+	.brand-icon i {
+		display: none;
+	}
+	.brand-icon span {
+		padding: 7px;
+		font-size: 17px;
+		font-weight: 800;
+	}
+}
+
+/**
+ * "Fabrica"
+ */
+.navbar-brand {
+	line-height: (@navbar-height - 1);
+	text-align: center;
+	display: inline-block;
+	vertical-align: middle;
+	.user-select(none);
+	float: left;
+
+	.brand-icon {
+		text-transform: uppercase;
+		font-family: "museo-sans";
+		color: #444;
+		min-width: @navbar-height;
+		padding: 0 20px;
+		height: @navbar-height;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 16px;
+		i {
+			font-size: 24px;
+		}
+		span {
+			vertical-align: middle;
+			font-weight: bold;
+		}
+		position: relative;
+		color: white;
+		background: @CFABRICA;
+	}
+
+	.brand {
+		text-transform: uppercase;
+		font-family: "museo-sans";
+		color: #444;
+		padding: 0 25px;
+		font-size: 1.5em;
+		position: relative;
+
+		[class*=icon] { // Behold the bulb!
+			font-size: .9em;
+			margin: -4px 2px 0 2px;
+		}
+	}
+	a.brand {
+		outline: none !important;
+		text-decoration: none !important;
+		&:focus, &:hover {
+		}
+	}
+}
+
+/**
+ * Lists of elements floating to either side of the navbar.
+ */
+.navbar-content > ul {
+	float: left;
+
+	&.right { float: right !important; }
+
+	& > li {
+		display: inline-block;
+		vertical-align: top;
+		list-style: none;
+		line-height: @navbar-height;
+		height: @navbar-height;
+		position: relative;
+
+		&.nav-dropdown {
+
+			.avatar-btn {
+				.reset-button;
+				cursor: pointer;
+				position: relative;
+				display: inline-block;
+				width: @navbar-height;
+				.avatarDd {
+					display: inline-block;
+					width: 35px; // @navbar-height+1;
+					height: 35px; // @navbar-height;
+					vertical-align: middle;
+					.background-size(cover);
+					border-radius: 35px;
+					position: relative;
+				}
+			}
+
+			.dropdown-menu {
+				left: auto;
+				right: 5px;
+				margin-top: 0; // 6px;
+				padding: 6px 0px;
+				border-radius: 0; // 3px;
+				background: #292929;
+				min-width: 0;
+				border: 0;
+
+				// &::before {
+				// 	content: ' ';
+				// 	border: 5px solid transparent;
+				// 	border-bottom-color: #222;
+				// 	position: absolute;
+				// 	top: -11px;
+				// 	right: 10px; // Na mão
+				// }
+
+				li {
+					// font-family: Arial;
+					background: transparent;
+					font-size: 11px;
+					border: 0;
+					text-transform: uppercase;
+					a {
+						outline: none;
+						cursor: pointer;
+						color: white;
+						border-radius: 1px;
+						padding: 5px 20px;
+						font-weight: bold;
+
+						.transition(all, .2s, linear);
+
+						&:focus, &:hover, &:active { background: #222; }
+
+						&:hover {
+							background: darken(desaturate(@CBLUE,10%),3%);
+							color: white;
+						}
+						&:active {
+							.inner-shadow(3px, .3);
+						}
+
+						i {
+							// display: none;
+							font-size: 1em;
+							width: 12px;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	.icon-btn,
+	.nav-btn {
+		.navbar-vertical-align(@input-height-base);
+		vertical-align: middle;
+		outline: none;
+		box-shadow: none;
+		border-radius: 0;
+		background: none;
+		// border-bottom: 1px solid transparent;
+		display: table-cell;
+		margin: 0;
+		// End defaults reset
+		text-decoration: none;
+		color: #777;
+		height: (@navbar-height - 1);
+		font-weight: 700;
+		padding: 8px 13px;
+		margin-left: 5px;
+		vertical-align: top;
+		.transition(font-size .2s linear, border-bottom .2s linear);
+
+		&:hover, &:active {
+			box-shadow: none;
+		}
+
+		i {
+			font-size: 1.3em;
+			vertical-align: middle;
+			line-height: @navbar-height;
+		}
+	}
+
+	.nav-btn.active {
+		border-bottom: 3px solid darken(@CBLUE, 10%);
+		color: #444;
+	}
+
+	.icon-btn {
+		position: relative;
+		width: 44px !important;
+		padding: 0;
+		margin: 0;
+
+		sup {
+			font-size: 1em;
+			color: inherit;
+			top: -3px;
+			line-height: @navbar-height;
+		}
+
+		i {
+			vertical-align: top;
+			font-size: 1.4em;
+		}
+	}
+
+	.nav-btn {
+		min-width: 43px;
+		padding: 0 14px;
+		display: inline-block;
+		font-size: 14px;
+		color: #666;
+		font-weight: 500;
+
+		&:hover {
+			color: #444;
+		}
+
+		span {
+			line-height: @navbar-height;
+			vertical-align: middle;
+		}
+	}
+
+	.iconBtn (@color) {
+		color: white;
+		.transition;
+		height: @navbar-height;
+		// border-color: @color;
+		border-bottom-width: 3px;
+		color: #999;
+		&:hover {
+			color: @color;
+		}
+
+		&.active {
+			color: @color;
+		}
+	}
+
+	.calendar { .iconBtn(@CGREEN); }
+	.chat { .iconBtn(#ffcf2c); }
+	.pencil {
+		.iconBtn(white); // mix(@CORANGE,@CRED));
+		background: mix(@CORANGE,@CRED,75%);
+		color: white;
+		// margin-left: 5px;
+		margin-right: 5px;
+	}
+	.bell, .karma {
+		i {
+			// display: none;
+			// font-size: 18px;
+			vertical-align: middle;
+		}
+		span {
+			vertical-align: middle;
+		}
+		.karma-text {
+			font-weight: normal;
+		}
+		sup {
+			font-size: 1em;
+			color: inherit;
+			line-height: 1;
+			display: inline-block;
+			vertical-align: middle;
+			top: -2px;
+		}
+		.count {
+			vertical-align: middle;
+			font-size: 1.1em;
+			font-weight: normal;
+		}
+	}
+	.bell {
+		.iconBtn(desaturate(@CBLUE, 10%));
+		.icon-notifications:before {
+			content: "\e6fa";
+		}
+		&.active .icon-notifications:before {
+			content: "\e6f9";
+		}
+		&.open-popover {
+			color: @CBLUE;
+		}
+	}
+
+	.karma {
+		border-bottom: 0;
+		width: auto !important;
+		padding: 0 7px;
+		.iconBtn(desaturate(@CGREEN, 10%));
+		&.open-popover {
+			color: @CGREEN;
+		}
+	}
+
+}
+
+/**
+ * Navigation and breadcrumps.
+ */
+.navbar-navigation {
+	& > li {
+
+		margin-right: -4px;
+
+		&.active a {
+			background: #DDD;
+			color: #444;
+		}
+
+		// &.active:last-child {
+		// 	// height: (@navbar-height + 3);
+		// 	border-bottom: 3px solid #08c;
+		// }
+		&.standout {
+			background: #F0F0F0;
+			// background: #F0F0F0;
+			// border-bottom: 1px solid #DDD;
+			// border-left: 1px solid #EEE;
+			// border-right: 1px solid #EEE;
+		}
+	}
+
+	.user-avatar {
+		height: 30px;
+		width: 30px;
+		border-radius: 30px;
+	}
+
+	.icon-thumbnail {
+		display: inline-block;
+		vertical-align: middle;
+		text-decoration: none;
+		overflow: hidden;
+		text-align: center;
+		border-radius: 25px;
+		width: 28px;
+		height: 28px;
+		line-height: 28px;
+		font-size: 1.4px;
+		color: white;
+		// background: @CBLUE;
+		font-size: 21px;
+		color: mix(@CBLUE, #444, 20%); // white;
+
+		& + .username, & + .name, & + span {
+			vertical-align: middle;
+		}
+
+
+		&.icon-user { background: #08C; }
+		&.icon-tag, &.icon-tags { background: @CRED; }
+		&.icon-guia { background: @CORANGE; }
+	}
+
+	& > i {
+		vertical-align: middle;
+		display: inline-block;
+		line-height: @navbar-height;
+	}
+
+	.tooltip {
+		top: 0 !important;
+		margin-top: 0 !important;
+
+		.tooltip-arrow {
+			top: 50% !important;
+		}
+
+		.tooltip-inner {
+			padding: 0 10px;
+			line-height: @navbar-height;
+		}
+	}
+}
+
+.global-strip {
+	width: 100%;
+	background: lighten(mix(@CYELLOW, @CRED), 10%);
+	text-align: center;
+	color: white;
+	line-height: 40px;
+
+	span {
+		line-height: 1;
+		display: inline-block;
+		max-width: 900px;
+		font-size: 14px;
+		vertical-align: middle;
+	}
+}

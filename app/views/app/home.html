@@ -1,0 +1,19 @@
+{% extends '../page.html' %}
+{% set dataPage="app" %}
+{% set navbarOpts = { pageRoot: 'home' } %}
+
+{% block container %}
+
+	<div class="container">
+		<div id="queue">
+		</div>
+	</div>
+
+	{% development %}
+		<script src="/static/js/dev.js"></script>
+	{% enddevelopment %}
+	{% production %}
+		<script src="{{ assetUrl('js/prod.js') }}"></script>
+	{% endproduction %}
+
+{% endblock %}

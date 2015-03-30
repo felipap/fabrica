@@ -1,0 +1,201 @@
+
+// WebKit-style focus
+
+.tab-focus() {
+  // Default
+  outline: thin dotted;
+  // WebKit
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
+}
+
+button, .button {
+	border: none;
+	display: inline-block;
+	margin-bottom: 0; // For input.btn
+	text-align: center;
+	vertical-align: middle;
+	cursor: pointer;
+	white-space: nowrap;
+	border: none;
+	background-image: none;
+	padding: 6px 12px;
+	color: @btn-default-color;
+	font-weight: @btn-font-weight;
+	color: #222;
+	line-height: 1;
+	border-radius: 2px;
+	.user-select(none);
+
+	&:focus {
+		.tab-focus();
+	}
+
+	&:hover, &:focus {
+		// color: @btn-default-color;
+		text-decoration: none;
+	}
+
+	&.disabled, &[disabled], fieldset[disabled] & {
+		cursor: not-allowed;
+		pointer-events: none; // Future-proof disabling of clicks
+		.opacity(.65);
+		.box-shadow(none);
+	}
+
+	&:active, &.active {
+		outline: 0;
+		background-image: none;
+		.box-shadow(inset 0 3px 5px rgba(0,0,0,.125));
+	}
+}
+
+.button.blue:not(.depth) {
+	.xbtn(white, @CBLUE);
+}
+
+.button.depth.blue {
+	.high-xbtn(white, @CBLUE);
+}
+
+/* Mixins for building button states. */
+
+.color-btn (@color, @bg, @border) {
+	color: @color;
+	background: @bg;
+	border-color: @border;
+}
+
+.color-btn-hover (@color, @bg, @border) {
+	&:hover {
+		.color-btn(@color, @bg, @border);
+	}
+}
+
+.color-btn-active (@color, @bg, @border) {
+	&:active {
+		.color-btn(@color, @bg, @border);
+	}
+}
+
+.color-btn-focus (@color, @bg, @border) {
+	&:focus {
+		.color-btn(@color, @bg, @border);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+.btn0 {
+	outline: none;
+	// font-weight: bold;
+	padding: 7px 10px;
+	border: none;
+	border-radius: 2px;
+}
+
+/* Don't change a thing. */
+.xbtn (@color: @btn-default-color, @bg: @btn-default-bg,
+	@chover: lighten(@bg, 4%), @border: transparent) {
+	.btn0;
+	.transition;
+
+	.color-btn-focus(@color, @bg, transparent);
+	border: 1px solid transparent;
+	.color-btn(@color, @bg, @border);
+	.color-btn-hover(@color, @chover, @chover);
+	.color-btn-active(@color, darken(@chover, 4%), darken(@chover, 8%));
+
+	&:active {
+		.no-text-shadow;
+		.no-box-shadow;
+	}
+
+	&[disabled] {
+		.color-btn(@color,
+			mix(greyscale(@bg), @bg, 75%),
+			mix(greyscale(@bg), @bg, 75%));
+	}
+}
+
+.high-xbtn (@color: white, @bg: @CBLUE, @shadowSize: 3px,
+	@verticalpadding: 9px, @horizontalPadding: 15px, @verticalMargin: 8px) {
+	.btn0;
+
+	.transition;
+	.color-btn-focus(@color, @bg, transparent);
+	.box-shadow(0, @shadowSize, 0, darken(@bg, 10%));
+	.color-btn(@color, @bg, transparent);
+
+	padding: @verticalpadding @horizontalPadding;
+	margin-top: @verticalMargin;
+	margin-bottom: @verticalMargin+@shadowSize;
+
+	&:hover {
+		.text-shadow(1px, 1px, 0, rgba(0,0,0,.1));
+		background: lighten(@bg, 5%);
+	}
+	a&:hover {
+		color: @color;
+	}
+	&[disabled] {
+		.no-box-shadow;
+	}
+
+	&:active {
+		.no-text-shadow;
+		.no-box-shadow;
+		.translate(0, @shadowSize);
+	}
+}
+
+/*---------------------------*\
+	#FOLLOW #BUTTON
+\*---------------------------*/
+
+.btn-follow,
+.btn-tag-follow {
+	&[data-action=follow] {
+		border-radius: 5px;
+		&:empty::before { content: "Seguir"; }
+		.xbtn(@color: white, @bg: @CGREEN);
+		padding: 3px 0px;
+	}
+	&[data-action=unfollow]:not(:hover) {
+		border-radius: 5px;
+		.xbtn(@color: white, @bg: @CBLUE);
+		padding: 3px 0px;
+		&::before { content: "Seguindo"; }
+	}
+	&[data-action=unfollow]:hover{
+		&:empty::before { content: "Desfazer"; }
+		.xbtn(@color: white, @bg: desaturate(@CRED,10%));
+		padding: 3px 0px;
+	}
+
+	text-transform: uppercase;
+	font-size: 10px !important;
+	margin-left: 10px;
+	margin-right: 10px;
+	width: 60px;
+	font-family: "Open Sans";
+	font-weight: bold;
+}
+
+/**
+ * Specific to tags (different text?)
+ */
+
+.btn-tag-follow {
+	&[data-action=follow] {
+		&:empty::before { content: "Seguir Tag"; }
+	}
+	&[data-action=unfollow]:not(:hover) {
+		&::before { content: "Seguindo"; }
+	}
+	&[data-action=unfollow]:hover{
+		&:empty::before { content: "Desfazer"; }
+	}
+	width: 70px;
+}

@@ -1,0 +1,245 @@
+
+.popover.popoverlist {
+	margin-right: 3px;
+	position: fixed;
+	z-index: 19;
+	margin-top: 0 !important;
+	border-radius: 0;
+	border: none;
+	max-width: 30000px;
+	width: 400px;
+	padding: 0;
+	.no-box-shadow;
+	background: none;
+
+	// This is important, ok?
+	& > .arrow {
+		border: none !important;
+		top: -11px !important;
+		display: none;
+
+ 		&:after {
+			position: absolute !important;
+			margin-left: 7px !important;
+			content: ' ' !important;
+			border: 5px solid transparent !important;
+			border-bottom-color: #222 !important;
+		}
+	}
+
+	.popover-content {
+		padding: 0 !important;
+		background: #FFF;
+		color: white;
+		background: #292929;
+		border-radius: 0; // 3px;
+		.box-shadow(0 5px 10px rgba(0,0,0,.2));
+		margin-right: 4px;
+
+		a {
+			color: mix(white, @CBLUE);
+			&:hover {
+				color: mix(white, @CBLUE, 30%);
+				// text-decoration: underline;
+			}
+		}
+	}
+
+	/**
+	 * Scrollbar.
+	 */
+
+	::-webkit-scrollbar {
+	    width: 7px;
+	}
+
+	/* Track */
+	::-webkit-scrollbar-track {
+	    // -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	    -webkit-border-radius: 10px;
+	    border-radius: 10px;
+	    margin-right: 3px;
+	}
+
+	/* Handle */
+	::-webkit-scrollbar-thumb {
+	    -webkit-border-radius: 10px;
+	    border-radius: 10px;
+	    background: none
+	    .transition;
+	}
+
+	::-webkit-scrollbar-thumb:window-inactive {
+		background: none;
+	}
+
+	&:hover ::-webkit-scrollbar-thumb {
+	    background: #666;
+	}
+
+	.popover-header {
+		padding: 6px;
+		font-size: 11px;
+		font-weight: bold;
+	}
+
+	.popover-inner {
+		// margin-left: -84px;
+
+		// & > .top {
+		// 	background: #F2F2F2;
+		// 	text-transform: uppercase;
+		// 	font: bold 11px museo-sans;
+		// 	color: #666;
+		// 	padding: 8px;
+		// 	border-bottom: 1px solid #DDD;
+		// 	.detail {
+		// 		color: @CGREEN;
+		// 		float: right;
+		// 	}
+		// }
+
+		.msg-empty {
+			padding: 30px
+		}
+	}
+
+	.popover-list {
+		overflow: hidden;
+		max-height: 300px;
+		overflow-y: auto;
+		// padding: 5px;
+
+		& > li {
+			list-style: none;
+			width: 100%;
+			cursor: pointer;
+			min-height: 50px;
+			position: relative;
+			font-size: 12px;
+			font-family: museo-sans;
+			.transition(all, .2s, linear);
+
+			// &:not(:last-child) {
+			border-top: 1px solid rgba(0,0,0,.2);
+
+			time {
+				font-weight: normal;
+				font-style: normal;
+				float: right;
+				font-size: 10px;
+				margin-top: 4px;
+				opacity: .8;
+			}
+
+			.left {
+				display: inline-block;
+				vertical-align: top;
+				width: 70px;
+				position: absolute;
+				left: 0;
+				bottom: 0;
+				top: 0;
+
+				.user-avatar {
+					margin-top: 15px;
+					margin-left: 10px;
+					width: 30px;
+					height: 30px;
+				}
+			}
+			.right {
+				display: inline-block;
+				vertical-align: top;
+				padding: 15px;
+				width: 100%;
+			}
+
+			&.hasThumb .right {
+				padding: 10px;
+				padding-left: 50px;
+			}
+
+			.delta {
+				color: @CGREEN;
+				padding: 12px 0;
+				font: bold 12px museo-sans;
+				text-align: center;
+			}
+
+			.name {
+				font-weight: bold;
+				display: block;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			.user-avatar {
+				width: 20px;
+				margin-right: 4px;
+				height: 20px;
+				border-radius: 20px;
+			}
+		}
+	}
+}
+
+
+.popover-list.notification-list {
+	.thumbnail {
+		border-radius: 0px;
+		.background-size(cover);
+		position: absolute;
+		background-position: center;
+		top: 0;
+		bottom: 0;
+		right: 0;
+		left: 0;
+	}
+
+	li.action {
+		text-align: center;
+		height: 40px;
+		min-height: 0;
+		font: bold 12px/40px museo-sans;
+		text-transform: uppercase;
+		color: #ccc;
+
+		&:hover {
+			color: #EEE;
+		}
+	}
+
+	& > li {
+		.right.body {
+			.read {
+				font-size: .9em;
+			}
+			a {
+				color: white;
+			}
+		}
+	}
+
+	&[data-seen=false]::before {
+		content: " ";
+		position: absolute;
+		left: 50px;
+		top: 0;
+		bottom: 0;
+		width: 3px;
+		z-index: 1;
+		background: #08C;
+	}
+
+	&[data-seen=true] {
+		// color: #DDD;
+		// background: rgba(255, 255, 255, .1); // #F9FAFF;
+	}
+
+	.message {
+		line-height: 2;
+		display: block;
+	}
+}

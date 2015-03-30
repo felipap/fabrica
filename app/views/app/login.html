@@ -1,0 +1,44 @@
+{% extends '../default.html' %}
+{% set dataPage="login" %}
+
+{% block head %}
+	<link rel="stylesheet" href="{{ assetUrl('css/bundle.css') }}" />
+{% endblock %}
+
+{% block body %}
+
+<script>
+messages={{ messages|json|safe }};
+</script>
+
+<div class="container">
+  <a class="Logo" href="/">
+    Fabrica
+  </a><a class="Logo delta" href="/">
+    DeltaThinkers
+  </a>
+  <h1>
+    Fazer Login
+  </h1>
+  <p>
+    Ainda não tem uma conta? <a href="/signup">Registre-se.</a>
+  </p>
+  <div id="flash-messages" class="FlashWrapper"></div>
+	<form class="LoginForm" method="post" action="">
+		<input type="email" name="email" placeholder="Email" />
+		<input type="password" name="password" placeholder="Senha" />
+    <input type="hidden" name="_csrf" value="{{ token }}" />
+    <button class="login">Entrar</button>
+	</form>
+  <footer>
+  </footer>
+</div>
+
+{% development %}
+  <script src="/static/js/dev.js"></script>
+{% enddevelopment %}
+{% production %}
+  <script src="{{ assetUrl('js/prod.js') }}"></script>
+{% endproduction %}
+
+{% endblock %}
