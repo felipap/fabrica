@@ -187,6 +187,7 @@ UserSchema.methods.seeNotifications = (cb) ->
 
 UserSchema.methods.getNotifications = (limit, cb) ->
 	self = @
+	return cb(null, { items:[]. last_seen: Date.now(), last_update: 0 })
 	if @notification_chunks.length is 0
 		return cb(null, { items: [], last_seen: Date.now() })
 	# TODO: Use cache here if last_sent_notification < last_seen_notifications

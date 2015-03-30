@@ -55,7 +55,7 @@ app.use(function (req, res, next) {
 	next();
 });
 
-require('./config/s3')(app);
+// require('./config/s3')(app);
 require('./config/passport')(app);
 
 /**
