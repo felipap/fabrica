@@ -6,6 +6,7 @@ jobs = require 'app/config/kue.js'
 please = require 'app/lib/please.js'
 redis = require 'app/config/redis.js'
 bcrypt = require 'bcrypt'
+crypto = require 'crypto'
 
 ################################################################################
 ## Schema ######################################################################
@@ -14,11 +15,16 @@ SALT_WORK_FACTOR = 10
 
 UserSchema = new mongoose.Schema {
 	name:					{ type: String, required: true }
-	username:			{ type: String, required: true, index: true, unique: true }
-	access_token: { type: String, required: true }
-	facebook_id:	{ type: String, required: true, index: true }
-	email:				{ type: String }
+	# username:			{ type: String, required: true, index: true, unique: true }
+	# access_token: { type: String, required: true }
+	# facebook_id:	{ type: String, required: true, index: true }
+	email:				{ type: String, required: true, unique: true, index: true }
 	avatar_url:		{ type: String }
+
+	company: {
+		id: 		{ type: String }
+		name: 	{ type: String, default: 'DeltaThinkers' }
+	}
 
 	profile: {
 		isStaff: 		{ type: Boolean, default: false }
@@ -27,8 +33,6 @@ UserSchema = new mongoose.Schema {
 		bio: 				{ type: String, default: ''}
 		home: 			{ type: String, default: '' }
 		background:	{ type: String, default: '/static/images/rio.jpg' }
-		serie: 			{ type: String, enum:
-			['6-ef','7-ef','8-ef','9-ef','1-em','2-em','3-em','faculdade','pg','esp'] }
 		birthday:		{ type: Date }
 	}
 
@@ -47,7 +51,6 @@ UserSchema = new mongoose.Schema {
 		last_access: { type: Date, default: Date.now }
 		last_seen_notifications: { type: Date, default: 0 }
 		last_received_notifications: { type: Date, default: 0 }
-		karma_from_previous_chunks: { type: Number, default: 0 }
 	}
 
 	badges: [{
@@ -138,17 +141,9 @@ UserSchema.statics.CacheFields = {
 	Profile: 'user:{id}:profile'
 }
 
-UserSchema.virtual('avatarUrl').get ->
-	if @avatar_url
-		@avatar_url+'?width=200&height=200'
-	else
-		'https://graph.facebook.com/'+@facebook_id+'/picture?width=200&height=200'
-
 UserSchema.virtual('picture').get ->
-	if @avatar_url
-		@avatar_url+'?width=200&height=200'
-	else
-		'https://graph.facebook.com/'+@facebook_id+'/picture?width=200&height=200'
+	hash = crypto.createHash('md5').update(@email).digest('hex')
+	'http://www.gravatar.com/avatar/'+hash
 
 UserSchema.virtual('path').get ->
 	'/@'+@username
@@ -265,6 +260,22 @@ UserSchema.methods.toSelfJSON = () ->
 		virtuals: true
 		select: UserSchema.statics.APISelectSelf
 	})
+
+validator = require 'validator'
+
+UserSchema.statics.SingupParseRules = {
+	name:
+		$valid: (str) -> true
+		$parse: validator.trim
+	email:
+		$valid: (str) ->
+			validator.isEmail(str)
+		$parse: validator.trim
+	password1:
+		$msg: "Entre uma senha com ao menos 5 caracteres."
+		$valid: (str) ->
+			validator.isLength(str, 5)
+}
 
 UserSchema.plugin(require('./lib/hookedModelPlugin'))
 UserSchema.plugin(require('./lib/trashablePlugin'))

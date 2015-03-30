@@ -41,8 +41,25 @@ module.exports = (app) ->
 	router.get '/signup', (req, res) ->
 		res.render 'app/signup', {}
 
-	router.post '/signup', (req, res) ->
-		# res.render 'app/signup', {}
+	router.post '/signup', (req, res, next) ->
+		req.parse User.SingupParseRules, (err, body) ->
+			if body.password1 isnt req.body.password2
+				req.flash('error', 'As senhas não correspondem.')
+				return res.redirect('/signup')
+			u = new User {
+				name: body.name,
+				email: body.email,
+				password: body.password1,
+			}
+			u.save (err, user) ->
+				if err
+					return next(err)
+				req.flash('info', 'Bem-vindo, '+user.name)
+				req.logIn user, (err) ->
+					if err
+						return next(err)
+					res.redirect('/')
+
 
 	router.post '/login', (req, res, next) ->
 		authFn = (err, user, info) ->

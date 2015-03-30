@@ -20,12 +20,16 @@ module.exports = function (app) {
     .on('keyup', function (e) {
       if (p1.val() && p2.val() && p1.val() == p2.val()) {
         p2.removeClass('is-wrong')
+        $("is-wrong-stuff").remove()
       }
     })
 
-  form.on("submit", function (e) {
+  form.submit(function (e) {
     e.preventDefault();
-    if (e.data('wrong')) {
+    e.stopPropagation()
+    $("is-wrong-stuff").remove()
+    if (p2.hasClass('is-wrong')) {
+      $("#flash-messages").append($("<li class='error' id='is-wrong-stuff'>Ops. As senhas estão diferentes.<i class='close-btn' onClick='$(this.parentElement).slideUp()'></i></li>"))
     } else {
       this.submit();
     }

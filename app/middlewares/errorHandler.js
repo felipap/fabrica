@@ -61,6 +61,7 @@ module.exports = function(err, req, res, next) {
 
 	// Test mongoose errors.
 	if (err.name === 'ValidationError' || err.obj && err.obj.name === 'ValidationError') {
+		console.log('validationerror', err)
 		res.renderError(400, {msg:'Não foi possível completar a sua ligação.'})
 		return;
 	}

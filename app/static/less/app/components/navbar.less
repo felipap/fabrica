@@ -180,6 +180,11 @@ html.snpage .navbar-brand {
 		height: @navbar-height;
 		position: relative;
 
+		&:hover {
+			.transition;
+			background: rgba(0,0,0,.05);
+		}
+
 		&.nav-dropdown {
 
 			.avatar-btn {
@@ -187,7 +192,18 @@ html.snpage .navbar-brand {
 				cursor: pointer;
 				position: relative;
 				display: inline-block;
-				width: @navbar-height;
+				// width: @navbar-height;
+				.right {
+					display: inline-block;
+					width: 80px;
+					margin: 0 10px;
+					vertical-align: middle;
+					.name, .company {
+						// display: inline-block;
+						margin-bottom: 3px;
+						line-height: 1;
+					}
+				}
 				.avatarDd {
 					display: inline-block;
 					width: 35px; // @navbar-height+1;

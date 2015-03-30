@@ -17,6 +17,9 @@
 {% block head %}{% endblock %}
 <link rel="stylesheet" href='{{ assetUrl('css/fonts.css') }}' />
 <link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Open+Sans:300,600,700,800|PT+Serif:400,400i,700,700i' />
+<script>
+messages={{ messages|json|safe }};
+</script>
 </head>
 <body data-page="{{ dataPage }}" class="{% if user %}logged{% endif %}">
 {% block body %}{% endblock %}

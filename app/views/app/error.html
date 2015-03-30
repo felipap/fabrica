@@ -44,16 +44,6 @@
 				{{ action|safe }}
 			</a>
 		{% endif %}
-
-		<script>
-			var bulb = document.getElementById('malfunctioningBulb');
-			setTimeout(function doIt() {
-				var isYellow = /(^|\s+)yellow(\s+|$)/.test(bulb.className);
-				if (isYellow) bulb.className = bulb.className.replace(/(^|\s+)yellow(\s+|$)/,' ');
-				else bulb.className += " yellow";
-				setTimeout(doIt, Math.random()*(isYellow?2000:(Math.random()>.5?200:500)));
-			}, 300);
-		</script>
 		<footer>
 		</footer>
 	</div>

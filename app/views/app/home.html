@@ -9,11 +9,4 @@
 		</div>
 	</div>
 
-	{% development %}
-		<script src="/static/js/dev.js"></script>
-	{% enddevelopment %}
-	{% production %}
-		<script src="{{ assetUrl('js/prod.js') }}"></script>
-	{% endproduction %}
-
 {% endblock %}
