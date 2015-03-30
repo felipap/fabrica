@@ -15,6 +15,10 @@ npm-debug.log
 
 .nodemonignore
 
+Aassets/js
+Aassets/css
+Aassets/fonts
+
 *.sublime-project
 *.sublime-workspace
 .sass-cache

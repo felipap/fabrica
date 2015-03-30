@@ -99,7 +99,7 @@
 	}
 }
 
-html.snpage .navbar-brand {
+html.aoo .navbar-brand {
 	.brand-icon i {
 		display: none;
 	}
@@ -192,16 +192,23 @@ html.snpage .navbar-brand {
 				cursor: pointer;
 				position: relative;
 				display: inline-block;
+				padding: 0 15px;
 				// width: @navbar-height;
 				.right {
 					display: inline-block;
-					width: 80px;
-					margin: 0 10px;
+					margin-right: 10px;
 					vertical-align: middle;
 					.name, .company {
 						// display: inline-block;
 						margin-bottom: 3px;
 						line-height: 1;
+					}
+					.name {
+						font-size: 14px;
+						font-weight: 700;
+					}
+					.company {
+						font-size: 13px;
 					}
 				}
 				.avatarDd {
@@ -215,6 +222,10 @@ html.snpage .navbar-brand {
 				}
 			}
 
+			&.open {
+				background: rgba(0,0,0,.05);
+			}
+
 			.dropdown-menu {
 				left: auto;
 				right: 5px;
@@ -224,6 +235,7 @@ html.snpage .navbar-brand {
 				background: #292929;
 				min-width: 0;
 				border: 0;
+				.box-shadow(0 4px 6px rgba(0,0,0,.1));
 
 				// &::before {
 				// 	content: ' ';

@@ -19,6 +19,7 @@ UserSchema = new mongoose.Schema {
 	# access_token: { type: String, required: true }
 	# facebook_id:	{ type: String, required: true, index: true }
 	email:				{ type: String, required: true, unique: true, index: true }
+	password:			{ type: String, required: true }
 	avatar_url:		{ type: String }
 
 	company: {
@@ -171,9 +172,10 @@ UserSchema.virtual('path').get ->
 	# 	next()
 
 UserSchema.methods.usesPassword = (candidate, cb) ->
+	console.log(@)
 	bcrypt.compare candidate, @password, (err, isMatch) ->
 		if err
-			return next(err)
+			return cb(err)
 		cb(null, isMatch)
 
 UserSchema.methods.seeNotifications = (cb) ->

@@ -23,35 +23,25 @@
 	<ul class="right">
 		<li id="ttip-bell" title="Notificações">
 			<button id="nav-bell" class="icon-btn bell" data-action="show-notifications">
-				<i class="icon-notifications"></i><sup class="count" data-info="unseen-notifs">0</sup>
+				<i class="icon-notifications"></i><sup class="count" data-info="unseen-notifs"></sup>
 			</button>
 		</li><li class="nav-dropdown" id="ttip-dd-menu">
-		 	<div id="drop3" data-toggle="dropdown" role="button" class="avatar-btn dropdown-toggle">
-			 	<div class="right">
-			 		<div class="name">
-		 				{{ user.name|split(' ')|index(0) }}
-			 		</div>
-			 		<div class="company">
-		 				{{ user.company.name }}
-			 		</div>
-			 	</div>
+			<div id="drop3" data-toggle="dropdown" role="button" class="avatar-btn dropdown-toggle">
+				<div class="right">
+					<div class="name">
+						{{ user.name|split(' ')|index(0) }}
+					</div>
+					<div class="company">
+						{{ user.company.name }}
+					</div>
+				</div>
 				<div class="avatarDd" style="background-image: url('{{ user.picture }}')">
 				</div>
 			</div>
-			<ul class="dropdown-menu nav-tabs" role="menu" aria-labelledby="drop3">
+			<ul class="dropdown-menu" role="menu" aria-labelledby="drop3">
+				{% if user.flags.isStaff %}
 				<li role="presentation">
-					<a role="menuitem" tabindex="-1" href="{{ user.path }}">
-						<i class="icon-user2"></i> Meu Perfil
-					</a>
-				</li>
-				<li role="presentation">
-					<a role="menuitem"  tabindex="-1" href="{{ urls.settings }}">
-						<i class="icon-settings"></i> Configurações
-					</a>
-				</li>
-				{% if user.flags.editor %}
-				<li role="presentation">
-					<a role="menuitem"  tabindex="-1" href="/admin">
+					<a role="menuitem" tabindex="-1" href="/admin">
 						<i class="icon-apps"></i> Administração
 					</a>
 				</li>
@@ -62,17 +52,15 @@
 					</a>
 				</li>
 				<li role="presentation">
-					<a role="menuitem" tabindex="-2" href="{{ urls.about }}">
-						<i class="icon-info"></i> Sobre o Site
-					</a>
-				</li>
-				{#<li role="presentation" class="divider"></li>#}
-				<li role="presentation">
 					<a role="menuitem" tabindex="-1" data-ajax-post-href="{{ urls.logout }}" data-redirect-href="/">
 						<i class="icon-exit-to-app"></i> Sair
 					</a>
 				</li>
 			</ul>
+		</li><li title="Ajuda">
+			<a href="/help" class="button">
+				Ajuda
+			</a>
 		</li>
 	</ul>
 	{% else %}

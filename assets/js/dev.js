@@ -373,7 +373,7 @@ module.exports = $.fn.bell = function (opts) {
 		onClick: function () {
 			// Check cookies for last fetch
 			console.log(1)
-			fetchNL();
+			// fetchNL();
 			if (!all_seen) {
 				console.log(2)
 				all_seen = true
@@ -428,7 +428,7 @@ module.exports = $.fn.bell = function (opts) {
 		}, INTERVAL)
 	}
 
-	startPoolNewNotificationsLoop()
+	// startPoolNewNotificationsLoop()
 
 	var fetchNL = function () {
 		nl.fetch({
@@ -448,7 +448,7 @@ module.exports = $.fn.bell = function (opts) {
 	}
 
 	var updateUnseenNotifs = function (num) {
-		$('[data-info=unseen-notifs]').html(num)
+		$('[data-info=unseen-notifs]').html(num?num:'')
 		$('[data-info=unseen-notifs]').addClass(num?'nonzero':'zero')
 		if (num) {
 			this.addClass('active')
