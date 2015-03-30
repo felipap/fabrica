@@ -25,10 +25,10 @@ module.exports = function (app) {
 				}
 			}
 		}
-		if (nconf.get('env') === 'production')
-			return pathLib.join(nconf.get('S3_STATIC_URL'), relPath)
-		else
-			return pathLib.join(nconf.get('staticUrl'), relPath)
+		// if (nconf.get('env') === 'production')
+		// 	return pathLib.join(nconf.get('S3_STATIC_URL'), relPath)
+		// else
+		return pathLib.join(nconf.get('staticUrl'), relPath)
 	}
 
 	app.locals.defaultMetaObject = {
