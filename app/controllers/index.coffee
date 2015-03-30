@@ -60,7 +60,6 @@ module.exports = (app) ->
 						return next(err)
 					res.redirect('/')
 
-
 	router.post '/login', (req, res, next) ->
 		authFn = (err, user, info) ->
 			if err
@@ -75,15 +74,15 @@ module.exports = (app) ->
 		(passport.authenticate 'local', authFn)(req, res, next)
 
 	router.use '/', (req, res, next) ->
-		# if not req.user
-		# 	return res.redirect('/login')
+		if not req.user
+			return res.redirect('/login')
 		next()
 
 	router.get '/', (req, res, next) ->
 		res.render 'app/home'
 
-	router.get '/arquivos', (req, res, next) ->
-		res.render 'app/files'
+	router.get '/arquivos', (req, res, next) -> res.render 'app/files'
+	router.get '/ajuda', (req, res, next) -> res.render 'app/help'
 
 	router.get '/entrar', (req, res) -> res.redirect '/login'
 	router.get '/settings', required.login, (req, res) -> res.render 'app/settings'

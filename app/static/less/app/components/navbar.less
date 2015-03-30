@@ -121,6 +121,11 @@ html.aoo .navbar-brand {
 	.user-select(none);
 	float: left;
 
+	.brand-icon.delta {
+		background: @CDTHINKERS;
+		margin-right: -4px;
+	}
+
 	.brand-icon {
 		text-transform: uppercase;
 		font-family: "museo-sans";
@@ -179,9 +184,9 @@ html.aoo .navbar-brand {
 		line-height: @navbar-height;
 		height: @navbar-height;
 		position: relative;
+		.transition(background .1s linear);
 
 		&:hover {
-			.transition;
 			background: rgba(0,0,0,.05);
 		}
 
@@ -411,7 +416,7 @@ html.aoo .navbar-brand {
 	.bell {
 		.iconBtn(desaturate(@CBLUE, 10%));
 		.icon-notifications:before {
-			content: "\e6fa";
+			// content: "\e6fa";
 		}
 		&.active .icon-notifications:before {
 			content: "\e6f9";
@@ -439,7 +444,9 @@ html.aoo .navbar-brand {
 .navbar-navigation {
 	& > li {
 
-		margin-right: -4px;
+		&:not(:last-child) {
+			margin-right: -4px;
+		}
 
 		&.active a {
 			background: #DDD;

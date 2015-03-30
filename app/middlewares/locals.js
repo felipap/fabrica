@@ -59,7 +59,7 @@ module.exports = function (app) {
 		facebook: 'http://facebook.com/deltathinkres',
 		logo: "http://app.deltathinkers.com/static/images/logoBB.png",
 		logout: '/api/me/logout',
-		feedbackForm: 'https://docs.google.com/forms/d/1bfmATEv6WfOkON_gv4Dmhob4jDAm7jJbo7xK7Lt8_jE/viewform',
+		feedbackForm: '',
 		blog: 'http://blog.deltathinkers.com',
 	}
 }
