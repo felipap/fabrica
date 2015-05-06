@@ -24,8 +24,9 @@ module.exports = function () {
 	var models = fs.readdirSync(MODELS_PATH)
 
 	var models = {
-		'user': 'User',
 		'notification': 'Notification',
+		'print_job': 'PrintJob',
+		'user': 'User',
 		'company': 'Company',
 	}
 

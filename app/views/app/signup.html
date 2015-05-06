@@ -1,5 +1,7 @@
 {% extends '../default.html' %}
-{% set dataPage="signup" %}
+{% set page = {
+  tag: 'signup',
+} %}
 
 {% block head %}
 	<link rel="stylesheet" href="{{ assetUrl('css/bundle.css') }}" />

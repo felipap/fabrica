@@ -11,21 +11,31 @@
 			<span>Fabrica</span>
 		</a>
 	</div>
+	{% if user %}
 
 	<ul class="navbar-navigation">
-		<li {% if pageRoot == "home" %}class="active"{% endif %}>
-			<a class="button" href="/">
-				Painel
+		<li {% if root == "new-service" %}class="active"{% endif %}>
+			<a class="button" href="/novo">
+				Novo Pedido
 			</a>
 		</li>
-		<li {% if pageRoot == "files" %}class="active"{% endif %}>
+		<li {% if root == "files" %}class="active"{% endif %}>
 			<a class="button" href="/arquivos">
 				Arquivos
 			</a>
 		</li>
+		<li {% if root == "account" %}class="active"{% endif %}>
+			<a class="button" href="/conta">
+				Sua Conta
+			</a>
+		</li>
 	</ul>
-	{% if user %}
 	<ul class="navbar-navigation right">
+		<li {% if root == "contact" %}class="active"{% endif %}>
+			<a class="button" href="/contato">
+				Fale Conosco
+			</a>
+		</li>
 		<li id="ttip-bell" title="Notificações">
 			<button id="nav-bell" class="icon-btn bell" data-action="show-notifications">
 				<i class="icon-notifications"></i><sup class="count" data-info="unseen-notifs"></sup>
@@ -52,9 +62,16 @@
 					</a>
 				</li>
 				{% endif %}
+				<!--
 				<li role="presentation">
 					<a role="menuitem" tabindex="-2" href="{{ urls.feedbackForm }}">
 						Relatar Problema
+					</a>
+				</li>
+				-->
+				<li role="presentation">
+					<a role="menuitem" tabindex="-2" href="/conta">
+						Alterar Informações
 					</a>
 				</li>
 				<li role="presentation">
@@ -64,7 +81,7 @@
 				</li>
 			</ul>
 		</li>
-		<li title="Ajuda" {% if pageRoot == "help" %}class="active"{% endif %}>
+		<li title="Ajuda" {% if root == "help" %}class="active"{% endif %}>
 			<a href="/ajuda" class="button">
 				Ajuda
 			</a>

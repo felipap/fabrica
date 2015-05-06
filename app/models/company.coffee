@@ -12,7 +12,7 @@ redis = require 'app/config/redis.js'
 CompanySchema = new mongoose.Schema {
 	name:					{ type: String, required: true }
 	username:			{ type: String, required: true, index: true, unique: true }
-	access_token: { type: String, required: true }
+
 	facebook_id:	{ type: String, required: true, index: true }
 	email:				{ type: String }
 	avatar_url:		{ type: String }

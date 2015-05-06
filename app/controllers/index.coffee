@@ -68,7 +68,7 @@ module.exports = (app) ->
 				req.flash('error', info.message)
 				return res.redirect('/login')
 			req.logIn user, (err) ->
-				if err
+			if err
 					return next(err)
 				res.redirect('/')
 		(passport.authenticate 'local', authFn)(req, res, next)
@@ -86,6 +86,8 @@ module.exports = (app) ->
 
 	router.get '/entrar', (req, res) -> res.redirect '/login'
 	router.get '/settings', required.login, (req, res) -> res.render 'app/settings'
+	router.get '/conta', required.login, (req, res) -> res.render 'app/account'
+	router.get '/contato', required.login, (req, res) -> res.render 'app/contact'
 	router.get '/sobre', (req, res) -> res.render('about/main')
 	router.get '/faq', (req, res) -> res.render('about/faq')
 	router.get '/blog', (req, res) -> res.redirect('http://blog.deltathinkers.com')
