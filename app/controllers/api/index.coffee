@@ -3,6 +3,9 @@ express = require 'express'
 unspam = require '../lib/unspam'
 bunyan = require 'app/config/bunyan'
 required = require '../lib/required'
+aws = require 'aws-sdk'
+crypto = require 'crypto'
+nconf = require 'app/config/nconf'
 
 module.exports = (app) ->
 	api = express.Router()
@@ -15,6 +18,43 @@ module.exports = (app) ->
 		next()
 
 	api.use unspam
+
+	api.get '/s3/sign', required.login, unspam.limit(1*1000), (req, res) ->
+		req.logger.warn "Faz check aqui, felipe"
+		aws.config.update({
+			accessKeyId: nconf.get('AWS_ACCESS_KEY_ID'),
+			secretAccessKey: nconf.get('AWS_SECRET_ACCESS_KEY')
+		})
+		s3 = new aws.S3()
+		key = req.query.s3_object_name
+		key = 'media/posts/uimages/'+crypto.randomBytes(10).toString('hex')
+		s3_params = {
+			Bucket: nconf.get('S3_BUCKET'),
+			Key: key,
+			Expires: 60,
+			# post: req.query.,
+			Metadata: {
+				'uploader': req.user.id,
+			},
+			ContentType: req.query.s3_object_type,
+			ACL: 'public-read'
+		}
+		console.log s3_params, {
+			accessKeyId: nconf.get('AWS_ACCESS_KEY_ID'),
+			secretAccessKey: nconf.get('AWS_SECRET_ACCESS_KEY')
+		}
+		s3.getSignedUrl 'putObject', s3_params, (err, data) ->
+			if err
+				console.log('err!', err)
+			else
+				console.log(data)
+				return_data = {
+					signed_request: data,
+					url: 'https://'+nconf.get('S3_BUCKET')+'.s3.amazonaws.com/'+key
+				}
+				res.endJSON(return_data)
+
+
 
 	# A little backdoor for debugging purposes.
 	api.get '/logmein/:username', (req, res) ->

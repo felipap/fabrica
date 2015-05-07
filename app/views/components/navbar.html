@@ -12,18 +12,19 @@
 		</a>
 	</div>
 	{% if user %}
-
 	<ul class="navbar-navigation">
-		<li {% if root == "new-service" %}class="active"{% endif %}>
+		<li {% if root == "new-printjob" %}class="active"{% endif %}>
 			<a class="button" href="/novo">
 				Novo Pedido
 			</a>
 		</li>
+		{% if user.flags.seller %}
 		<li {% if root == "files" %}class="active"{% endif %}>
 			<a class="button" href="/arquivos">
 				Arquivos
 			</a>
 		</li>
+		{% endif %}
 		<li {% if root == "account" %}class="active"{% endif %}>
 			<a class="button" href="/conta">
 				Sua Conta

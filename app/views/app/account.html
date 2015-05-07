@@ -1,0 +1,40 @@
+{% extends '../page.html' %}
+{% set page = {
+	tag: 'account',
+	root: 'account',
+} %}
+
+{% block container %}
+
+	<div class="container">
+		<h2>Modifique suas informações</h2>
+
+		<br />
+		<form class="AccountForm form-horizontal col-sm-7">
+			<div class="form-group disabled">
+				<label for="" class="col-sm-2 control-label">Sua empresa</label>
+				<div class="col-sm-5" title="Entre em contato conosco para modificar essa informação.">
+					<input type="text" class="form-control disabled" disabled="true" name="name" placeholder="" value="{{ user.company.name }}" />
+				</div>
+			</div>
+			<div class="form-group name">
+				<label for="" class="col-sm-2 control-label">Nome</label>
+				<div class="col-sm-5">
+					<input type="text" class="form-control" name="name" placeholder="" value="{{ user.name }}" />
+				</div>
+			</div>
+			<div class="form-group email">
+				<label for="" class="col-sm-2 control-label">Email</label>
+				<div class="col-sm-5">
+					<input type="text" class="form-control" email="email" placeholder="" value="{{ user.email }}" />
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+					<button type="submit" class="btn btn-default">Salvar</button>
+				</div>
+			</div>
+		</form>
+	</div>
+
+{% endblock %}

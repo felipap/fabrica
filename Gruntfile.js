@@ -42,42 +42,6 @@ module.exports = function (grunt) {
 				options: { spawn: true },
 			},
 		},
-		browserify: {
-			prod: {
-				files: {
-					"assets/js/prod.js": "app/static/js/app/app.js",
-				},
-				options: {
-					preBundleCB: function (b) {
-						b.plugin('minifyify', {
-							compressPath: function (p) {
-								return require('path').relative(__dirname, p);
-							},
-							map: '/static/js/prod.map?',
-							output: "assets/js/prod.map"
-						});
-						return b;
-					},
-					watch: false,
-					browserifyOptions: {
-						debug: true,
-					},
-				},
-				bundleOptions: {
-					debug: true,
-				},
-			},
-			dev: {
-				files: {
-					"assets/js/dev.js": "app/static/js/app/app.js",
-				},
-			},
-			options: {
-				transform: [ require('grunt-react').browserify ],
-				watch: true,
-				keepAlive: true,
-			}
-		},
 		nodemon: {
 			server: {
 				script: 'master.js',
@@ -185,6 +149,45 @@ module.exports = function (grunt) {
 					},
 				]
 			},
+		}
+	});
+
+	grunt.config.set('browserify', {
+		prod: {
+			files: {
+				"assets/js/prod.js": "app/static/js/app/app.js",
+			},
+			options: {
+				preBundleCB: function (b) {
+					b.plugin('minifyify', {
+						compressPath: function (p) {
+							return require('path').relative(__dirname, p);
+						},
+						map: '/static/js/prod.map?',
+						output: "assets/js/prod.map"
+					});
+					return b;
+				},
+				watch: false,
+				browserifyOptions: {
+					debug: true,
+				},
+			},
+			bundleOptions: {
+				debug: true,
+			},
+		},
+		dev: {
+			files: {
+				"assets/js/dev.js": "app/static/js/app/app.js",
+			},
+		},
+		options: {
+			transform: [
+				['reactify', { es6: true }],
+			],
+			watch: true,
+			keepAlive: true,
 		}
 	});
 

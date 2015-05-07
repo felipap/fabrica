@@ -16,37 +16,13 @@ CompanySchema = new mongoose.Schema {
 	facebook_id:	{ type: String, required: true, index: true }
 	email:				{ type: String }
 	avatar_url:		{ type: String }
+
 }, {
 	toObject:	{ virtuals: true }
 	toJSON: 	{ virtuals: true }
 }
 
 CompanySchema.statics.APISelect = ''
-
-CompanySchema.statics.APISelectSelf = ''
-
-################################################################################
-## Virtuals ####################################################################
-
-CompanySchema.methods.getCacheField = (field) ->
-	# WTF, I feel like this is unnecessary... use only CacheFields?
-	if field of CompanySchema.statics.CacheFields
-		return CompanySchema.statics.CacheFields[field].replace('{id}', @id)
-	else
-		throw new Error("Field #{field} isn't a valid user cache field.")
-
-CompanySchema.statics.CacheFields = {
-}
-
-################################################################################
-## Middlewares #################################################################
-
-# Useful inside templates
-CompanySchema.methods.toSelfJSON = () ->
-	@toJSON({
-		virtuals: true
-		select: CompanySchema.statics.APISelectSelf
-	})
 
 CompanySchema.plugin(require('./lib/hookedModelPlugin'))
 CompanySchema.plugin(require('./lib/trashablePlugin'))

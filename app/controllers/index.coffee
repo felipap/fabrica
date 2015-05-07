@@ -4,6 +4,7 @@ _ = require 'lodash'
 passport = require 'passport'
 
 required = require './lib/required'
+unspam = require './lib/unspam'
 
 User = mongoose.model 'User'
 
@@ -78,8 +79,14 @@ module.exports = (app) ->
 			return res.redirect('/login')
 		next()
 
-	router.get '/', (req, res, next) ->
-		res.render 'app/home'
+	for n in [
+		'/',
+	]
+		router.get n, (req, res, next) ->
+			res.render 'app/home'
+
+	router.get '/novo', (req, res) ->
+		res.render 'app/new_job'
 
 	router.get '/arquivos', (req, res, next) -> res.render 'app/files'
 	router.get '/ajuda', (req, res, next) -> res.render 'app/help'
@@ -88,6 +95,8 @@ module.exports = (app) ->
 	router.get '/settings', required.login, (req, res) -> res.render 'app/settings'
 	router.get '/conta', required.login, (req, res) -> res.render 'app/account'
 	router.get '/contato', required.login, (req, res) -> res.render 'app/contact'
+	router.get '/novo', required.login, (req, res) -> res.render 'app/contact'
+
 	router.get '/sobre', (req, res) -> res.render('about/main')
 	router.get '/faq', (req, res) -> res.render('about/faq')
 	router.get '/blog', (req, res) -> res.redirect('http://blog.deltathinkers.com')
