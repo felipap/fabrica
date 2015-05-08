@@ -4,8 +4,14 @@ unspam = require '../lib/unspam'
 bunyan = require 'app/config/bunyan'
 required = require '../lib/required'
 aws = require 'aws-sdk'
-crypto = require 'crypto'
+uuid = require 'uuid'
 nconf = require 'app/config/nconf'
+
+aws.config.update({
+	accessKeyId: nconf.get('AWS_ACCESS_KEY_ID'),
+	secretAccessKey: nconf.get('AWS_SECRET_ACCESS_KEY')
+})
+s3 = new aws.S3()
 
 module.exports = (app) ->
 	api = express.Router()
@@ -19,41 +25,33 @@ module.exports = (app) ->
 
 	api.use unspam
 
+	api.put '/s3/confirm', required.login, unspam.limit(1*1000), (req, res) ->
+
+
 	api.get '/s3/sign', required.login, unspam.limit(1*1000), (req, res) ->
 		req.logger.warn "Faz check aqui, felipe"
-		aws.config.update({
-			accessKeyId: nconf.get('AWS_ACCESS_KEY_ID'),
-			secretAccessKey: nconf.get('AWS_SECRET_ACCESS_KEY')
-		})
-		s3 = new aws.S3()
-		key = req.query.s3_object_name
-		key = 'media/posts/uimages/'+crypto.randomBytes(10).toString('hex')
-		s3_params = {
+		key = 'jobs/'+uuid.v4()
+		# key = 'aaaa'
+		params = {
 			Bucket: nconf.get('S3_BUCKET'),
 			Key: key,
-			Expires: 60,
-			# post: req.query.,
-			Metadata: {
-				'uploader': req.user.id,
-			},
-			ContentType: req.query.s3_object_type,
+			Expires: 60
 			ACL: 'public-read'
+			ContentType: req.query.type,
+			# Metadata: {
+			# 	'uploader': req.user.id,
+			# },
 		}
-		console.log s3_params, {
-			accessKeyId: nconf.get('AWS_ACCESS_KEY_ID'),
-			secretAccessKey: nconf.get('AWS_SECRET_ACCESS_KEY')
-		}
-		s3.getSignedUrl 'putObject', s3_params, (err, data) ->
+		s3.getSignedUrl 'putObject', params, (err, data) ->
 			if err
 				console.log('err!', err)
 			else
-				console.log(data)
+				console.log('data', params, data)
 				return_data = {
 					signed_request: data,
 					url: 'https://'+nconf.get('S3_BUCKET')+'.s3.amazonaws.com/'+key
 				}
 				res.endJSON(return_data)
-
 
 
 	# A little backdoor for debugging purposes.

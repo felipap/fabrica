@@ -221,7 +221,222 @@ $('form[data-ajax-form=true]').submit(function (evt) {
 	});
 });
 
-},{"../vendor/bootstrap/button.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/button.js","../vendor/bootstrap/dropdown.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/dropdown.js","../vendor/bootstrap/tooltip.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/tooltip.js","autosize":"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js","es5-shim":"/home/felipe/Projects/fabrica/app/static/js/vendor/es5-shim.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","modernizr":"/home/felipe/Projects/fabrica/app/static/js/vendor/modernizr-3.0.0-beta.min.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx":[function(require,module,exports){
+},{"../vendor/bootstrap/button.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/button.js","../vendor/bootstrap/dropdown.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/dropdown.js","../vendor/bootstrap/tooltip.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/tooltip.js","autosize":"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js","es5-shim":"/home/felipe/Projects/fabrica/app/static/js/vendor/es5-shim.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","modernizr":"/home/felipe/Projects/fabrica/app/static/js/vendor/modernizr-3.0.0-beta.min.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx":[function(require,module,exports){
+
+var React = require('react');
+
+function load() {
+
+  if (!Detector.webgl) {
+    Detector.addGetWebGLMessage();
+  }
+
+  var container, stats;
+  var camera, cameraTarget, scene, renderer;
+
+  init();
+  animate();
+
+  function init() {
+
+    container = document.createElement( 'div' );
+    document.body.appendChild( container );
+
+    camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 15 );
+    camera.position.set( 3, 0.15, 3 );
+
+    cameraTarget = new THREE.Vector3( 0, -0.25, 0 );
+
+    scene = new THREE.Scene();
+    scene.fog = new THREE.Fog( 0x72645b, 2, 15 );
+
+
+    // Ground
+
+    var plane = new THREE.Mesh(
+      new THREE.PlaneBufferGeometry( 40, 40 ),
+      new THREE.MeshPhongMaterial( { color: 0x999999, specular: 0x101010 } )
+    );
+    plane.rotation.x = -Math.PI/2;
+    plane.position.y = -0.5;
+    scene.add( plane );
+
+    plane.receiveShadow = true;
+
+
+    // ASCII file
+
+    var loader = new THREE.STLLoader();
+    loader.load( './models/stl/ascii/slotted_disk.stl', function ( geometry ) {
+
+      var material = new THREE.MeshPhongMaterial( { color: 0xff5533, specular: 0x111111, shininess: 200 } );
+      var mesh = new THREE.Mesh( geometry, material );
+
+      mesh.position.set( 0, - 0.25, 0.6 );
+      mesh.rotation.set( 0, - Math.PI / 2, 0 );
+      mesh.scale.set( 0.5, 0.5, 0.5 );
+
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      scene.add( mesh );
+
+    } );
+
+
+    // Binary files
+
+    var material = new THREE.MeshPhongMaterial( { color: 0xAAAAAA, specular: 0x111111, shininess: 200 } );
+
+    loader.load( './models/stl/binary/pr2_head_pan.stl', function ( geometry ) {
+
+      var mesh = new THREE.Mesh( geometry, material );
+
+      mesh.position.set( 0, - 0.37, - 0.6 );
+      mesh.rotation.set( - Math.PI / 2, 0, 0 );
+      mesh.scale.set( 2, 2, 2 );
+
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      scene.add( mesh );
+
+    } );
+
+    loader.load( './models/stl/binary/pr2_head_tilt.stl', function ( geometry ) {
+
+      var mesh = new THREE.Mesh( geometry, material );
+
+      mesh.position.set( 0.136, - 0.37, - 0.6 );
+      mesh.rotation.set( - Math.PI / 2, 0.3, 0 );
+      mesh.scale.set( 2, 2, 2 );
+
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      scene.add( mesh );
+
+    } );
+
+    // Colored binary STL
+    loader.load( './models/stl/binary/colored.stl', function ( geometry ) {
+
+      var meshMaterial = material;
+      if (geometry.hasColors) {
+        meshMaterial = new THREE.MeshPhongMaterial({ opacity: geometry.alpha, vertexColors: THREE.VertexColors });
+      }
+
+      var mesh = new THREE.Mesh( geometry, meshMaterial );
+
+      mesh.position.set( 0.5, 0.2, 0 );
+      mesh.rotation.set( - Math.PI / 2, Math.PI / 2, 0 );
+      mesh.scale.set( 0.3, 0.3, 0.3 );
+
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      scene.add( mesh );
+
+    } );
+
+
+    // Lights
+
+    scene.add( new THREE.AmbientLight( 0x777777 ) );
+
+    addShadowedLight( 1, 1, 1, 0xffffff, 1.35 );
+    addShadowedLight( 0.5, 1, -1, 0xffaa00, 1 );
+
+    // renderer
+
+    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer.setClearColor( scene.fog.color );
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+    renderer.gammaInput = true;
+    renderer.gammaOutput = true;
+
+    renderer.shadowMapEnabled = true;
+    renderer.shadowMapCullFace = THREE.CullFaceBack;
+
+    container.appendChild( renderer.domElement );
+
+    // stats
+
+    stats = new Stats();
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.top = '0px';
+    container.appendChild( stats.domElement );
+
+    //
+
+    window.addEventListener( 'resize', onWindowResize, false );
+  }
+
+  function addShadowedLight( x, y, z, color, intensity ) {
+
+    var directionalLight = new THREE.DirectionalLight( color, intensity );
+    directionalLight.position.set( x, y, z )
+    scene.add( directionalLight );
+
+    directionalLight.castShadow = true;
+    // directionalLight.shadowCameraVisible = true;
+
+    var d = 1;
+    directionalLight.shadowCameraLeft = -d;
+    directionalLight.shadowCameraRight = d;
+    directionalLight.shadowCameraTop = d;
+    directionalLight.shadowCameraBottom = -d;
+
+    directionalLight.shadowCameraNear = 1;
+    directionalLight.shadowCameraFar = 4;
+
+    directionalLight.shadowMapWidth = 1024;
+    directionalLight.shadowMapHeight = 1024;
+
+    directionalLight.shadowBias = -0.005;
+    directionalLight.shadowDarkness = 0.15;
+  }
+
+  function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+  }
+
+  function animate() {
+    requestAnimationFrame( animate );
+    render();
+    stats.update();
+  }
+
+  function render() {
+    var timer = Date.now() * 0.0005;
+    camera.position.x = Math.cos( timer ) * 3;
+    camera.position.z = Math.sin( timer ) * 3;
+
+    camera.lookAt( cameraTarget );
+
+    renderer.render( scene, camera );
+  }
+}
+
+var STLRenderer = React.createClass({displayName: "STLRenderer",
+
+
+  render: function() {
+    return (
+      React.createElement("div", null
+      )
+    );
+  }
+
+});
+
+module.exports = STLRenderer;
+
+},{"react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx":[function(require,module,exports){
 
 var $ = require('jquery')
 var React = require('react')
@@ -1118,6 +1333,8 @@ var selectize = require('selectize')
 var Modal = require('../components/modal.jsx')
 var Models = require('../components/models.js')
 
+var STLRenderer = require('../components/STLRenderer.jsx')
+
 require('react.backbone')
 
 const SigninUrl = "api/s3/sign";
@@ -1131,31 +1348,109 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 		}
 	},
 
-	_updateProgress: function(percentage, status) {
-		this.setState({ status: status, uploadPercentage: percentage });
-	},
-
 	componentDidUpdate: function(prevProps, prevState) {
 		if (this.refs && this.refs.progressBar) {
 			var be = this.refs.progressBar.getDOMNode();
 			var up = ''+parseInt(this.state.uploadPercentage)+'%';
-			$(be).find('.bar').css('width', up);
+			be.querySelector('.bar').style.width = up;
 		}
+	},
+
+	_updateProgress: function(percentage, status) {
+		console.log('Updating progress', percentage, status);
+		this.setState({ status: status, uploadPercentage: percentage });
 	},
 
 	_onFileSelected: function(event) {
 
 		var onError = function(message)  {
 			this.setState({ status: message });
-		}.bind(this)
+		}.bind(this);
+
+		var onFinishS3Put = function(file, url, publicUrl)  {
+			// function request(data, method, url) {
+			// 	var xhr = new XMLHttpRequest;
+			// 	xhr.open(method, url, true);
+			// 	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+			// 	xhr.sendData(data)
+			// }
+			// request(JSON.stringify(), 'PUT', '/api/s3/confirm');
+
+			this._updateProgress(100, "Arquivo enviado.");
+			this.props.parent._onFileUploaded(file, publicUrl);
+		}.bind(this);
+
+		var uploadToS3 = function(file, url, publicUrl)  {
+			// Uploading the file to S3 through a "handmade" xhr is not working for
+			// large files (> a couple megabytes). So we're making the XHR and passing
+			// it to a jquery ajax call, that is somehow preventing the error from
+			// appearing. Making our own XHR and passing it to $.ajax is the only way
+			// we can monitor the progress of the upload
+			// (see http://stackoverflow.com/a/19127053/396050)
+
+			function makeXHR (file, url) {
+				function createCORSRequest(method, url) {
+					var xhr = new XMLHttpRequest;
+					if (xhr.withCredentials != null) {
+						xhr.open(method, url, true);
+					} else if (typeof XDomainRequest !== 'undefined') {
+						xhr = new XDomainRequest;
+						xhr.open(method, url);
+					} else {
+						xhr = null;
+					}
+					return xhr;
+				}
+
+				var xhr = createCORSRequest('PUT', url);
+				if (!xhr) {
+					return;
+				}
+				xhr.setRequestHeader('Content-Type', file.type);
+				xhr.setRequestHeader('x-amz-acl', 'public-read');
+				xhr.upload.onprogress = function(e)  {
+					if (e.lengthComputable) {
+						var percentLoaded = Math.round((e.loaded/e.total)*100);
+						this._updateProgress(percentLoaded, percentLoaded===100?'Done':'Uploading');
+					}
+				}.bind(this)
+				return xhr;
+			}
+
+			var xhr = makeXHR(file, url);
+			if (!xhr) {
+				onError('CORS not supported.');
+				return;
+			}
+
+			$.ajax({
+				xhr: function()  {return xhr;},
+				url: url,
+				type: 'PUT',
+				contentType: file.type,
+				data: file.file,
+				success: function()  {
+					console.log('Uploaded data successfully.', arguments);
+					this._updateProgress(100, 'Upload completed');
+					onFinishS3Put(file, url, publicUrl);
+				}.bind(this),
+				error: function(xhr)  {
+					console.log('Failed to upload data.', arguments);
+					onError('XHR error.');
+				}
+			})
+		}.bind(this);
 
 		var getSigninUrl = function(file, callback)  {
 			var xhr = new XMLHttpRequest;
 			var filename = file.name.replace(/zs+/g, "_");
-			xhr.open('GET', SigninUrl+'?objectName='+filename, true);
+
+			xhr.open('GET', SigninUrl+'?name='+filename+'&type='+file.type, true);
+
 			if (xhr.overrideMimeType) {
-				xhr.overrideMimeType('text/plain; charset=x-user-defined');
+				xhr.overrideMimeType('text/plain charset=x-user-defined');
 			}
+
 			xhr.onreadystatechange = function () {
 				if (xhr.readyState === 4 && xhr.status === 200) {
 					try {
@@ -1169,13 +1464,14 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 				onError('Could not contact request signing server. Status = '+xhr.status);
 			}.bind(this);
 			return xhr.send();
-		}.bind(this)
+		}.bind(this);
 
-		this._updateProgress(0, "Começando envio do arquivo.");
 		var file = this.refs.input.getDOMNode().files[0];
-		getSigninUrl(file, function (data) {
-			console.log(data);
-		})
+		this._updateProgress(0, "Começando envio do arquivo.");
+
+		getSigninUrl(file, function(result)  {
+			uploadToS3(file, result.signed_request, result.url);
+		});
 	},
 
 	render: function() {
@@ -1204,15 +1500,19 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 var PrintJobForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
-			fileSelected: false,
+			selectedFile: false,
 		}
+	},
+
+	_onFileUploaded: function(file, publicUrl) {
+		this.setState({ selectedFile: publicUrl });
 	},
 
 	render: function() {
 		var self = this;
 
-		if (!this.state.fileSelected) {
-			return React.createElement(PrintJobForm_NoFile, React.__spread({},  this.props))
+		if (!this.state.selectedFile) {
+			return React.createElement(PrintJobForm_NoFile, React.__spread({},  this.props, {parent: this}))
 		}
 
 		return (
@@ -1231,7 +1531,7 @@ module.exports = function(app) {
 };
 
 
-},{"../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/signup.jsx":[function(require,module,exports){
+},{"../components/STLRenderer.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/signup.jsx":[function(require,module,exports){
 
 var $ = require('jquery')
 var selectize = require('selectize')

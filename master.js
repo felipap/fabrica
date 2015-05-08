@@ -79,7 +79,7 @@ if (process.env.NODE_ENV === 'production' && !process.env.NO_CLUSTER) {
 			cluster.fork();
 		});
 	} else {
-		var server = require('./app/server.js');
+		var server = require('app/server.js');
 		startServerWhenMongooseConnects(server);
 	}
 } else {
@@ -87,6 +87,6 @@ if (process.env.NODE_ENV === 'production' && !process.env.NO_CLUSTER) {
 		// logger.info('Calling consumer from web process.');
 		// require('./app/consumer.js');
 	}
-	var server = require('./app/server.js');
+	var server = require('app/server.js');
 	startServerWhenMongooseConnects(server);
 }

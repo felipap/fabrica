@@ -21,135 +21,139 @@ module.exports = function (grunt) {
 			'<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
 			'* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
 			' Licensed <%= pkg.license %> */\n',
+	});
 
+	grunt.config.set('less', {
+		production: {
+			files: { 'assets/css/bundle.css': 'app/static/less/app/app.less' },
+			options: { compress: true },
+			plugins: [
+				new (require('less-plugin-autoprefix'))({browsers: ["last 2 versions"]}),
+				new (require('less-plugin-clean-css'))({})
+			],
+		},
+	});
+
+	grunt.config.set('watch', {
+		options: {
+			atBegin: true,
+		},
 		less: {
-			production: {
-				files: { 'assets/css/bundle.css': 'app/static/less/app/app.less' },
-				options: { compress: true },
-				plugins: [
-					new (require('less-plugin-autoprefix'))({browsers: ["last 2 versions"]}),
-					new (require('less-plugin-clean-css'))({})
-				],
-			},
+			files: ['app/static/less/**/*.less'],
+			tasks: ['less'],
+			options: { spawn: true },
+		},
+	});
+
+	grunt.config.set('concurrent', {
+		server: {
+			tasks: ['nodemon:server', 'nodemon:consumer']
 		},
 		watch: {
+			tasks: ['browserify:dev', 'watch'],
 			options: {
-				atBegin: true,
-			},
-			less: {
-				files: ['app/static/less/**/*.less'],
-				tasks: ['less'],
-				options: { spawn: true },
-			},
-		},
-		nodemon: {
-			server: {
-				script: 'master.js',
-				options: {
-					args: ['dev'],
-					nodeArgs: ['--debug'],
-					ignore: ['node_modules/**','app/static/', 'assets/**'],
-					// watch: ['src'],
-					ext: 'js,coffee',
-					delay: 0,
-					legacyWatch: true,
-					cwd: __dirname,
-				}
-			},
-			consumer: {
-				script: 'app/consumer.js',
-				options: {
-					args: ['dev'],
-					nodeArgs: ['--debug'],
-					ignore: ['node_modules/**','app/static/**', 'app/static/js/app/components/', 'assets/**'],
-					// watch: ['src'],
-					// ext: 'js',
-					delay: 1,
-					legacyWatch: true,
-					cwd: __dirname,
-				}
-			},
-		},
-		concurrent: {
-			server: {
-				tasks: ['nodemon:server', 'nodemon:consumer']
-			},
-			watch: {
-				tasks: ['browserify:dev', 'watch'],
-				options: {
-					logConcurrentOutput: true
-				}
+				logConcurrentOutput: true
+			}
+		}
+	});
+
+	grunt.config.set('nodemon', {
+		server: {
+			script: 'master.js',
+			options: {
+				args: ['dev'],
+				nodeArgs: ['--debug'],
+				ignore: ['node_modules/**','app/static/', 'assets/**'],
+				// watch: ['src'],
+				ext: 'js,coffee',
+				delay: 0,
+				legacyWatch: true,
+				cwd: __dirname,
 			}
 		},
-		s3: {
+		consumer: {
+			script: 'app/consumer.js',
 			options: {
-				key: nconf.get('AWS_ACCESS_KEY_ID'),
-				secret: nconf.get('AWS_SECRET_ACCESS_KEY'),
-				bucket: nconf.get('S3_BUCKET'),
-				access: 'public-read',
-				headers: {
-					// Two Year cache policy (1000 * 60 * 60 * 24 * 730)
-					"Cache-Control": "max-age=630720000, public",
-					"Expires": new Date(Date.now() + 63072000000).toUTCString()
-				},
+				args: ['dev'],
+				nodeArgs: ['--debug'],
+				ignore: ['node_modules/**','app/static/**', 'app/static/js/app/components/', 'assets/**'],
+				// watch: ['src'],
+				// ext: 'js',
+				delay: 1,
+				legacyWatch: true,
+				cwd: __dirname,
+			}
+		},
+	});
+
+	grunt.config.set('s3', {
+		options: {
+			key: nconf.get('AWS_ACCESS_KEY_ID'),
+			secret: nconf.get('AWS_SECRET_ACCESS_KEY'),
+			bucket: nconf.get('S3_BUCKET'),
+			access: 'public-read',
+			headers: {
+				// Two Year cache policy (1000 * 60 * 60 * 24 * 730)
+				"Cache-Control": "max-age=630720000, public",
+				"Expires": new Date(Date.now() + 63072000000).toUTCString()
 			},
-			deploy: {
-				options: {
-					encodePaths: false,
-					maxOperations: 20,
-				},
-				upload: [
-					{
-						src: 'assets/css/bundle.css',
-						dest: 'static/css/bundle.css',
-					},
-					{
-						src: 'assets/js/prod.js',
-						dest: 'static/js/prod.js',
-					},
-					{
-						src: 'assets/js/prod.map',
-						dest: 'static/js/prod.map',
-					},
-				]
+		},
+		deploy: {
+			options: {
+				encodePaths: false,
+				maxOperations: 20,
 			},
-			deployVendor: {
-				options: {
-					encodePaths: false,
-					maxOperations: 20,
+			upload: [
+				{
+					src: 'assets/css/bundle.css',
+					dest: 'static/css/bundle.css',
 				},
-				upload: [
-					{
-						src: 'assets/js/vendor/*',
-						dest: 'static/js/vendor/',
-					},
-				]
-			},
-			deployFonts: {
-				options: {
-					encodePaths: false,
-					maxOperations: 20,
+				{
+					src: 'assets/js/prod.js',
+					dest: 'static/js/prod.js',
 				},
-				upload: [
-					{
-						src: 'assets/css/fonts.css',
-						dest: 'static/css/fonts.css',
-					},
-				]
-			},
-			deployIcons: {
-				options: {
-					encodePaths: false,
-					maxOperations: 20,
+				{
+					src: 'assets/js/prod.map',
+					dest: 'static/js/prod.map',
 				},
-				upload: [
-					{
-						src: 'assets/fonts/*',
-						dest: 'static/fonts/',
-					},
-				]
+			]
+		},
+		deployVendor: {
+			options: {
+				encodePaths: false,
+				maxOperations: 20,
 			},
-		}
+			upload: [
+				{
+					src: 'assets/js/vendor/*',
+					dest: 'static/js/vendor/',
+				},
+			]
+		},
+		deployFonts: {
+			options: {
+				encodePaths: false,
+				maxOperations: 20,
+			},
+			upload: [
+				{
+					src: 'assets/css/fonts.css',
+					dest: 'static/css/fonts.css',
+				},
+			]
+		},
+		deployIcons: {
+			options: {
+				encodePaths: false,
+				maxOperations: 20,
+			},
+			upload: [
+				{
+					src: 'assets/fonts/*',
+					dest: 'static/fonts/',
+				},
+			]
+		},
 	});
 
 	grunt.config.set('browserify', {
