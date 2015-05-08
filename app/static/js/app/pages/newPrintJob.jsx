@@ -1,4 +1,6 @@
 
+"use strict";
+
 var $ = require('jquery')
 var React = require('react')
 var selectize = require('selectize')
@@ -41,90 +43,64 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 		};
 
 		var onFinishS3Put = (file, url, publicUrl) => {
-			// function request(data, method, url) {
-			// 	var xhr = new XMLHttpRequest;
-			// 	xhr.open(method, url, true);
-			// 	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-			// 	xhr.sendData(data)
-			// }
-			// request(JSON.stringify(), 'PUT', '/api/s3/confirm');
-
 			this._updateProgress(100, "Arquivo enviado.");
 			this.props.parent._onFileUploaded(file, publicUrl);
 		};
 
 		var uploadToS3 = (file, url, publicUrl) => {
-			// Uploading the file to S3 through a "handmade" xhr is not working for
-			// large files (> a couple megabytes). So we're making the XHR and passing
-			// it to a jquery ajax call, that is somehow preventing the error from
-			// appearing. Making our own XHR and passing it to $.ajax is the only way
-			// we can monitor the progress of the upload
-			// (see http://stackoverflow.com/a/19127053/396050)
-
-			function makeXHR (file, url) {
-				function createCORSRequest(method, url) {
-					var xhr = new XMLHttpRequest;
-					if (xhr.withCredentials != null) {
-						xhr.open(method, url, true);
-					} else if (typeof XDomainRequest !== 'undefined') {
-						xhr = new XDomainRequest;
-						xhr.open(method, url);
-					} else {
-						xhr = null;
-					}
-					return xhr;
-				}
-
-				var xhr = createCORSRequest('PUT', url);
-				if (!xhr) {
-					return;
-				}
-				xhr.setRequestHeader('Content-Type', file.type);
-				xhr.setRequestHeader('x-amz-acl', 'public-read');
-				xhr.upload.onprogress = (e) => {
-					if (e.lengthComputable) {
-						var percentLoaded = Math.round((e.loaded/e.total)*100);
-						this._updateProgress(percentLoaded, percentLoaded===100?'Done':'Uploading');
-					}
+			function createCORSRequest(method, url) {
+				var xhr = new XMLHttpRequest;
+				if (xhr.withCredentials != null) {
+					xhr.open(method, url, true);
+				} else if (typeof XDomainRequest !== 'undefined') {
+					xhr = new XDomainRequest;
+					xhr.open(method, url);
+				} else {
+					xhr = null;
 				}
 				return xhr;
 			}
 
-			var xhr = makeXHR(file, url);
+			var xhr = createCORSRequest('PUT', url);
 			if (!xhr) {
 				onError('CORS not supported.');
 				return;
 			}
 
-			$.ajax({
-				xhr: () => xhr,
-				url: url,
-				type: 'PUT',
-				contentType: file.type,
-				data: file.file,
-				success: () => {
-					console.log('Uploaded data successfully.', arguments);
-					this._updateProgress(100, 'Upload completed');
-					onFinishS3Put(file, url, publicUrl);
-				},
-				error: (xhr) => {
-					console.log('Failed to upload data.', arguments);
-					onError('XHR error.');
+			xhr.onerror = function(error) {
+				console.log('error', error)
+			};
+			xhr.setRequestHeader('Content-Type', 'text/plain');
+			xhr.setRequestHeader('x-amz-acl', 'public-read');
+			xhr.upload.onprogress = (e) => {
+				if (e.lengthComputable) {
+					var percentLoaded = Math.round((e.loaded/e.total)*100);
+					this._updateProgress(percentLoaded, percentLoaded===100?'Done':'Uploading');
 				}
-			})
+			}
+
+			return xhr.send(file);
 		};
 
 		var getSigninUrl = (file, callback) => {
 			var xhr = new XMLHttpRequest;
 			var filename = file.name.replace(/zs+/g, "_");
 
-			xhr.open('GET', SigninUrl+'?name='+filename+'&type='+file.type, true);
+			xhr.open('GET', SigninUrl+'?name='+filename+'&type=text/plain', true);
 
 			if (xhr.overrideMimeType) {
 				xhr.overrideMimeType('text/plain charset=x-user-defined');
 			}
 
-			xhr.onreadystatechange = function () {
+			xhr.onload = () => {
+				if (xhr.status === 200) {
+					this._onFileUploaded();
+					return;
+				}
+				onError('Upload error:' + xhr.status);
+			}
+
+			xhr.onreadystatechange = () => {
 				if (xhr.readyState === 4 && xhr.status === 200) {
 					try {
 						var result = JSON.parse(xhr.responseText);
@@ -135,7 +111,7 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 					return callback(result);
 				}
 				onError('Could not contact request signing server. Status = '+xhr.status);
-			}.bind(this);
+			}
 			return xhr.send();
 		};
 
@@ -148,13 +124,14 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 	},
 
 	render: function() {
-
 		return (
 			<div className="PrintJobForm noFile">
 				<div className="status">
 					{this.state.status}
 				</div>
-				<input type="file" ref="input" accept="application/stl" onChange={this._onFileSelected} />
+				<form ref="inputForm">
+					<input type="file" ref="input" name="file" accept="" onChange={this._onFileSelected} />
+				</form>
 				{
 					(this.state.uploadPercentage !== null)?
 					(
@@ -173,7 +150,7 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 var PrintJobForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
-			selectedFile: false,
+			selectedFile: null,
 		}
 	},
 
@@ -189,7 +166,8 @@ var PrintJobForm = React.createBackboneClass({
 		}
 
 		return (
-			<div className="PrintJobForm">
+			<div>
+				<STLRenderer file={this.state.selectedFile} />
 			</div>
 		);
 	}
