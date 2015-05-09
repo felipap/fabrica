@@ -198,12 +198,12 @@ var PageStack = function () {
 				var root = document.body.dataset.root;
 				this.old.pageRoot = document.body.dataset.root;
 				if (root) {
-					let olds = document.querySelectorAll('[data-activate-root='+root+']');
+					var olds = document.querySelectorAll('[data-activate-root='+root+']');
 					for (var i=0; i<olds.length; ++i) {
 						olds[i].classList.remove('active');
 					}
 				}
-				let news = document.querySelectorAll('[data-activate-root='+opts.pageRoot+']');
+				var news = document.querySelectorAll('[data-activate-root='+opts.pageRoot+']');
 				for (var i=0; i<news.length; ++i) {
 					news[i].classList.add('active');
 				}
@@ -242,13 +242,13 @@ var PageStack = function () {
 				document.title = this.old.title;
 			}
 			if (this.old.pageRoot !== null) {
-				let olds = document.querySelectorAll('[data-activate-root='+
+				var olds = document.querySelectorAll('[data-activate-root='+
 					document.body.dataset.root+']');
 				for (var i=0; i<olds.length; ++i) {
 					olds[i].classList.remove('active');
 				}
 				if (this.old.pageRoot !== '') {
-					let news = document.querySelectorAll('[data-activate-root='+
+					var news = document.querySelectorAll('[data-activate-root='+
 						this.old.pageRoot+']');
 					for (var i=0; i<news.length; ++i) {
 						news[i].classList.add('active');

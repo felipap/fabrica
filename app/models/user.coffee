@@ -59,8 +59,11 @@ UserSchema.pre 'save', (next) ->
 			next()
 
 UserSchema.virtual('picture').get ->
-	fallback = path.join(nconf.get('S3_STATIC_URL'),
-		'static/images/lavatars/'+@name[0].toUpperCase()+'.png')
+	if nconf.get('production') and nconf.get('S3_STATIC_URL')
+		fallback = path.join(nconf.get('S3_STATIC_URL'),
+			'static/images/lavatars/'+@name[0].toUpperCase()+'.png')
+	else
+		fallback = '/static/images/lavatars/'+@name[0].toUpperCase()+'.png'
 	return fallback
 	hash = crypto.createHash('md5').update(@email).digest('hex')
 	'http://www.gravatar.com/avatar/'+hash+'?d='+encodeURIComponent(fallback)

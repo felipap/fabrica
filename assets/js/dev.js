@@ -729,12 +729,12 @@ var PageStack = function () {
 				var root = document.body.dataset.root;
 				this.old.pageRoot = document.body.dataset.root;
 				if (root) {
-					let olds = document.querySelectorAll('[data-activate-root='+root+']');
+					var olds = document.querySelectorAll('[data-activate-root='+root+']');
 					for (var i=0; i<olds.length; ++i) {
 						olds[i].classList.remove('active');
 					}
 				}
-				let news = document.querySelectorAll('[data-activate-root='+opts.pageRoot+']');
+				var news = document.querySelectorAll('[data-activate-root='+opts.pageRoot+']');
 				for (var i=0; i<news.length; ++i) {
 					news[i].classList.add('active');
 				}
@@ -773,13 +773,13 @@ var PageStack = function () {
 				document.title = this.old.title;
 			}
 			if (this.old.pageRoot !== null) {
-				let olds = document.querySelectorAll('[data-activate-root='+
+				var olds = document.querySelectorAll('[data-activate-root='+
 					document.body.dataset.root+']');
 				for (var i=0; i<olds.length; ++i) {
 					olds[i].classList.remove('active');
 				}
 				if (this.old.pageRoot !== '') {
-					let news = document.querySelectorAll('[data-activate-root='+
+					var news = document.querySelectorAll('[data-activate-root='+
 						this.old.pageRoot+']');
 					for (var i=0; i<news.length; ++i) {
 						news[i].classList.add('active');
@@ -24104,32 +24104,64 @@ module.exports = warning;
 var process = module.exports = {};
 var queue = [];
 var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
 
 function drainQueue() {
     if (draining) {
         return;
     }
+    var timeout = setTimeout(cleanUpNextTick);
     draining = true;
-    var currentQueue;
+
     var len = queue.length;
     while(len) {
         currentQueue = queue;
         queue = [];
-        var i = -1;
-        while (++i < len) {
-            currentQueue[i]();
+        while (++queueIndex < len) {
+            currentQueue[queueIndex].run();
         }
+        queueIndex = -1;
         len = queue.length;
     }
+    currentQueue = null;
     draining = false;
+    clearTimeout(timeout);
 }
+
 process.nextTick = function (fun) {
-    queue.push(fun);
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
     if (!draining) {
         setTimeout(drainQueue, 0);
     }
 };
 
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
 process.title = 'browser';
 process.browser = true;
 process.env = {};
