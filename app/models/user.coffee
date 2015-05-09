@@ -7,6 +7,8 @@ please = require 'app/lib/please.js'
 redis = require 'app/config/redis.js'
 bcrypt = require 'bcrypt'
 crypto = require 'crypto'
+nconf = require 'app/config/nconf'
+path = require 'path'
 
 SALT_WORK_FACTOR = 10
 
@@ -35,8 +37,8 @@ UserSchema = new mongoose.Schema {
 	}
 
 	flags: {
-		admin: 	false
-		seller:	false
+		admin: 	{ type: Boolean, default: false }
+		seller:	{ type: Boolean, default: false }
 	}
 
 }, {
@@ -57,8 +59,11 @@ UserSchema.pre 'save', (next) ->
 			next()
 
 UserSchema.virtual('picture').get ->
+	fallback = path.join(nconf.get('S3_STATIC_URL'),
+		'static/images/lavatars/'+@name[0].toUpperCase()+'.png')
+	return fallback
 	hash = crypto.createHash('md5').update(@email).digest('hex')
-	'http://www.gravatar.com/avatar/'+hash
+	'http://www.gravatar.com/avatar/'+hash+'?d='+encodeURIComponent(fallback)
 
 UserSchema.virtual('path').get ->
 	'/@'+@username
@@ -153,13 +158,17 @@ UserSchema.statics.SingupParseRules = {
 
 UserSchema.statics.ClientRegisterParseRules = {
 	name:
-		$valid: (str) -> true
+		$validate: (str) ->
+			if not validator.trim(str)[0].match(/[a-z]/i)
+				"O nome deve começar com uma letra do alfabeto."
 		$parse: validator.trim
 	phone:
-		$valid: (str) -> console.log('CHECK PHONE!!!'); true
+		$validate: (str) ->
+			false
 	email:
-		$valid: (str) ->
-			validator.isEmail(str)
+		$validate: (str) ->
+			if not validator.isEmail(str)
+				"Email inválido."
 		$parse: validator.trim
 }
 

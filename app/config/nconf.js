@@ -27,7 +27,11 @@ if (nconf.get('NODE_ENV') !== 'production') {
 var srcDir = path.join(path.dirname(module.parent.filename), 'app')
 nconf.set('appRoot', srcDir)
 nconf.set('staticUrl', '/static/')
-nconf.set('staticRoot', path.join(srcDir, '../assets'))
+if (nconf.get('env') === 'production') {
+  nconf.set('staticRoot', path.join(nconf.get('S3_STATIC_URL'), 'static'))
+} else {
+  nconf.set('staticRoot', path.join(srcDir, '../assets'))
+}
 nconf.set('viewsRoot', path.join(srcDir, 'views'))
 
 nconf.defaults({

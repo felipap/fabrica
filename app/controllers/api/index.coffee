@@ -31,21 +31,21 @@ module.exports = (app) ->
 	api.use unspam
 
 	# A little backdoor for debugging purposes.
-	api.get '/logmein/:username', (req, res) ->
+	api.get '/logmein/:id', (req, res) ->
 		if nconf.get('env') is 'production'
 			if not req.user or
 			not req.user.flags.mystique or
 			not req.user.flags.admin
 				return res.status(404).end()
 		is_admin = nconf.get('env') is 'development' or req.user.flags.admin
-		User.findOne { username: req.params.username }, (err, user) ->
+		User.findOne { _id: req.params.id }, (err, user) ->
 			if err
 				return res.endJSON(error:err)
 			if not user
 				return res.endJSON(error:true, message:'User not found')
 			if not user.flags.fake and not is_admin
 				return res.endJSON(error:true, message:'Não pode.')
-			logger.info 'Logging in as ', user.username
+			logger.info 'Logging in as ', user.name, user.email
 			req.login user, (err) ->
 				if err
 					return res.endJSON(error:err)

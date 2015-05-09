@@ -462,7 +462,7 @@ var Queue = Backbone.Collection.extend({
 
 var ClientList = Backbone.Collection.extend({
   model: Client,
-  url: '/api/clients',
+  url: '/api/myclients',
 })
 
 module.exports = {
@@ -1280,12 +1280,14 @@ var PrintQueue = React.createBackboneClass({
 });
 
 module.exports = function (app) {
-
 	var queue = new QueueCol();
-	var InitPrintQueue = React.createFactory(PrintQueue)({ collection: queue });
 
-	React.render(InitPrintQueue,
-		document.getElementById('queue'))
+	app.pushPage(React.createElement(PrintQueue, {collection: queue}), 'home', {
+		onClose: function() {
+		},
+		container: document.querySelector('#page-container'),
+		pageRoot: 'home',
+	})
 };
 
 
@@ -1305,15 +1307,37 @@ var ListClients = React.createBackboneClass({
 
 	render: function() {
 		var clientList = this.getCollection().map(function (i) {
+			console.log('ele', i.attributes)
 			return (
 				React.createElement("li", null, 
-					"123"
+					React.createElement("ul", {className: ""}, 
+						React.createElement("li", {className: "selection"}
+						), 
+						React.createElement("li", {className: "picture"}, 
+							React.createElement("img", {src: i.get('picture')})
+						), 
+						React.createElement("li", {className: "info"}, 
+							React.createElement("div", {className: "name"}, 
+								i.get('name')
+							)
+						)
+					), 
+					React.createElement("ul", {className: "right"}, 
+						React.createElement("li", {className: "buttons"}, 
+							React.createElement("button", null, "The")
+						)
+					)
 				)
 			);
 		});
 		return (
 			React.createElement("div", {className: "ListClients"}, 
-				"oiasdfsadf", 
+				React.createElement("h1", null, 
+					"Seus clientes"
+				), 
+				React.createElement("p", null, 
+					"Lista organizada por pedidos mais recentes."
+				), 
 				React.createElement("ul", {className: "clientList"}, 
 					clientList
 				)
@@ -1324,7 +1348,9 @@ var ListClients = React.createBackboneClass({
 
 module.exports = function(app) {
 
-	var collection = new Models.ClientList({ url: '/api/myclients'});
+	var collection = new Models.ClientList();
+
+	collection.fetch();
 
 	app.pushPage(React.createElement(ListClients, {collection: collection}), 'list-clients', {
 		onClose: function() {

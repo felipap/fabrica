@@ -14,7 +14,6 @@
 @import "pages/home.less";
 @import "pages/error.less";
 @import "pages/signin.less";
-@import "pages/newClient.less";
 @import "components/printJobForm.less";
 
 html {
@@ -289,4 +288,77 @@ body:not(.public) {
       border-color: @CRED;
     }
   }
+}
+
+
+.page-container {
+
+	// max-width: 400px;
+
+	font-size: 15px;
+
+	h1, h2, h3, h4, h5 {
+		color: #444;
+	}
+
+	h1, h2 {
+		margin-bottom: 20px;
+	}
+
+	h2 {
+		font-weight: 600;
+	}
+
+  p {
+    font-size: 16px;
+    margin: 1em 0;
+  }
+
+  a {
+    color: @CBLUE;
+    font-weight: 600;
+    text-decoration: none !important;
+
+    &:hover {
+      color: darken(@CBLUE, 15%)
+    }
+
+    &:visited {
+    }
+  }
+
+	.form-group {
+		font-size: 15px;
+
+	  label {
+	  }
+
+  	.warning {
+  		display: inline-block;
+  		color: @RED;
+  		font-weight: 600;
+  		font-size: 1em;
+  		line-height: 50px;
+  		margin-left: -10px;
+  	}
+	}
+
+  .form-btn {
+    font-family: museo-sans;
+    .xbtn(white, @CBLUE);
+    margin-top: 15px;
+    padding: 15px 20px;
+    color: white;
+    font-weight: bold;
+    // font-size: 16px;
+    text-transform: uppercase;
+  }
+}
+
+.clientList {
+
+
+	& > li {
+		border: 1px solid #EEE;
+	}
 }

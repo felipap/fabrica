@@ -53,10 +53,12 @@ var PrintQueue = React.createBackboneClass({
 });
 
 module.exports = function (app) {
-
 	var queue = new QueueCol();
-	var InitPrintQueue = React.createFactory(PrintQueue)({ collection: queue });
 
-	React.render(InitPrintQueue,
-		document.getElementById('queue'))
+	app.pushPage(<PrintQueue collection={queue} />, 'home', {
+		onClose: function() {
+		},
+		container: document.querySelector('#page-container'),
+		pageRoot: 'home',
+	})
 };

@@ -15,7 +15,7 @@ var Queue = Backbone.Collection.extend({
 
 var ClientList = Backbone.Collection.extend({
   model: Client,
-  url: '/api/clients',
+  url: '/api/myclients',
 })
 
 module.exports = {

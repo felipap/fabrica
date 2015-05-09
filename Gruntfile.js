@@ -130,6 +130,18 @@ module.exports = function (grunt) {
 				},
 			]
 		},
+		deployAvatars: {
+			options: {
+				encodePaths: false,
+				maxOperations: 20,
+			},
+			upload: [
+				{
+					src: 'assets/images/lavatars/*',
+					dest: 'static/images/lavatars/',
+				},
+			]
+		},
 		deployFonts: {
 			options: {
 				encodePaths: false,
