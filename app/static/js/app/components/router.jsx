@@ -499,7 +499,7 @@ var App = Router.extend({
 	},
 
 	routes: {
-		'novo':
+		'novo/pedido':
 			function () {
 				Pages.NewPrintJob(this);
 			},

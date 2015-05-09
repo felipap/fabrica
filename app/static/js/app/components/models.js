@@ -2,7 +2,6 @@
 var Backbone = require('backbone');
 
 var PrintJob = Backbone.Model.extend({
-
 });
 
 var Client = Backbone.Model.extend({

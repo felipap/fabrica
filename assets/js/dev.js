@@ -142,7 +142,56 @@ $('form[data-ajax-form=true]').submit(function (evt) {
 	});
 });
 
-},{"../vendor/bootstrap/button.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/button.js","../vendor/bootstrap/dropdown.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/dropdown.js","../vendor/bootstrap/tooltip.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/tooltip.js","autosize":"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js","es5-shim":"/home/felipe/Projects/fabrica/app/static/js/vendor/es5-shim.min.js","es6-shim":"/home/felipe/Projects/fabrica/app/static/js/vendor/es6-shim.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","modernizr":"/home/felipe/Projects/fabrica/app/static/js/vendor/modernizr-3.0.0-beta.min.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx":[function(require,module,exports){
+},{"../vendor/bootstrap/button.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/button.js","../vendor/bootstrap/dropdown.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/dropdown.js","../vendor/bootstrap/tooltip.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/tooltip.js","autosize":"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js","es5-shim":"/home/felipe/Projects/fabrica/app/static/js/vendor/es5-shim.min.js","es6-shim":"/home/felipe/Projects/fabrica/app/static/js/vendor/es6-shim.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","modernizr":"/home/felipe/Projects/fabrica/app/static/js/vendor/modernizr-3.0.0-beta.min.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/PrettyCheck.jsx":[function(require,module,exports){
+
+var React = require('react');
+var $ = require('jquery');
+
+var PrettyCheck = React.createClass({displayName: "PrettyCheck",
+  getInitialState: function () {
+    return {
+      checked: false,
+      focused: false,
+    };
+  },
+
+  componentDidMount: function() {
+    $(this.refs.input.getDOMNode()).focus(function()  {
+      console.log('focusin')
+      this.setState({ focused: true });
+    }.bind(this));
+    $(this.refs.input.getDOMNode()).focusout(function()  {
+      console.log('focusout')
+      this.setState({ focused: false });
+    }.bind(this));
+  },
+
+  render: function () {
+
+    var toggle = function(event)  {
+      console.log("checked", this.state.checked)
+      if (this.refs.input.getDOMNode().checked) {
+        this.setState({ checked: true });
+        console.log(this.state.checked)
+      } else {
+        console.log(this.state.checked)
+        this.setState({ checked: false });
+      }
+    }.bind(this)
+
+    var cclass = ' '+(this.state.checked?"is-checked":'')+' '+(this.state.focused?"is-focused":'');
+    return (
+      React.createElement("div", {className: "PrettyCheck "+cclass}, 
+        React.createElement("input", {type: "checkbox", ref: "input", role: "checkbox", onChange: toggle, 
+          "aria-checked": this.state.checked})
+      )
+    );
+  }
+})
+
+module.exports = PrettyCheck;
+
+},{"jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx":[function(require,module,exports){
 
 "use strict";
 
@@ -261,9 +310,9 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 						-(b.max.z + b.min.z)/4
 					)
 				);
-			}
+			};
 
-			position(m)
+			position(m);
 
 			// CENTER!
 			// mesh.position.set(g.boundingBox.max.x/2, -g.boundingBox.min.y/2, 0);
@@ -276,15 +325,15 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 
 		this.scene.add(new THREE.AmbientLight(0x777777));
 
-		addShadowedLight( 1, 1, 1, 0xffffff, 1.35 );
-		addShadowedLight( 0.5, 1, -1, 0xffaa00, 1 );
+		addShadowedLight(1, 1, 1, 0xffffff, 1.35);
+		addShadowedLight(0.5, 1, -1, 0xffaa00, 1);
 	},
 
 	_onWindowResize: function() {
 		this.controls.handleResize();
 		this.camera.aspect = window.innerWidth / window.innerHeight;
 		this.camera.updateProjectionMatrix();
-		this.renderer.setSize( window.innerWidth, window.innerHeight );
+		this.renderer.setSize(window.innerWidth, window.innerHeight);
 	},
 
 	_animate: function() {
@@ -449,7 +498,6 @@ module.exports.TourDialog = function (data, onRender, onClose) {
 var Backbone = require('backbone');
 
 var PrintJob = Backbone.Model.extend({
-
 });
 
 var Client = Backbone.Model.extend({
@@ -974,7 +1022,7 @@ var App = Router.extend({
 	},
 
 	routes: {
-		'novo':
+		'novo/pedido':
 			function () {
 				Pages.NewPrintJob(this);
 			},
@@ -1300,6 +1348,7 @@ var selectize = require('selectize')
 
 var Modal = require('../components/modal.jsx')
 var Models = require('../components/models.js')
+var PrettyCheck = require('../components/PrettyCheck.jsx')
 
 require('react.backbone')
 
@@ -1309,16 +1358,30 @@ var ListClients = React.createBackboneClass({
 		var clientList = this.getCollection().map(function (i) {
 			console.log('ele', i.attributes)
 			return (
-				React.createElement("li", null, 
+				React.createElement("li", {className: "clientItem"}, 
 					React.createElement("ul", {className: ""}, 
-						React.createElement("li", {className: "selection"}
+						React.createElement("li", {className: "selection"}, 
+							React.createElement(PrettyCheck, null)
 						), 
 						React.createElement("li", {className: "picture"}, 
-							React.createElement("img", {src: i.get('picture')})
+							React.createElement("div", {className: "user-avatar"}, 
+								React.createElement("div", {className: "avatar", style: {backgroundImage: 'url(\''+i.get('picture')+'\')'}})
+							)
 						), 
 						React.createElement("li", {className: "info"}, 
 							React.createElement("div", {className: "name"}, 
 								i.get('name')
+							), 
+							React.createElement("div", {className: "email"}, 
+								i.get('email')
+							)
+						), 
+						React.createElement("li", {className: "stats"}, 
+							React.createElement("div", {className: "total"}, 
+								"3 Pedidos"
+							), 
+							React.createElement("div", {className: "ago"}, 
+								"Último pedido há 3 dias"
 							)
 						)
 					), 
@@ -1347,21 +1410,18 @@ var ListClients = React.createBackboneClass({
 });
 
 module.exports = function(app) {
-
 	var collection = new Models.ClientList();
-
 	collection.fetch();
-
 	app.pushPage(React.createElement(ListClients, {collection: collection}), 'list-clients', {
 		onClose: function() {
 		},
 		container: document.querySelector('#page-container'),
 		pageRoot: 'list-clients',
-	})
+	});
 };
 
 
-},{"../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx":[function(require,module,exports){
+},{"../components/PrettyCheck.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/PrettyCheck.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx":[function(require,module,exports){
 
 var $ = require('jquery')
 var selectize = require('selectize')
@@ -1462,7 +1522,7 @@ var NewClientForm = React.createBackboneClass({
 						React.createElement("div", {className: "col-md-4"}, 
 							React.createElement("input", {type: "text", ref: "name", 
 								className: "form-control"+(this.state.warnings.name?" invalid":''), 
-								defaultValue: "André da Silva"})
+								defaultValue: "André da Silva", required: true})
 						), 
 						React.createElement("div", {className: "col-md-6"}, 
 						 this.state.warnings.name?(
@@ -1483,7 +1543,7 @@ var NewClientForm = React.createBackboneClass({
 						React.createElement("div", {className: "col-md-4"}, 
 							React.createElement("input", {type: "email", ref: "email", 
 								className: "form-control"+(this.state.warnings.email?" invalid":''), 
-								defaultValue: "andre@mail.com"})
+								defaultValue: "andre@mail.com", required: true})
 						), 
 						React.createElement("div", {className: "col-md-6"}, 
 						 this.state.warnings.email?(
@@ -1504,7 +1564,7 @@ var NewClientForm = React.createBackboneClass({
 						React.createElement("div", {className: "col-md-4"}, 
 							React.createElement("input", {type: "tel", ref: "phone", 
 								className: "form-control"+(this.state.warnings.phone?" invalid":''), 
-								defaultValue: "(21) 99999 1234"})
+								defaultValue: "(21) 99999 1234", required: true})
 						), 
 						React.createElement("div", {className: "col-md-6"}, 
 						 this.state.warnings.phone?(
@@ -1539,6 +1599,7 @@ module.exports = function(app) {
 "use strict";
 
 var $ = require('jquery')
+var _ = require('lodash')
 var React = require('react')
 var selectize = require('selectize')
 
@@ -1549,13 +1610,24 @@ var STLRenderer = require('../components/STLRenderer.jsx')
 
 require('react.backbone')
 
-const SigninUrl = "api/s3/sign";
+const SigninUrl = "/api/s3/sign";
 
-var PrintJobForm_NoFile = React.createBackboneClass({
+var FormPart_Renderer = React.createBackboneClass({
+	render: function() {
+		return (
+			React.createElement("div", {className: "formPart renderer"}, 
+				React.createElement(STLRenderer, {file: this.getModel().get('file')})
+			)
+		);
+	}
+});
+
+
+var FormPart_Upload = React.createBackboneClass({
 
 	getInitialState: function() {
 		return {
-			status: "Selecione um arquivo .stl.",
+			status: "Esperando arquivo.",
 			uploadPercentage: null,
 		}
 	},
@@ -1574,14 +1646,15 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 	},
 
 	_onFileSelected: function(event) {
-
 		var onError = function(message)  {
 			this.setState({ status: message });
 		}.bind(this);
 
-		var onFinishS3Put = function(file, url, publicUrl)  {
+		var onFinishS3Put = function(publicUrl)  {
 			this._updateProgress(100, "Arquivo enviado.");
-			this.props.parent._onFileUploaded(file, publicUrl);
+			this.getModel().set('file', publicUrl);
+			// We're done here!
+			this.props.parent.advancePosition();
 		}.bind(this);
 
 		var uploadToS3 = function(file, url, publicUrl)  {
@@ -1602,6 +1675,14 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 			if (!xhr) {
 				onError('CORS not supported.');
 				return;
+			}
+
+			xhr.onload = function()  {
+				if (xhr.status === 200) {
+					onFinishS3Put(publicUrl);
+					return;
+				}
+				onError('Upload error:' + xhr.status);
 			}
 
 			xhr.onerror = function(error) {
@@ -1629,14 +1710,6 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 				xhr.overrideMimeType('text/plain charset=x-user-defined');
 			}
 
-			xhr.onload = function()  {
-				if (xhr.status === 200) {
-					this._onFileUploaded();
-					return;
-				}
-				onError('Upload error:' + xhr.status);
-			}.bind(this)
-
 			xhr.onreadystatechange = function()  {
 				if (xhr.readyState === 4 && xhr.status === 200) {
 					try {
@@ -1650,7 +1723,7 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 				onError('Could not contact request signing server. Status = '+xhr.status);
 			}
 			return xhr.send();
-		}.bind(this);
+		};
 
 		var file = this.refs.input.getDOMNode().files[0];
 		this._updateProgress(0, "Começando envio do arquivo.");
@@ -1662,7 +1735,7 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 
 	render: function() {
 		return (
-			React.createElement("div", {className: "PrintJobForm noFile"}, 
+			React.createElement("div", {className: "formPart upload"}, 
 				React.createElement("div", {className: "status"}, 
 					this.state.status
 				), 
@@ -1684,42 +1757,158 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 	}
 })
 
-var PrintJobForm = React.createBackboneClass({
+var FormPart_ChooseClient = React.createBackboneClass({
 	getInitialState: function() {
+		this.tried = {};
 		return {
-			selectedFile: null,
+			warning: null,
 		}
 	},
 
-	_onFileUploaded: function(file, publicUrl) {
-		this.setState({ selectedFile: publicUrl });
+	componentDidMount: function() {
+		var ef = this.refs.email.getDOMNode();
+		$(ef).on('keyup', function(e)  {
+			var trimmed = this.refs.email.getDOMNode().value.replace(/^\s+|\s+$/, '');
+			if (trimmed in this.tried) {
+				// We know no user exists with this email, so warn user.
+				this.setState({ warning: 'Não existe usuário com esse email.'});
+			} else {
+				if (this.state.warning) {
+					// We don't know if the user exists, so remove warning.
+					this.setState({ warning: null });
+				}
+			}
+		}.bind(this));
+	},
+
+	_send: function(e) {
+		e.preventDefault();
+
+		var email = this.refs.email.getDOMNode().value.replace(/^\s+|\s+$/, '');
+		if (email.match(/^\s*$/)) {
+			this.setState({ warning: 'Use um endereço de email.' });
+			return;
+		}
+
+		$.ajax({
+			url: '/api/clients/exists?',
+			data: { email: email },
+			dataType: 'json',
+			success: function(data)  {
+				if (!data.exists) {
+					this.setState({ warning: 'Não existe usuário com esse email.' });
+					this.tried[email] = true;
+					return;
+				}
+				this.getModel().set('user', data);
+				this.props.parent.advancePosition();
+			}.bind(this),
+			error: function(xhr, options)  {
+				var data = xhr.responseJSON;
+				if (data && data.message) {
+					Utils.flash.alert(data.message);
+				} else {
+					Utils.flash.alert('Milton Friedman.');
+				}
+			}
+		})
+	},
+
+	render: function() {
+		return (
+			React.createElement("div", {className: "formPart chooseClient "+(this.props.isLatest?'is-latest':'')}, 
+				React.createElement("h1", null, "Selecione um cliente ", React.createElement("div", {className: "position"}, "passo #", this.props.step)), 
+				React.createElement("form", {onSubmit: this._send}, 
+					React.createElement("div", {className: "form-group"}, 
+						React.createElement("div", {className: "row"}, 
+							React.createElement("div", {className: "col-md-4"}, 
+								React.createElement("label", {htmlFor: ""}, 
+									"Email do comprador"
+								)
+							)
+						), 
+						React.createElement("div", {className: "row"}, 
+							React.createElement("div", {className: "col-md-4"}, 
+								React.createElement("input", {type: "email", ref: "email", required: true, 
+									className: "form-control"+(this.state.warning?" invalid":''), 
+									placeholder: "joaozinho@mail.com"})
+							), 
+							React.createElement("div", {className: "col-md-6"}, 
+							 this.state.warning?(
+								React.createElement("div", {className: "warning"}, this.state.warning)
+							):null
+							)
+						), 
+						React.createElement("button", {className: "form-btn"}, 
+							"Salvar"
+						)
+					)
+				)
+			)
+		);
+	}
+})
+
+var PrintJobForm = React.createBackboneClass({
+	getInitialState: function() {
+		return {
+			formPosition: 0,
+		}
+	},
+
+	advancePosition: function() {
+		this.setState({ formPosition: this.state.formPosition+1 });
 	},
 
 	render: function() {
 		var self = this;
 
-		if (!this.state.selectedFile) {
-			return React.createElement(PrintJobForm_NoFile, React.__spread({},  this.props, {parent: this}))
-		}
+		console.log("rendered", this.getModel().attributes, this.state.formPosition)
+
+		var FormParts = [FormPart_ChooseClient, FormPart_Upload, FormPart_Renderer];
+		var formParts = _.map(FormParts, function(P, i)  {
+			if (i > this.state.formPosition) {
+				return null;
+			}
+			return React.createElement(P, React.__spread({parent: this},  this.props, 
+				{step: i, isLatest: i===this.state.formPosition}))
+		}.bind(this));
 
 		return (
-			React.createElement("div", null, 
-				React.createElement(STLRenderer, {file: this.state.selectedFile})
+			React.createElement("div", {className: "PrintJobForm"}, 
+				React.createElement("h1", null, "Novo Pedido"), 
+				formParts
 			)
 		);
 	}
 });
 
 module.exports = function(app) {
-
 	var printJob = new Models.PrintJob;
 
-	React.render(React.createElement(PrintJobForm, {model: printJob}),
-		document.getElementById('form-wrapper'))
+	function addScript(src) {
+		var el = document.createElement('script');
+		el.setAttribute('src', src);
+		document.body.appendChild(el);
+	}
+
+	addScript('/static/js/vendor/three.min.js');
+	addScript('/static/js/vendor/stats.min.js');
+	addScript('/static/js/vendor/three.STLLoader.js');
+	addScript('/static/js/vendor/three.Detector.js');
+	addScript('/static/js/vendor/three.TrackballControls.js');
+
+	setTimeout(function () {
+		app.pushPage(React.createElement(PrintJobForm, {model: printJob}), 'new-printjob', {
+			onClose: function() {
+			},
+			container: document.querySelector('#page-container'),
+			pageRoot: 'new-printjob',
+		});
+	}, 400);
 };
 
-
-},{"../components/STLRenderer.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/signup.jsx":[function(require,module,exports){
+},{"../components/STLRenderer.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/signup.jsx":[function(require,module,exports){
 
 var $ = require('jquery')
 var selectize = require('selectize')

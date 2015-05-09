@@ -292,10 +292,8 @@ body:not(.public) {
 
 
 .page-container {
-
 	// max-width: 400px;
-
-	font-size: 15px;
+	font-size: 16px;
 
 	h1, h2, h3, h4, h5 {
 		color: #444;
@@ -306,7 +304,7 @@ body:not(.public) {
 	}
 
 	h2 {
-		font-weight: 600;
+		// font-weight: 600;
 	}
 
   p {
@@ -355,10 +353,80 @@ body:not(.public) {
   }
 }
 
-.clientList {
+.ListClients {
+
+  .clientList {
+    .clientItem {
+      border: 1px solid #EEE;
+
+      & > ul {
+        display: table;
+        float: left;
+        & > li {
+          display: table-cell;
+          border: 1px solid #08C;
+        }
+
+        .user-avatar {
+          .avatar {
+
+          }
+        }
+
+      }
+
+      & > ul.right {
+        float: right;
+      }
+  	}
+  }
+}
 
 
-	& > li {
-		border: 1px solid #EEE;
-	}
+
+
+.PrettyCheck {
+  position: relative;
+  z-index: 1;
+
+  background-position: 0 0;
+
+  width: 24px;
+  height: 24px;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  background-image: url(/static/images/mailchimp-checkmarks-sprite-2x.png);
+  background-size: 24px 384px;
+
+  &:hover {
+    background-position: 0 -24px;
+  }
+  &.is-focused {
+    background-position: 0 -72px;
+  }
+  &.is-checked {
+    background-position: 0 -144px;
+  }
+  &.is-checked.is-focused {
+    background-position: 0 -96px;
+  }
+  &.is-checked:hover {
+    background-position: 0 -120px;
+  }
+
+  input[type=checkbox] {
+    -webkit-user-select: none;
+    cursor: pointer;
+    display: block;
+    margin: 0 !important;
+    opacity: .01;
+
+    width: 24px;
+    height: 24px;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    background-image: url(/static/images/mailchimp-checkmarks-sprite-2x.png);
+    background-size: 24px 384px;
+  }
+
 }

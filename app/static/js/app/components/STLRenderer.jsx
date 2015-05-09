@@ -116,9 +116,9 @@ var STLRenderer = React.createClass({
 						-(b.max.z + b.min.z)/4
 					)
 				);
-			}
+			};
 
-			position(m)
+			position(m);
 
 			// CENTER!
 			// mesh.position.set(g.boundingBox.max.x/2, -g.boundingBox.min.y/2, 0);
@@ -131,15 +131,15 @@ var STLRenderer = React.createClass({
 
 		this.scene.add(new THREE.AmbientLight(0x777777));
 
-		addShadowedLight( 1, 1, 1, 0xffffff, 1.35 );
-		addShadowedLight( 0.5, 1, -1, 0xffaa00, 1 );
+		addShadowedLight(1, 1, 1, 0xffffff, 1.35);
+		addShadowedLight(0.5, 1, -1, 0xffaa00, 1);
 	},
 
 	_onWindowResize: function() {
 		this.controls.handleResize();
 		this.camera.aspect = window.innerWidth / window.innerHeight;
 		this.camera.updateProjectionMatrix();
-		this.renderer.setSize( window.innerWidth, window.innerHeight );
+		this.renderer.setSize(window.innerWidth, window.innerHeight);
 	},
 
 	_animate: function() {

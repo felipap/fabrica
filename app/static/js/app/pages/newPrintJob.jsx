@@ -2,6 +2,7 @@
 "use strict";
 
 var $ = require('jquery')
+var _ = require('lodash')
 var React = require('react')
 var selectize = require('selectize')
 
@@ -12,13 +13,24 @@ var STLRenderer = require('../components/STLRenderer.jsx')
 
 require('react.backbone')
 
-const SigninUrl = "api/s3/sign";
+const SigninUrl = "/api/s3/sign";
 
-var PrintJobForm_NoFile = React.createBackboneClass({
+var FormPart_Renderer = React.createBackboneClass({
+	render: function() {
+		return (
+			<div className="formPart renderer">
+				<STLRenderer file={this.getModel().get('file')} />
+			</div>
+		);
+	}
+});
+
+
+var FormPart_Upload = React.createBackboneClass({
 
 	getInitialState: function() {
 		return {
-			status: "Selecione um arquivo .stl.",
+			status: "Esperando arquivo.",
 			uploadPercentage: null,
 		}
 	},
@@ -37,14 +49,15 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 	},
 
 	_onFileSelected: function(event) {
-
 		var onError = (message) => {
 			this.setState({ status: message });
 		};
 
-		var onFinishS3Put = (file, url, publicUrl) => {
+		var onFinishS3Put = (publicUrl) => {
 			this._updateProgress(100, "Arquivo enviado.");
-			this.props.parent._onFileUploaded(file, publicUrl);
+			this.getModel().set('file', publicUrl);
+			// We're done here!
+			this.props.parent.advancePosition();
 		};
 
 		var uploadToS3 = (file, url, publicUrl) => {
@@ -65,6 +78,14 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 			if (!xhr) {
 				onError('CORS not supported.');
 				return;
+			}
+
+			xhr.onload = () => {
+				if (xhr.status === 200) {
+					onFinishS3Put(publicUrl);
+					return;
+				}
+				onError('Upload error:' + xhr.status);
 			}
 
 			xhr.onerror = function(error) {
@@ -92,14 +113,6 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 				xhr.overrideMimeType('text/plain charset=x-user-defined');
 			}
 
-			xhr.onload = () => {
-				if (xhr.status === 200) {
-					this._onFileUploaded();
-					return;
-				}
-				onError('Upload error:' + xhr.status);
-			}
-
 			xhr.onreadystatechange = () => {
 				if (xhr.readyState === 4 && xhr.status === 200) {
 					try {
@@ -125,7 +138,7 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 
 	render: function() {
 		return (
-			<div className="PrintJobForm noFile">
+			<div className="formPart upload">
 				<div className="status">
 					{this.state.status}
 				</div>
@@ -147,36 +160,153 @@ var PrintJobForm_NoFile = React.createBackboneClass({
 	}
 })
 
-var PrintJobForm = React.createBackboneClass({
+var FormPart_ChooseClient = React.createBackboneClass({
 	getInitialState: function() {
+		this.tried = {};
 		return {
-			selectedFile: null,
+			warning: null,
 		}
 	},
 
-	_onFileUploaded: function(file, publicUrl) {
-		this.setState({ selectedFile: publicUrl });
+	componentDidMount: function() {
+		var ef = this.refs.email.getDOMNode();
+		$(ef).on('keyup', (e) => {
+			var trimmed = this.refs.email.getDOMNode().value.replace(/^\s+|\s+$/, '');
+			if (trimmed in this.tried) {
+				// We know no user exists with this email, so warn user.
+				this.setState({ warning: 'Não existe usuário com esse email.'});
+			} else {
+				if (this.state.warning) {
+					// We don't know if the user exists, so remove warning.
+					this.setState({ warning: null });
+				}
+			}
+		});
+	},
+
+	_send: function(e) {
+		e.preventDefault();
+
+		var email = this.refs.email.getDOMNode().value.replace(/^\s+|\s+$/, '');
+		if (email.match(/^\s*$/)) {
+			this.setState({ warning: 'Use um endereço de email.' });
+			return;
+		}
+
+		$.ajax({
+			url: '/api/clients/exists?',
+			data: { email: email },
+			dataType: 'json',
+			success: (data) => {
+				if (!data.exists) {
+					this.setState({ warning: 'Não existe usuário com esse email.' });
+					this.tried[email] = true;
+					return;
+				}
+				this.getModel().set('user', data);
+				this.props.parent.advancePosition();
+			},
+			error: (xhr, options) => {
+				var data = xhr.responseJSON;
+				if (data && data.message) {
+					Utils.flash.alert(data.message);
+				} else {
+					Utils.flash.alert('Milton Friedman.');
+				}
+			}
+		})
+	},
+
+	render: function() {
+		return (
+			<div className={"formPart chooseClient "+(this.props.isLatest?'is-latest':'')}>
+				<h1>Selecione um cliente <div className="position">passo #{this.props.step}</div></h1>
+				<form onSubmit={this._send}>
+					<div className="form-group">
+						<div className="row">
+							<div className="col-md-4">
+								<label htmlFor="">
+									Email do comprador
+								</label>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-md-4">
+								<input type="email" ref="email" required={true}
+									className={"form-control"+(this.state.warning?" invalid":'')}
+									placeholder="joaozinho@mail.com" />
+							</div>
+							<div className="col-md-6">
+							{ this.state.warning?(
+								<div className="warning">{this.state.warning}</div>
+							):null }
+							</div>
+						</div>
+						<button className="form-btn">
+							Salvar
+						</button>
+					</div>
+				</form>
+			</div>
+		);
+	}
+})
+
+var PrintJobForm = React.createBackboneClass({
+	getInitialState: function() {
+		return {
+			formPosition: 0,
+		}
+	},
+
+	advancePosition: function() {
+		this.setState({ formPosition: this.state.formPosition+1 });
 	},
 
 	render: function() {
 		var self = this;
 
-		if (!this.state.selectedFile) {
-			return <PrintJobForm_NoFile {...this.props} parent={this} />
-		}
+		console.log("rendered", this.getModel().attributes, this.state.formPosition)
+
+		var FormParts = [FormPart_ChooseClient, FormPart_Upload, FormPart_Renderer];
+		var formParts = _.map(FormParts, (P, i) => {
+			if (i > this.state.formPosition) {
+				return null;
+			}
+			return <P parent={this} {...this.props}
+				step={i} isLatest={i===this.state.formPosition} />
+		});
 
 		return (
-			<div>
-				<STLRenderer file={this.state.selectedFile} />
+			<div className="PrintJobForm">
+				<h1>Novo Pedido</h1>
+				{formParts}
 			</div>
 		);
 	}
 });
 
 module.exports = function(app) {
-
 	var printJob = new Models.PrintJob;
 
-	React.render(<PrintJobForm model={printJob} />,
-		document.getElementById('form-wrapper'))
+	function addScript(src) {
+		var el = document.createElement('script');
+		el.setAttribute('src', src);
+		document.body.appendChild(el);
+	}
+
+	addScript('/static/js/vendor/three.min.js');
+	addScript('/static/js/vendor/stats.min.js');
+	addScript('/static/js/vendor/three.STLLoader.js');
+	addScript('/static/js/vendor/three.Detector.js');
+	addScript('/static/js/vendor/three.TrackballControls.js');
+
+	setTimeout(function () {
+		app.pushPage(<PrintJobForm model={printJob} />, 'new-printjob', {
+			onClose: function() {
+			},
+			container: document.querySelector('#page-container'),
+			pageRoot: 'new-printjob',
+		});
+	}, 400);
 };

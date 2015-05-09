@@ -1,27 +1,45 @@
 
 .PrintJobForm {
 
-}
+  .formPart {
+    margin-top: 30px;
+    border-top: 1px dashed #DDD;
+    padding: 30px 0;
 
+    font-size: 13px;
 
-.PrintJobForm.noFile {
-  .status {
-    color: #333;
-  }
-
-  .progressBar {
-    margin: 10px 0;
-    width: 200px;
-    height: 20px;
-    display: inline-block;
-    background: #EEE;
-    position: relative;
-
-    .bar {
-      width: 50%;
-      background: #08f;
-      height: 20px;
+    .position {
+      color: #AAA;
+      margin-left: 10px;
+      font-size: .8em;
+      font-weight: 600;
+      display: inline-block;
     }
   }
 
+  .formPart:not(.is-latest) {
+    opacity: .9em;
+  }
+
+  .formPart.upload {
+    .status {
+      color: #333;
+    }
+
+    .progressBar {
+      margin: 10px 0;
+      width: 200px;
+      height: 20px;
+      display: inline-block;
+      background: #EEE;
+      position: relative;
+
+      .bar {
+        width: 50%;
+        background: #08f;
+        height: 20px;
+      }
+    }
+  }
 }
+

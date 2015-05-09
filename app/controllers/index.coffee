@@ -82,14 +82,12 @@ module.exports = (app) ->
 	for n in [
 		'/'
 		'/novo'
+		'/novo/pedido'
 		'/clientes'
 		'/novo/cliente'
 	]
 		router.get n, (req, res, next) ->
 			res.render 'app/home'
-
-	router.get '/novo/pedido', (req, res) ->
-		res.render 'app/new_job'
 
 	router.get '/arquivos', (req, res, next) -> res.render 'app/files'
 	router.get '/ajuda', (req, res, next) -> res.render 'app/help'

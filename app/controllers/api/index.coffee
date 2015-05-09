@@ -57,8 +57,6 @@ module.exports = (app) ->
 	api.use '/session', require('./session') app
 	api.use '/me', require('./me') app
 
-	api.put '/s3/confirm', unspam.limit(1*1000), (req, res) ->
-
 	api.post '/clients', unspam.limit(2*1000), (req, res, next) ->
 		req.parse User.ClientRegisterParseRules, (err, reqbody) ->
 			if err
@@ -68,6 +66,10 @@ module.exports = (app) ->
 				if err
 					return next(err)
 				res.endJSON(reqbody)
+
+	api.get '/clients/exists', unspam.limit(1*1000), (req, res) ->
+		User.findOne { email: req.query.email }, req.handleErr (user) ->
+			res.endJSON(exists: user and user.toJSON())
 
 	api.get '/myclients', unspam.limit(1*1000), (req, res) ->
 		User.find {
