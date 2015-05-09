@@ -18,26 +18,15 @@ const SigninUrl = "/api/s3/sign";
 var ColorSelect = React.createBackboneClass({
 	changeOptions: "change:color",
 
-	getInitialState: function() {
-		return {
-			selectedColor: null,
-		}
-	},
-
-	getValue: function() {
-		return this.state.selectedColor;
-	},
-
 	render: function() {
 		var circles = _.map(this.props.colors, (value, key) => {
 			var select = () => {
-				this.setState({ selectedColor: key });
+				this.getModel().set({ color: key });
 			};
-			var selected = this.state.selectedColor === key;
+			var selected = this.getModel().get('color') === key;
 			return (
-				<div className={"circle-wrapper"+(selected?' selected':'')} key={key}
-					onClick={select}>
-					<div className="circle"
+				<div className={"circle-wrapper"+(selected?' selected':'')} key={key}>
+					<div className="circle" onClick={select}
 						style={{backgroundColor: value}} />
 				</div>
 			)
@@ -94,7 +83,6 @@ var DropdownInput = React.createClass({
 
 var FormPart_Visualizer = React.createBackboneClass({
 	_send: function () {
-		this.getModel().set('color', this.refs.colors.getValue());
 		this.getModel().set('material', this.refs.materials.getValue());
 
 		console.log('model', this.getModel().attributes)
@@ -108,12 +96,12 @@ var FormPart_Visualizer = React.createBackboneClass({
 	},
 
 	render: function() {
-		var colorOptions = {blue:'#0bf', red:'red'};
-		var materialOptions = {pla:'PLA', abs: 'ABS'};
+		var colorOptions = {blue:'#0bf', red:'#f54747', green:'#3ECC5A'};
+		var materialOptions = {pla:'PLA', pet: 'PET'};
 
 		return (
 			<div className="formPart renderer">
-				<h1>Visualização <div className="position">passo #{this.props.step}</div></h1>
+				<h1>Visualização <div className="position">passo {this.props.step} de {this.props.totalSteps}</div></h1>
 				<div className="row">
 					<div className="col-md-4">
 						<div className="field">
@@ -126,11 +114,15 @@ var FormPart_Visualizer = React.createBackboneClass({
 							<p>Temos <strong>2 opções de materiais</strong> para a sua peça.</p>
 							<DropdownInput ref="materials" options={materialOptions} />
 						</div>
+						<div className="field">
+							<h1>Escolha o tamanho</h1>
+							<ColorSelect ref="colors" model={this.getModel()} colors={colorOptions}/>
+						</div>
 						<button className="finalize" onClick={this._send}>
 							Enviar Pedido
 						</button>
 					</div>
-					<div className="col-md-4">
+					<div className="col-md-8">
 						<STLRenderer file={this.getModel().get('file')} />
 					</div>
 				</div>
@@ -255,7 +247,7 @@ var FormPart_Upload = React.createBackboneClass({
 	render: function() {
 		return (
 			<div className="formPart upload">
-				<h1>Selecione um arquivo <div className="position">passo #{this.props.step}</div></h1>
+				<h1>Selecione um arquivo <div className="position">passo {this.props.step} de {this.props.totalSteps}</div></h1>
 				<p>Escolha um arquivo 3D para ser impresso. Ele deve ter a extensão <strong>.stl</strong>.</p>
 				<h3 className="status">
 					{this.state.status}
@@ -338,7 +330,7 @@ var FormPart_ChooseClient = React.createBackboneClass({
 	render: function() {
 		return (
 			<div className="formPart chooseClient">
-				<h1>Selecione um cliente <div className="position">passo #{this.props.step}</div></h1>
+				<h1>Selecione um cliente <div className="position">passo {this.props.step} de {this.props.totalSteps}</div></h1>
 				<p>Registre um pedido de um cliente cadastrado entrando com o seu email. <a href="/novo/cliente">Clique aqui para fazer o seu cadastro.</a></p>
 				<form onSubmit={this._send}>
 					<div className="form-group">
@@ -367,7 +359,7 @@ var FormPart_ChooseClient = React.createBackboneClass({
 var PrintJobForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
-			formPosition: 0,
+			formPosition: 2,
 		}
 	},
 
@@ -408,7 +400,7 @@ var PrintJobForm = React.createBackboneClass({
 							Retomar daqui
 						</button>
 					</div>
-					<P parent={this} {...this.props} step={i} />
+					<P parent={this} {...this.props} step={i} totalSteps={FormParts.length} />
 				</div>
 			)
 		});
@@ -433,6 +425,8 @@ function setupLeaveWarning() {
 
 module.exports = function(app) {
 	var printJob = new Models.PrintJob({
+		color: 'red',
+		file: 'https://s3-sa-east-1.amazonaws.com/deltathinkers/jobs/dfd691c6-3622-4dc1-9e8c-59d08d87e69c',
 	});
 
 	function addScript(src, cb) {

@@ -41,6 +41,9 @@
     }
   }
 
+  .is-latest {
+    padding-bottom: 100px;
+  }
   .is-latest > .curtain {
     display: none;
   }
@@ -52,8 +55,8 @@
 
     .progressBar {
       margin: 10px 0;
-      width: 200px;
-      height: 20px;
+      width: 300px;
+      max-width: 100%;
       display: inline-block;
       background: #EEE;
       position: relative;
@@ -61,7 +64,7 @@
       .bar {
         width: 50%;
         background: #08f;
-        height: 20px;
+        height: 30px;
       }
     }
   }
@@ -82,12 +85,25 @@
     }
 
     .dropdown {
-      ul > li > button {
-        width: 100%;
-        border-radius: 0;
-        background: none;
-        &:hover {
-          background: @CBLUE;
+
+      & > button {
+        width: 300px;
+        font-size: 20px;
+      }
+
+      & > ul {
+        width: 300px;
+
+        li > button {
+          width: 100%;
+          border-radius: 0;
+          background: none;
+          font-size: 20px;
+
+          &:hover {
+            background: @CBLUE;
+            color: white;
+          }
         }
       }
     }
@@ -114,6 +130,7 @@
           width: 45px;
           display: inline-block;
           border: 2px solid rgba(0,0,0,.01);
+          cursor: pointer;
         }
 
         &.selected .circle {

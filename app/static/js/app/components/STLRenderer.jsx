@@ -30,6 +30,12 @@ var STLRenderer = React.createClass({
 			Detector.addGetWebGLMessage();
 		}
 
+		window.t = this.getDOMNode();
+
+		var width = $(this.getDOMNode().parentElement).innerWidth();
+		var height = $(this.getDOMNode().parentElement.parentElement).height();
+		console.log(width, height)
+
 		var addShadowedLight = (x, y, z, color, intensity) => {
 			var directionalLight = new THREE.DirectionalLight(color, intensity);
 			directionalLight.position.set(x, y, z);
@@ -51,13 +57,13 @@ var STLRenderer = React.createClass({
 
 		// setup scene and camera
 		this.scene = new THREE.Scene();
-		this.camera = new THREE.PerspectiveCamera(45, 700/400, 1, 1000);
+		this.camera = new THREE.PerspectiveCamera(45, width/height, 1, 1000);
 		this.camera.position.set(3, 0.15, 5);
 		// this.camera.position.z = 5;
 
 		// setup renderer
 		this.renderer = new THREE.WebGLRenderer({ antialias: false });
-		this.renderer.setSize(700, 400);
+		this.renderer.setSize(width, height);
 		this.renderer.gammaInput = true;
 		this.renderer.gammaOutput = true;
 		this.renderer.shadowMapEnabled = true;
@@ -98,8 +104,6 @@ var STLRenderer = React.createClass({
 
 		var loader = new THREE.STLLoader();
 		loader.load(this.props.file, (geometry) => {
-
-			window.g = geometry;
 
 			var material = new THREE.MeshPhongMaterial({
 				color: 0xff5533,

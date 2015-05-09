@@ -18,7 +18,7 @@ function formatObject (obj, climit) {
 }
 
 var argsBuiltin = {
-	$is: {
+	$equals: {
 		test: function(value, expected) {
 			if (value === expected) {
 				return false;

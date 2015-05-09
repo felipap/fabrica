@@ -224,6 +224,12 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 			Detector.addGetWebGLMessage();
 		}
 
+		window.t = this.getDOMNode();
+
+		var width = $(this.getDOMNode().parentElement).innerWidth();
+		var height = $(this.getDOMNode().parentElement.parentElement).height();
+		console.log(width, height)
+
 		var addShadowedLight = function(x, y, z, color, intensity)  {
 			var directionalLight = new THREE.DirectionalLight(color, intensity);
 			directionalLight.position.set(x, y, z);
@@ -245,13 +251,13 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 
 		// setup scene and camera
 		this.scene = new THREE.Scene();
-		this.camera = new THREE.PerspectiveCamera(45, 700/400, 1, 1000);
+		this.camera = new THREE.PerspectiveCamera(45, width/height, 1, 1000);
 		this.camera.position.set(3, 0.15, 5);
 		// this.camera.position.z = 5;
 
 		// setup renderer
 		this.renderer = new THREE.WebGLRenderer({ antialias: false });
-		this.renderer.setSize(700, 400);
+		this.renderer.setSize(width, height);
 		this.renderer.gammaInput = true;
 		this.renderer.gammaOutput = true;
 		this.renderer.shadowMapEnabled = true;
@@ -292,8 +298,6 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 
 		var loader = new THREE.STLLoader();
 		loader.load(this.props.file, function(geometry)  {
-
-			window.g = geometry;
 
 			var material = new THREE.MeshPhongMaterial({
 				color: 0xff5533,
@@ -501,7 +505,7 @@ module.exports.TourDialog = function (data, onRender, onClose) {
 var Backbone = require('backbone');
 
 var PrintJob = Backbone.Model.extend({
-  urlRoot: '/api/jobs',
+  urlRoot: '/api/printjobs',
 });
 
 var Client = Backbone.Model.extend({
@@ -1622,26 +1626,15 @@ const SigninUrl = "/api/s3/sign";
 var ColorSelect = React.createBackboneClass({
 	changeOptions: "change:color",
 
-	getInitialState: function() {
-		return {
-			selectedColor: null,
-		}
-	},
-
-	getValue: function() {
-		return this.state.selectedColor;
-	},
-
 	render: function() {
 		var circles = _.map(this.props.colors, function(value, key)  {
 			var select = function()  {
-				this.setState({ selectedColor: key });
+				this.getModel().set({ color: key });
 			}.bind(this);
-			var selected = this.state.selectedColor === key;
+			var selected = this.getModel().get('color') === key;
 			return (
-				React.createElement("div", {className: "circle-wrapper"+(selected?' selected':''), key: key, 
-					onClick: select}, 
-					React.createElement("div", {className: "circle", 
+				React.createElement("div", {className: "circle-wrapper"+(selected?' selected':''), key: key}, 
+					React.createElement("div", {className: "circle", onClick: select, 
 						style: {backgroundColor: value}})
 				)
 			)
@@ -1698,7 +1691,6 @@ var DropdownInput = React.createClass({displayName: "DropdownInput",
 
 var FormPart_Visualizer = React.createBackboneClass({
 	_send: function () {
-		this.getModel().set('color', this.refs.colors.getValue());
 		this.getModel().set('material', this.refs.materials.getValue());
 
 		console.log('model', this.getModel().attributes)
@@ -1712,12 +1704,12 @@ var FormPart_Visualizer = React.createBackboneClass({
 	},
 
 	render: function() {
-		var colorOptions = {blue:'#0bf', red:'red'};
-		var materialOptions = {pla:'PLA', abs: 'ABS'};
+		var colorOptions = {blue:'#0bf', red:'#f54747', green:'#3ECC5A'};
+		var materialOptions = {pla:'PLA', pet: 'PET'};
 
 		return (
 			React.createElement("div", {className: "formPart renderer"}, 
-				React.createElement("h1", null, "Visualização ", React.createElement("div", {className: "position"}, "passo #", this.props.step)), 
+				React.createElement("h1", null, "Visualização ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps)), 
 				React.createElement("div", {className: "row"}, 
 					React.createElement("div", {className: "col-md-4"}, 
 						React.createElement("div", {className: "field"}, 
@@ -1730,11 +1722,15 @@ var FormPart_Visualizer = React.createBackboneClass({
 							React.createElement("p", null, "Temos ", React.createElement("strong", null, "2 opções de materiais"), " para a sua peça."), 
 							React.createElement(DropdownInput, {ref: "materials", options: materialOptions})
 						), 
+						React.createElement("div", {className: "field"}, 
+							React.createElement("h1", null, "Escolha o tamanho"), 
+							React.createElement(ColorSelect, {ref: "colors", model: this.getModel(), colors: colorOptions})
+						), 
 						React.createElement("button", {className: "finalize", onClick: this._send}, 
 							"Enviar Pedido"
 						)
 					), 
-					React.createElement("div", {className: "col-md-4"}, 
+					React.createElement("div", {className: "col-md-8"}, 
 						React.createElement(STLRenderer, {file: this.getModel().get('file')})
 					)
 				)
@@ -1859,7 +1855,7 @@ var FormPart_Upload = React.createBackboneClass({
 	render: function() {
 		return (
 			React.createElement("div", {className: "formPart upload"}, 
-				React.createElement("h1", null, "Selecione um arquivo ", React.createElement("div", {className: "position"}, "passo #", this.props.step)), 
+				React.createElement("h1", null, "Selecione um arquivo ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps)), 
 				React.createElement("p", null, "Escolha um arquivo 3D para ser impresso. Ele deve ter a extensão ", React.createElement("strong", null, ".stl"), "."), 
 				React.createElement("h3", {className: "status"}, 
 					this.state.status
@@ -1942,7 +1938,7 @@ var FormPart_ChooseClient = React.createBackboneClass({
 	render: function() {
 		return (
 			React.createElement("div", {className: "formPart chooseClient"}, 
-				React.createElement("h1", null, "Selecione um cliente ", React.createElement("div", {className: "position"}, "passo #", this.props.step)), 
+				React.createElement("h1", null, "Selecione um cliente ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps)), 
 				React.createElement("p", null, "Registre um pedido de um cliente cadastrado entrando com o seu email. ", React.createElement("a", {href: "/novo/cliente"}, "Clique aqui para fazer o seu cadastro.")), 
 				React.createElement("form", {onSubmit: this._send}, 
 					React.createElement("div", {className: "form-group"}, 
@@ -1971,7 +1967,7 @@ var FormPart_ChooseClient = React.createBackboneClass({
 var PrintJobForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
-			formPosition: 0,
+			formPosition: 2,
 		}
 	},
 
@@ -2012,7 +2008,7 @@ var PrintJobForm = React.createBackboneClass({
 							"Retomar daqui"
 						)
 					), 
-					React.createElement(P, React.__spread({parent: this},  this.props, {step: i}))
+					React.createElement(P, React.__spread({parent: this},  this.props, {step: i, totalSteps: FormParts.length}))
 				)
 			)
 		}.bind(this));
@@ -2037,6 +2033,8 @@ function setupLeaveWarning() {
 
 module.exports = function(app) {
 	var printJob = new Models.PrintJob({
+		color: 'red',
+		file: 'https://s3-sa-east-1.amazonaws.com/deltathinkers/jobs/dfd691c6-3622-4dc1-9e8c-59d08d87e69c',
 	});
 
 	function addScript(src, cb) {

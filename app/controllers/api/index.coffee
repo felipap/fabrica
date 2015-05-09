@@ -5,10 +5,12 @@ bunyan = require 'app/config/bunyan'
 required = require '../lib/required'
 aws = require 'aws-sdk'
 uuid = require 'uuid'
-nconf = require 'app/config/nconf'
+nconf = require 'nconf'
 mongoose = require 'mongoose'
 
 clientActions = require 'app/actions/clients'
+pjobActions = require 'app/actions/printJobs'
+mail = require 'app/actions/mail'
 
 User = mongoose.model 'User'
 
@@ -56,6 +58,9 @@ module.exports = (app) ->
 	api.use required.login
 	api.use '/session', require('./session') app
 	api.use '/me', require('./me') app
+
+	api.post '/api/printjobs', unspam.limit(2*1000), (req, res, next) ->
+		req.parse
 
 	api.post '/clients', unspam.limit(2*1000), (req, res, next) ->
 		req.parse User.ClientRegisterParseRules, (err, reqbody) ->

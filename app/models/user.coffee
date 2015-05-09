@@ -7,7 +7,7 @@ please = require 'app/lib/please.js'
 redis = require 'app/config/redis.js'
 bcrypt = require 'bcrypt'
 crypto = require 'crypto'
-nconf = require 'app/config/nconf'
+nconf = require 'nconf'
 path = require 'path'
 
 SALT_WORK_FACTOR = 10

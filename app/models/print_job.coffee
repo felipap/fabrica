@@ -21,19 +21,11 @@ PrintJob = new mongoose.Schema {
 	clerk:	 		{ type: mongoose.Schema.ObjectId, ref: 'User' }
 	vendor: 		{ type: mongoose.Schema.ObjectId, ref: 'Company' }
 
-	identifier: { type: String, required: true } # Identifies actions of same nature
-	resource:		{ type: mongoose.Schema.ObjectId, required: true }
-	path:				{ type: String, required: false }
-	object: 		{ } # name, thumbnail...
-	instances: [{
-		key: 			{ type: String, required: true }
-		path: 		{ type: String, required: true }
-		object: 	{ } # name, avatarUrl?
-		created_at: { type: Date, default: Date.now, index: 1 }
-		# _id:	false
-	}]
-	multiplier: { type: Number, default: 1 }
+	color: 			{ type: String }
+	name: 			{ type: String }
 
 }
+
+
 
 module.exports = PrintJob
