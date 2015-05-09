@@ -14,7 +14,7 @@
     "url": "https://github.com/f03lipe/fabrica"
   },
   "engines": {
-    "iojs": "2.0.x"
+    "iojs": "^2.0.x"
   },
   "devDependencies": {
     "browserify": "^9.0.3",
