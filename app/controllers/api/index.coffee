@@ -79,8 +79,7 @@ module.exports = (app) ->
 
 	api.get '/s3/sign', unspam.limit(1*1000), (req, res) ->
 		req.logger.warn "Faz check aqui, felipe"
-		key = 'jobs/aaa'
-		# key = 'aaaa'
+		key = 'jobs/'+uuid.v4()
 		params = {
 			Bucket: nconf.get('S3_BUCKET'),
 			Key: key,

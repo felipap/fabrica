@@ -69,7 +69,7 @@ var STLRenderer = React.createClass({
 
 		// setup controls
 		this.controls = new THREE.TrackballControls(this.camera);
-		this.controls.rotateSpeed = 4.0;
+		this.controls.rotateSpeed = 6.0;
 		this.controls.zoomSpeed = 5.2;
 		this.controls.panSpeed = 0.8;
 		// this.controls.noZoom = false;
@@ -99,6 +99,8 @@ var STLRenderer = React.createClass({
 		var loader = new THREE.STLLoader();
 		loader.load(this.props.file, (geometry) => {
 
+			window.g = geometry;
+
 			var material = new THREE.MeshPhongMaterial({
 				color: 0xff5533,
 				specular: 0x111111,
@@ -112,10 +114,11 @@ var STLRenderer = React.createClass({
 				mesh.applyMatrix(
 					new THREE.Matrix4().makeTranslation(
 						-(b.max.x + b.min.x)/4,
-						(b.max.y - b.min.y)/4,
+						-(b.max.y + b.min.y)/4,
 						-(b.max.z + b.min.z)/4
 					)
 				);
+				plane.position.y = -(b.max.y - b.min.y)/4;
 			};
 
 			position(m);

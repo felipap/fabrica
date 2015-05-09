@@ -2,6 +2,7 @@
 var Backbone = require('backbone');
 
 var PrintJob = Backbone.Model.extend({
+  urlRoot: '/api/jobs',
 });
 
 var Client = Backbone.Model.extend({

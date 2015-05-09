@@ -263,7 +263,7 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 
 		// setup controls
 		this.controls = new THREE.TrackballControls(this.camera);
-		this.controls.rotateSpeed = 4.0;
+		this.controls.rotateSpeed = 6.0;
 		this.controls.zoomSpeed = 5.2;
 		this.controls.panSpeed = 0.8;
 		// this.controls.noZoom = false;
@@ -293,6 +293,8 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 		var loader = new THREE.STLLoader();
 		loader.load(this.props.file, function(geometry)  {
 
+			window.g = geometry;
+
 			var material = new THREE.MeshPhongMaterial({
 				color: 0xff5533,
 				specular: 0x111111,
@@ -306,10 +308,11 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 				mesh.applyMatrix(
 					new THREE.Matrix4().makeTranslation(
 						-(b.max.x + b.min.x)/4,
-						(b.max.y - b.min.y)/4,
+						-(b.max.y + b.min.y)/4,
 						-(b.max.z + b.min.z)/4
 					)
 				);
+				plane.position.y = -(b.max.y - b.min.y)/4;
 			};
 
 			position(m);
@@ -498,6 +501,7 @@ module.exports.TourDialog = function (data, onRender, onClose) {
 var Backbone = require('backbone');
 
 var PrintJob = Backbone.Model.extend({
+  urlRoot: '/api/jobs',
 });
 
 var Client = Backbone.Model.extend({
@@ -718,14 +722,15 @@ var PageStack = function () {
 
 			if (opts.pageRoot) { // Save body[data-root] and replace by new
 				// Cacilds!
+				var root = document.body.dataset.root;
 				this.old.pageRoot = document.body.dataset.root;
-				let olds = document.querySelectorAll('[data-activate-root='+
-					document.body.dataset.root+']');
-				let news = document.querySelectorAll('[data-activate-root='+
-					opts.pageRoot+']');
-				for (var i=0; i<olds.length; ++i) {
-					olds[i].classList.remove('active');
+				if (root) {
+					let olds = document.querySelectorAll('[data-activate-root='+root+']');
+					for (var i=0; i<olds.length; ++i) {
+						olds[i].classList.remove('active');
+					}
 				}
+				let news = document.querySelectorAll('[data-activate-root='+opts.pageRoot+']');
 				for (var i=0; i<news.length; ++i) {
 					news[i].classList.add('active');
 				}
@@ -763,16 +768,18 @@ var PageStack = function () {
 			if (this.old.title) {
 				document.title = this.old.title;
 			}
-			if (this.old.pageRoot) {
+			if (this.old.pageRoot !== null) {
 				let olds = document.querySelectorAll('[data-activate-root='+
 					document.body.dataset.root+']');
-				let news = document.querySelectorAll('[data-activate-root='+
-					this.old.pageRoot+']');
 				for (var i=0; i<olds.length; ++i) {
 					olds[i].classList.remove('active');
 				}
-				for (var i=0; i<news.length; ++i) {
-					news[i].classList.add('active');
+				if (this.old.pageRoot !== '') {
+					let news = document.querySelectorAll('[data-activate-root='+
+						this.old.pageRoot+']');
+					for (var i=0; i<news.length; ++i) {
+						news[i].classList.add('active');
+					}
 				}
 				document.body.dataset.root = this.old.pageRoot;
 			}
@@ -1612,11 +1619,125 @@ require('react.backbone')
 
 const SigninUrl = "/api/s3/sign";
 
-var FormPart_Renderer = React.createBackboneClass({
+var ColorSelect = React.createBackboneClass({
+	changeOptions: "change:color",
+
+	getInitialState: function() {
+		return {
+			selectedColor: null,
+		}
+	},
+
+	getValue: function() {
+		return this.state.selectedColor;
+	},
+
 	render: function() {
+		var circles = _.map(this.props.colors, function(value, key)  {
+			var select = function()  {
+				this.setState({ selectedColor: key });
+			}.bind(this);
+			var selected = this.state.selectedColor === key;
+			return (
+				React.createElement("div", {className: "circle-wrapper"+(selected?' selected':''), key: key, 
+					onClick: select}, 
+					React.createElement("div", {className: "circle", 
+						style: {backgroundColor: value}})
+				)
+			)
+		}.bind(this))
+		return (
+			React.createElement("div", {className: "ColorSelect"}, 
+				circles
+			)
+		);
+	}
+});
+
+var DropdownInput = React.createClass({displayName: "DropdownInput",
+	changeOptions: "change:color",
+
+	getInitialState: function() {
+		return {
+			selected: null,
+		}
+	},
+
+	getValue: function() {
+		return this.state.selected;
+	},
+
+	render: function() {
+		var options = _.map(this.props.options, function(value, key)  {
+			var select = function()  {
+				this.setState({ selected: key });
+			}.bind(this);
+			var selected = this.state.selected === key;
+			return (
+				React.createElement("li", {role: "presentation", className: (selected?" selected":"")}, 
+					React.createElement("button", {role: "menuitem", tabindex: "-1", onClick: select}, value)
+				)
+			);
+		}.bind(this))
+		return (
+			React.createElement("div", {className: "DropdownInput"}, 
+				React.createElement("div", {className: "dropdown"}, 
+					React.createElement("button", {className: "btn btn-default dropdown-toggle", 
+						type: "button", id: "dropdownMenu1", "data-toggle": "dropdown", "aria-expanded": "true"}, 
+						this.props.options[this.state.selected] || "Escolha uma opção", 
+						" ", React.createElement("span", {className: "caret"})
+					), 
+					React.createElement("ul", {className: "dropdown-menu", role: "menu", "aria-labelledby": "dropdownMenu1"}, 
+						options
+					)
+				)
+			)
+		);
+	}
+});
+
+var FormPart_Visualizer = React.createBackboneClass({
+	_send: function () {
+		this.getModel().set('color', this.refs.colors.getValue());
+		this.getModel().set('material', this.refs.materials.getValue());
+
+		console.log('model', this.getModel().attributes)
+
+		this.getModel().save(null, {
+			success: function(model, response)  {
+			},
+			error: function(model, xhr, options)  {
+			},
+		})
+	},
+
+	render: function() {
+		var colorOptions = {blue:'#0bf', red:'red'};
+		var materialOptions = {pla:'PLA', abs: 'ABS'};
+
 		return (
 			React.createElement("div", {className: "formPart renderer"}, 
-				React.createElement(STLRenderer, {file: this.getModel().get('file')})
+				React.createElement("h1", null, "Visualização ", React.createElement("div", {className: "position"}, "passo #", this.props.step)), 
+				React.createElement("div", {className: "row"}, 
+					React.createElement("div", {className: "col-md-4"}, 
+						React.createElement("div", {className: "field"}, 
+							React.createElement("h1", null, "Escolha uma cor"), 
+							React.createElement("p", null, "Temos ", React.createElement("strong", null, "3 opções de cores"), " para a sua peça."), 
+							React.createElement(ColorSelect, {ref: "colors", model: this.getModel(), colors: colorOptions})
+						), 
+						React.createElement("div", {className: "field"}, 
+							React.createElement("h1", null, "Escolha um material"), 
+							React.createElement("p", null, "Temos ", React.createElement("strong", null, "2 opções de materiais"), " para a sua peça."), 
+							React.createElement(DropdownInput, {ref: "materials", options: materialOptions})
+						), 
+						React.createElement("button", {className: "finalize", onClick: this._send}, 
+							"Enviar Pedido"
+						)
+					), 
+					React.createElement("div", {className: "col-md-4"}, 
+						React.createElement(STLRenderer, {file: this.getModel().get('file')})
+					)
+				)
 			)
 		);
 	}
@@ -1624,6 +1745,7 @@ var FormPart_Renderer = React.createBackboneClass({
 
 
 var FormPart_Upload = React.createBackboneClass({
+	changeOptions: "change:file",
 
 	getInitialState: function() {
 		return {
@@ -1655,6 +1777,7 @@ var FormPart_Upload = React.createBackboneClass({
 			this.getModel().set('file', publicUrl);
 			// We're done here!
 			this.props.parent.advancePosition();
+			setupLeaveWarning();
 		}.bind(this);
 
 		var uploadToS3 = function(file, url, publicUrl)  {
@@ -1693,7 +1816,7 @@ var FormPart_Upload = React.createBackboneClass({
 			xhr.upload.onprogress = function(e)  {
 				if (e.lengthComputable) {
 					var percentLoaded = Math.round((e.loaded/e.total)*100);
-					this._updateProgress(percentLoaded, percentLoaded===100?'Done':'Uploading');
+					this._updateProgress(percentLoaded, percentLoaded===100?'Pronto!':'Enviando.');
 				}
 			}.bind(this)
 
@@ -1736,7 +1859,9 @@ var FormPart_Upload = React.createBackboneClass({
 	render: function() {
 		return (
 			React.createElement("div", {className: "formPart upload"}, 
-				React.createElement("div", {className: "status"}, 
+				React.createElement("h1", null, "Selecione um arquivo ", React.createElement("div", {className: "position"}, "passo #", this.props.step)), 
+				React.createElement("p", null, "Escolha um arquivo 3D para ser impresso. Ele deve ter a extensão ", React.createElement("strong", null, ".stl"), "."), 
+				React.createElement("h3", {className: "status"}, 
 					this.state.status
 				), 
 				React.createElement("form", {ref: "inputForm"}, 
@@ -1816,17 +1941,11 @@ var FormPart_ChooseClient = React.createBackboneClass({
 
 	render: function() {
 		return (
-			React.createElement("div", {className: "formPart chooseClient "+(this.props.isLatest?'is-latest':'')}, 
+			React.createElement("div", {className: "formPart chooseClient"}, 
 				React.createElement("h1", null, "Selecione um cliente ", React.createElement("div", {className: "position"}, "passo #", this.props.step)), 
+				React.createElement("p", null, "Registre um pedido de um cliente cadastrado entrando com o seu email. ", React.createElement("a", {href: "/novo/cliente"}, "Clique aqui para fazer o seu cadastro.")), 
 				React.createElement("form", {onSubmit: this._send}, 
 					React.createElement("div", {className: "form-group"}, 
-						React.createElement("div", {className: "row"}, 
-							React.createElement("div", {className: "col-md-4"}, 
-								React.createElement("label", {htmlFor: ""}, 
-									"Email do comprador"
-								)
-							)
-						), 
 						React.createElement("div", {className: "row"}, 
 							React.createElement("div", {className: "col-md-4"}, 
 								React.createElement("input", {type: "email", ref: "email", required: true, 
@@ -1860,18 +1979,42 @@ var PrintJobForm = React.createBackboneClass({
 		this.setState({ formPosition: this.state.formPosition+1 });
 	},
 
+	componentDidUpdate: function(prevProps, prevState) {
+		function scrollTo(el) {
+			window.el = el;
+			console.log($(el).offset().top)
+			$('html, body').animate({
+				scrollTop: $(el).offset().top
+			}, 1000);
+		}
+		scrollTo(this.getDOMNode().querySelector('.is-latest'));
+	},
+
 	render: function() {
 		var self = this;
 
 		console.log("rendered", this.getModel().attributes, this.state.formPosition)
 
-		var FormParts = [FormPart_ChooseClient, FormPart_Upload, FormPart_Renderer];
+		var FormParts = [FormPart_ChooseClient, FormPart_Upload, FormPart_Visualizer];
 		var formParts = _.map(FormParts, function(P, i)  {
+			var restoreHere = function()  {
+				alert('não tá funcionando, fio')
+				// this.setState({ formPosition: i });
+			}
+
 			if (i > this.state.formPosition) {
 				return null;
 			}
-			return React.createElement(P, React.__spread({parent: this},  this.props, 
-				{step: i, isLatest: i===this.state.formPosition}))
+			return (
+				React.createElement("div", {key: i, className: (i===this.state.formPosition)?'is-latest':'is-late'}, 
+					React.createElement("div", {className: "curtain"}, 
+						React.createElement("button", {onClick: restoreHere}, 
+							"Retomar daqui"
+						)
+					), 
+					React.createElement(P, React.__spread({parent: this},  this.props, {step: i}))
+				)
+			)
 		}.bind(this));
 
 		return (
@@ -1883,29 +2026,54 @@ var PrintJobForm = React.createBackboneClass({
 	}
 });
 
-module.exports = function(app) {
-	var printJob = new Models.PrintJob;
+// Wait for the user to upload the file before calling this!
+function setupLeaveWarning() {
+	if (!window.onbeforeunload) {
+	  window.onbeforeunload = function() {
+	  	return "Se você sair dessa página, terá que entrar com os dados novamente.";
+	  }
+	}
+}
 
-	function addScript(src) {
+module.exports = function(app) {
+	var printJob = new Models.PrintJob({
+	});
+
+	function addScript(src, cb) {
 		var el = document.createElement('script');
-		el.setAttribute('src', src);
-		document.body.appendChild(el);
+		el.src = src;
+		el.onload = function(){
+			cb();
+		}
+		document.head.appendChild(el);
 	}
 
-	addScript('/static/js/vendor/three.min.js');
-	addScript('/static/js/vendor/stats.min.js');
-	addScript('/static/js/vendor/three.STLLoader.js');
-	addScript('/static/js/vendor/three.Detector.js');
-	addScript('/static/js/vendor/three.TrackballControls.js');
+	var queue = [
+		'/static/js/vendor/three.min.js',
+		'/static/js/vendor/stats.min.js',
+		'/static/js/vendor/three.STLLoader.js',
+		'/static/js/vendor/three.Detector.js',
+		'/static/js/vendor/three.TrackballControls.js'
+	];
 
-	setTimeout(function () {
+	var i=0;
+	(function loadNext() {
+		if (queue.length === i) {
+			start()
+			return;
+		}
+		console.log('call', i)
+		addScript(queue[i++], loadNext);
+	})();
+
+	function start() {
 		app.pushPage(React.createElement(PrintJobForm, {model: printJob}), 'new-printjob', {
 			onClose: function() {
 			},
 			container: document.querySelector('#page-container'),
 			pageRoot: 'new-printjob',
 		});
-	}, 400);
+	}
 };
 
 },{"../components/STLRenderer.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/signup.jsx":[function(require,module,exports){

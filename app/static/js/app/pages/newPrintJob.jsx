@@ -15,11 +15,125 @@ require('react.backbone')
 
 const SigninUrl = "/api/s3/sign";
 
-var FormPart_Renderer = React.createBackboneClass({
+var ColorSelect = React.createBackboneClass({
+	changeOptions: "change:color",
+
+	getInitialState: function() {
+		return {
+			selectedColor: null,
+		}
+	},
+
+	getValue: function() {
+		return this.state.selectedColor;
+	},
+
 	render: function() {
+		var circles = _.map(this.props.colors, (value, key) => {
+			var select = () => {
+				this.setState({ selectedColor: key });
+			};
+			var selected = this.state.selectedColor === key;
+			return (
+				<div className={"circle-wrapper"+(selected?' selected':'')} key={key}
+					onClick={select}>
+					<div className="circle"
+						style={{backgroundColor: value}} />
+				</div>
+			)
+		})
+		return (
+			<div className="ColorSelect">
+				{circles}
+			</div>
+		);
+	}
+});
+
+var DropdownInput = React.createClass({
+	changeOptions: "change:color",
+
+	getInitialState: function() {
+		return {
+			selected: null,
+		}
+	},
+
+	getValue: function() {
+		return this.state.selected;
+	},
+
+	render: function() {
+		var options = _.map(this.props.options, (value, key) => {
+			var select = () => {
+				this.setState({ selected: key });
+			};
+			var selected = this.state.selected === key;
+			return (
+				<li role="presentation" className={(selected?" selected":"")}>
+					<button role="menuitem" tabindex="-1" onClick={select}>{value}</button>
+				</li>
+			);
+		})
+		return (
+			<div className="DropdownInput">
+				<div className="dropdown">
+					<button className="btn btn-default dropdown-toggle"
+						type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+						{this.props.options[this.state.selected] || "Escolha uma opção"}
+						&nbsp;<span className="caret"></span>
+					</button>
+					<ul className="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+						{options}
+					</ul>
+				</div>
+			</div>
+		);
+	}
+});
+
+var FormPart_Visualizer = React.createBackboneClass({
+	_send: function () {
+		this.getModel().set('color', this.refs.colors.getValue());
+		this.getModel().set('material', this.refs.materials.getValue());
+
+		console.log('model', this.getModel().attributes)
+
+		this.getModel().save(null, {
+			success: (model, response) => {
+			},
+			error: (model, xhr, options) => {
+			},
+		})
+	},
+
+	render: function() {
+		var colorOptions = {blue:'#0bf', red:'red'};
+		var materialOptions = {pla:'PLA', abs: 'ABS'};
+
 		return (
 			<div className="formPart renderer">
-				<STLRenderer file={this.getModel().get('file')} />
+				<h1>Visualização <div className="position">passo #{this.props.step}</div></h1>
+				<div className="row">
+					<div className="col-md-4">
+						<div className="field">
+							<h1>Escolha uma cor</h1>
+							<p>Temos <strong>3 opções de cores</strong> para a sua peça.</p>
+							<ColorSelect ref="colors" model={this.getModel()} colors={colorOptions}/>
+						</div>
+						<div className="field">
+							<h1>Escolha um material</h1>
+							<p>Temos <strong>2 opções de materiais</strong> para a sua peça.</p>
+							<DropdownInput ref="materials" options={materialOptions} />
+						</div>
+						<button className="finalize" onClick={this._send}>
+							Enviar Pedido
+						</button>
+					</div>
+					<div className="col-md-4">
+						<STLRenderer file={this.getModel().get('file')} />
+					</div>
+				</div>
 			</div>
 		);
 	}
@@ -27,6 +141,7 @@ var FormPart_Renderer = React.createBackboneClass({
 
 
 var FormPart_Upload = React.createBackboneClass({
+	changeOptions: "change:file",
 
 	getInitialState: function() {
 		return {
@@ -58,6 +173,7 @@ var FormPart_Upload = React.createBackboneClass({
 			this.getModel().set('file', publicUrl);
 			// We're done here!
 			this.props.parent.advancePosition();
+			setupLeaveWarning();
 		};
 
 		var uploadToS3 = (file, url, publicUrl) => {
@@ -96,7 +212,7 @@ var FormPart_Upload = React.createBackboneClass({
 			xhr.upload.onprogress = (e) => {
 				if (e.lengthComputable) {
 					var percentLoaded = Math.round((e.loaded/e.total)*100);
-					this._updateProgress(percentLoaded, percentLoaded===100?'Done':'Uploading');
+					this._updateProgress(percentLoaded, percentLoaded===100?'Pronto!':'Enviando.');
 				}
 			}
 
@@ -139,9 +255,11 @@ var FormPart_Upload = React.createBackboneClass({
 	render: function() {
 		return (
 			<div className="formPart upload">
-				<div className="status">
+				<h1>Selecione um arquivo <div className="position">passo #{this.props.step}</div></h1>
+				<p>Escolha um arquivo 3D para ser impresso. Ele deve ter a extensão <strong>.stl</strong>.</p>
+				<h3 className="status">
 					{this.state.status}
-				</div>
+				</h3>
 				<form ref="inputForm">
 					<input type="file" ref="input" name="file" accept="" onChange={this._onFileSelected} />
 				</form>
@@ -219,17 +337,11 @@ var FormPart_ChooseClient = React.createBackboneClass({
 
 	render: function() {
 		return (
-			<div className={"formPart chooseClient "+(this.props.isLatest?'is-latest':'')}>
+			<div className="formPart chooseClient">
 				<h1>Selecione um cliente <div className="position">passo #{this.props.step}</div></h1>
+				<p>Registre um pedido de um cliente cadastrado entrando com o seu email. <a href="/novo/cliente">Clique aqui para fazer o seu cadastro.</a></p>
 				<form onSubmit={this._send}>
 					<div className="form-group">
-						<div className="row">
-							<div className="col-md-4">
-								<label htmlFor="">
-									Email do comprador
-								</label>
-							</div>
-						</div>
 						<div className="row">
 							<div className="col-md-4">
 								<input type="email" ref="email" required={true}
@@ -263,18 +375,42 @@ var PrintJobForm = React.createBackboneClass({
 		this.setState({ formPosition: this.state.formPosition+1 });
 	},
 
+	componentDidUpdate: function(prevProps, prevState) {
+		function scrollTo(el) {
+			window.el = el;
+			console.log($(el).offset().top)
+			$('html, body').animate({
+				scrollTop: $(el).offset().top
+			}, 1000);
+		}
+		scrollTo(this.getDOMNode().querySelector('.is-latest'));
+	},
+
 	render: function() {
 		var self = this;
 
 		console.log("rendered", this.getModel().attributes, this.state.formPosition)
 
-		var FormParts = [FormPart_ChooseClient, FormPart_Upload, FormPart_Renderer];
+		var FormParts = [FormPart_ChooseClient, FormPart_Upload, FormPart_Visualizer];
 		var formParts = _.map(FormParts, (P, i) => {
+			var restoreHere = () => {
+				alert('não tá funcionando, fio')
+				// this.setState({ formPosition: i });
+			}
+
 			if (i > this.state.formPosition) {
 				return null;
 			}
-			return <P parent={this} {...this.props}
-				step={i} isLatest={i===this.state.formPosition} />
+			return (
+				<div key={i} className={(i===this.state.formPosition)?'is-latest':'is-late'}>
+					<div className="curtain">
+						<button onClick={restoreHere}>
+							Retomar daqui
+						</button>
+					</div>
+					<P parent={this} {...this.props} step={i} />
+				</div>
+			)
 		});
 
 		return (
@@ -286,27 +422,52 @@ var PrintJobForm = React.createBackboneClass({
 	}
 });
 
-module.exports = function(app) {
-	var printJob = new Models.PrintJob;
+// Wait for the user to upload the file before calling this!
+function setupLeaveWarning() {
+	if (!window.onbeforeunload) {
+	  window.onbeforeunload = function() {
+	  	return "Se você sair dessa página, terá que entrar com os dados novamente.";
+	  }
+	}
+}
 
-	function addScript(src) {
+module.exports = function(app) {
+	var printJob = new Models.PrintJob({
+	});
+
+	function addScript(src, cb) {
 		var el = document.createElement('script');
-		el.setAttribute('src', src);
-		document.body.appendChild(el);
+		el.src = src;
+		el.onload = function(){
+			cb();
+		}
+		document.head.appendChild(el);
 	}
 
-	addScript('/static/js/vendor/three.min.js');
-	addScript('/static/js/vendor/stats.min.js');
-	addScript('/static/js/vendor/three.STLLoader.js');
-	addScript('/static/js/vendor/three.Detector.js');
-	addScript('/static/js/vendor/three.TrackballControls.js');
+	var queue = [
+		'/static/js/vendor/three.min.js',
+		'/static/js/vendor/stats.min.js',
+		'/static/js/vendor/three.STLLoader.js',
+		'/static/js/vendor/three.Detector.js',
+		'/static/js/vendor/three.TrackballControls.js'
+	];
 
-	setTimeout(function () {
+	var i=0;
+	(function loadNext() {
+		if (queue.length === i) {
+			start()
+			return;
+		}
+		console.log('call', i)
+		addScript(queue[i++], loadNext);
+	})();
+
+	function start() {
 		app.pushPage(<PrintJobForm model={printJob} />, 'new-printjob', {
 			onClose: function() {
 			},
 			container: document.querySelector('#page-container'),
 			pageRoot: 'new-printjob',
 		});
-	}, 400);
+	}
 };
