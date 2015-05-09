@@ -80,12 +80,15 @@ module.exports = (app) ->
 		next()
 
 	for n in [
-		'/',
+		'/'
+		'/novo'
+		'/clientes'
+		'/novo/cliente'
 	]
 		router.get n, (req, res, next) ->
 			res.render 'app/home'
 
-	router.get '/novo', (req, res) ->
+	router.get '/novo/pedido', (req, res) ->
 		res.render 'app/new_job'
 
 	router.get '/arquivos', (req, res, next) -> res.render 'app/files'
@@ -95,7 +98,6 @@ module.exports = (app) ->
 	router.get '/settings', required.login, (req, res) -> res.render 'app/settings'
 	router.get '/conta', required.login, (req, res) -> res.render 'app/account'
 	router.get '/contato', required.login, (req, res) -> res.render 'app/contact'
-	router.get '/novo', required.login, (req, res) -> res.render 'app/contact'
 
 	router.get '/sobre', (req, res) -> res.render('about/main')
 	router.get '/faq', (req, res) -> res.render('about/faq')

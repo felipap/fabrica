@@ -11,12 +11,10 @@ crypto = require 'crypto'
 SALT_WORK_FACTOR = 10
 
 UserSchema = new mongoose.Schema {
-	name:					{ type: String, required: true }
-	email:				{ type: String, required: true, unique: true, index: true }
-	password:			{ type: String, required: true }
-
-	location:		{ type: String, default: '' }
-	home: 			{ type: String, default: '' }
+	name:			{ type: String, required: true }
+	email:		{ type: String, required: true, unique: true, index: true }
+	password:	{ type: String, required: false }
+	phone:		{ type: String, required: false }
 
 	company: {
 		id: 		{ type: String }
@@ -151,6 +149,18 @@ UserSchema.statics.SingupParseRules = {
 		$msg: "Entre uma senha com ao menos 5 caracteres."
 		$valid: (str) ->
 			validator.isLength(str, 5)
+}
+
+UserSchema.statics.ClientRegisterParseRules = {
+	name:
+		$valid: (str) -> true
+		$parse: validator.trim
+	phone:
+		$valid: (str) -> console.log('CHECK PHONE!!!'); true
+	email:
+		$valid: (str) ->
+			validator.isEmail(str)
+		$parse: validator.trim
 }
 
 UserSchema.plugin(require('./lib/hookedModelPlugin'))

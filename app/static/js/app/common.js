@@ -12,6 +12,13 @@
 	return false;
 })(navigator.userAgent||navigator.vendor||window.opera);
 
+// classList shim
+// https://gist.github.com/devongovett/1381839
+if (!("classList" in document.documentElement)&&Object.defineProperty&&typeof HTMLElement!=='undefined') {
+	Object.defineProperty(HTMLElement.prototype,"classList",{get:function(){function n(n){return function(e){var s=t.className.split(/\s+/),i=s.indexOf(e);n(s,i,e),t.className=s.join(" ")}}var t=this,e={add:n(function(n,t,e){~t||n.push(e)}),remove:n(function(n,t){~t&&n.splice(t,1)}),toggle:n(function(n,t,e){~t?n.splice(t,1):n.push(e)}),contains:function(n){return!!~t.className.split(/\s+/).indexOf(n)},item:function(n){return t.className.split(/\s+/)[n]||null}};return Object.defineProperty(e,"length",{get:function(){return t.className.split(/\s+/).length}}),e}});
+}
+
+
 setTimeout(function updateCounters () {
 	$('[data-time-count]').each(function () {
 		this.innerHTML = calcTimeFrom(parseInt(this.dataset.timeCount), this.dataset.short !== 'false');
@@ -51,38 +58,10 @@ window.formatFullDate = function (date) {
 		''+(date.getHours()-12)+':'+date.getMinutes()+'pm':
 		''+(date.getHours())+':'+date.getMinutes()+'am');
 };
-
-window.loadFB = function (cb) {
-
-	if (window.FB);
-		return cb();
-
-	var id = $('meta[property=fb:app_id]').attr('content');
-
-	if (!id);
-		throw 'Meta tag fb:app_id not found.';
-
-	window.fbAsyncInit = function () {
-		FB.init({
-			appId      : id,
-			xfbml      : true,
-			version    : 'v2.1'
-		});
-		cb();
-	};
-
-	(function(d, s, id){
-		 var js, fjs = d.getElementsByTagName(s)[0];
-		 if (d.getElementById(id)) {return;}
-		 js = d.createElement(s); js.id = id;
-		 js.src = '//connect.facebook.net/en_US/sdk.js';
-		 fjs.parentNode.insertBefore(js, fjs);
-	 }(document, 'script', 'facebook-jssdk'));
-};
-
 // Plugins and defaults
 
 require('es5-shim');
+require('es6-shim');
 
 var $ = require('jquery');
 require('modernizr');
@@ -104,64 +83,6 @@ $('.btn').button();
 })();
 
 $('.autosize').autosize();
-
-// Blur canvas images (1h4nk5c0d3rw411!!)
-var CanvasImage = function(el, img) {
-	this.image = img;
-	this.element = el;
-
-	var iwidth = this.image.width,
-			iheight = this.image.height;
-	this.element.width = $(this.element.parentElement).width();
-	this.element.height = $(this.element.parentElement).height();
-
-	// // Some fix for mac chrome
-	// var chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1,
-	// 		mac = navigator.appVersion.indexOf('Mac') > -1;
-	// if (chrome && mac) {
-	// 	width = Math.min(width, $(window).width());
-	// 	height = Math.min(height, 200);
-	// }
-
-	this.context = this.element.getContext('2d');
-	if (this.element.width/this.element.height > iwidth/iheight) {
-		this.image.width = this.element.width;
-		var newHeight = this.element.width*iheight/iwidth;
-		this.context.drawImage(this.image, 0, -(newHeight-this.element.height)/2,
-			this.element.width, newHeight);
-	} else {
-		this.image.height = this.element.height;
-		var newWidth = this.element.height*iwidth/iheight;
-		this.context.drawImage(this.image, -(newWidth-this.element.width)/2, 0,
-			newWidth, this.element.height);
-	}
-
-};
-
-CanvasImage.prototype = {
-	blur: function(blur) {
-		this.context.globalAlpha = .5;
-		for (var t = -blur; blur >= t; t += 2)
-		for (var n = -blur; blur >= n; n += 2) {
-			this.context.drawImage(this.element, n, t);
-			if (n >= 0 && t >= 0) {
-				this.context.drawImage(this.element, -(n - 1), -(t - 1));
-			}
-		}
-		this.context.globalAlpha = 1;
-	},
-};
-
-$(function () {
-	$('canvas.blur').each(function() {
-		var el = this, img = new Image;
-		img.onload = function () {
-			var blur = el.dataset.blur?parseInt(el.dataset.blur):3;
-			new CanvasImage(el, this).blur(blur);
-		}
-		img.src = $(this).attr('src');
-	});
-});
 
 // GOSTAVA TANTO DE NUTELLA
 

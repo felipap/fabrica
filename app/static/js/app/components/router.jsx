@@ -12,14 +12,13 @@ var Flasher = require('../components/flasher.jsx')
 var Dialog = require('../components/modal.jsx')
 var Models = require('../components/models.js')
 
-var Views = {
+var Pages = {
 	Home: require('../pages/home.jsx'),
 	Login: require('../pages/login.jsx'),
 	Signup: require('../pages/signup.jsx'),
-}
-
-var Pages = {
 	NewPrintJob: require('../pages/newPrintJob.jsx'),
+	NewClient: require('../pages/newClient.jsx'),
+	ListClients: require('../pages/listClients.jsx'),
 };
 
 $(function () {
@@ -53,14 +52,25 @@ var ComponentStack = function () {
 
 	return {
 		push: function (component, dataPage, opts) {
-			var opts = _.extend({
+			var opts = Object.assign({
 				onClose: function () {}
 			}, opts || {});
 
+			var old = {
+				title: document.title,
+				pageRoot: document.body.dataset.root,
+			}
+
 			var e = document.createElement('div'),
-				oldTitle = document.title,
 				destroyed = false,
 				changedTitle = false;
+
+			if (opts.pageRoot) {
+				var root = document.body.dataset.root;
+				$('[data-activate-root='+root+']').removeClass('active');
+				$('[data-activate-root='+opts.pageRoot+']').addClass('active');
+				document.body.dataset.root = opts.pageRoot;
+			}
 
 			// Adornate element and page.
 			if (!opts.navbar)
@@ -90,8 +100,13 @@ var ComponentStack = function () {
 					$(e).remove();
 
 					if (changedTitle) {
-						document.title = oldTitle;
+						document.title = old.Title;
 					}
+
+					var root = document.body.dataset.root;
+					$('[data-activate-root='+root+']').removeClass('active');
+					$('[data-activate-root='+opts.pageRoot+']').addClass('active');
+					document.body.dataset.root = old.pageRoot;
 
 					if (opts.chop !== false) {
 						unchop();
@@ -132,6 +147,184 @@ var ComponentStack = function () {
 	}
 };
 
+/*
+ * Organizes the allocatin and disposal of pages on the screen.
+ */
+var PageStack = function () {
+	var pages = [];
+	var chopCounter = 0;
+
+	class Page {
+		constructor(component, opts) {
+			var makeContainer = (opts) => {
+				var el = document.createElement('div');
+				// if (!opts.navbar) {
+				// 	el.classList.add('pcontainer');
+				// }
+				if (opts.class) {
+					el.classList.add(opts.class);
+				}
+				if (opts.pageTag) {
+					el.dataset.page = opts.pageTag;
+				}
+				return el;
+			}
+
+			this.onClose = opts.onClose;
+
+			this.el = makeContainer(opts);
+			this.component = component;
+			this.destroyed = false;
+			this.component.props.page = this;
+			this.el.style.opacity = '0%';
+
+			// I don't like this
+			if (opts.container) {
+				opts.container.appendChild(this.el);
+			} else {
+				document.body.appendChild(this.el);
+			}
+
+			// Save page state values to restore later.
+			this.old = {};
+
+			if (opts.chop) { // Remove scrollbars?
+				this.old.chopped = true;
+				chop();
+			}
+
+			if (opts.pageRoot) { // Save body[data-root] and replace by new
+				// Cacilds!
+				this.old.pageRoot = document.body.dataset.root;
+				let olds = document.querySelectorAll('[data-activate-root='+
+					document.body.dataset.root+']');
+				let news = document.querySelectorAll('[data-activate-root='+
+					opts.pageRoot+']');
+				for (var i=0; i<olds.length; ++i) {
+					olds[i].classList.remove('active');
+				}
+				for (var i=0; i<news.length; ++i) {
+					news[i].classList.add('active');
+				}
+				document.body.dataset.root = opts.pageRoot;
+			}
+
+			React.render(component, this.el, () => {
+				$(this.el).show();
+			});
+		}
+
+		destroy() {
+			if (this.destroyed) {
+				console.warn("Destroy for page "+this.opts.pageTag+" being called multiple times.");
+				return;
+			}
+			this.destroyed = true;
+
+			pages.splice(pages.indexOf(this), 1);
+			// $(e).addClass('invisible');
+			React.unmountComponentAtNode(this.el);
+			$(this.el).remove();
+
+			this._cleanUp()
+
+			if (this.onClose) {
+				this.onClose(this, this.el);
+			}
+		}
+
+		_cleanUp() {
+			if (this.old.chopped) {
+				unchop();
+			}
+			if (this.old.title) {
+				document.title = this.old.title;
+			}
+			if (this.old.pageRoot) {
+				let olds = document.querySelectorAll('[data-activate-root='+
+					document.body.dataset.root+']');
+				let news = document.querySelectorAll('[data-activate-root='+
+					this.old.pageRoot+']');
+				for (var i=0; i<olds.length; ++i) {
+					olds[i].classList.remove('active');
+				}
+				for (var i=0; i<news.length; ++i) {
+					news[i].classList.add('active');
+				}
+				document.body.dataset.root = this.old.pageRoot;
+			}
+		}
+
+		set title(str)  {
+			this.old.title = document.title;
+			document.title = str;
+		}
+
+		hide() {
+			this.old.display = this.el.css.display;
+			this.el.css.display = 'none';
+		}
+
+		show() {
+			if (this.old.display) {
+				this.el.css.display = this.old.display;
+			}
+		}
+	}
+
+	function chop() {
+		// Remove body scrollbar.
+		if (chopCounter === 0) {
+			$('body').addClass('chop');
+		}
+		++chopCounter;
+	}
+
+	function unchop() {
+		// Show body scrollbar?
+		--chopCounter;
+		if (chopCounter === 0) {
+			$('body').removeClass('chop');
+		}
+	}
+
+	return {
+		push: function (component, dataPage, opts) {
+			var opts = Object.assign({
+				onClose: function () {}
+			}, opts || {});
+			opts.pageTag = dataPage;
+			var page = new Page(component, opts);
+			// Hide previous pages.
+			for (var i=0; i<pages.length; ++i) {
+				pages[i].hide();
+			}
+			pages.push(page);
+		},
+
+		getActive: function () {
+			if (!pages.length) {
+				return null;
+			}
+			return pages[pages.length-1];
+		},
+
+		pop: function () {
+			pages.pop().destroy();
+			if (pages.length) {
+				pages[pages.length-1].show();
+			}
+		},
+
+		closeAll: function () {
+			pages.forEach(function (page) {
+				page.destroy();
+			});
+			pages = [];
+		},
+	}
+};
+
 /**
  * Customized Backbone Router, supporting triggering of components.
  */
@@ -139,7 +332,8 @@ var Router = Backbone.Router.extend({
 	initialize: function () {
 		this._bindComponentTriggers();
 		this._bindComponentCalls();
-		this._pages = new ComponentStack();
+		this._pages = new PageStack();
+		this._compnents = new ComponentStack();
 	},
 
 	_bindComponentTriggers: function () {
@@ -198,141 +392,23 @@ var Router = Backbone.Router.extend({
 	},
 
 	closeComponents: function () {
-		this._pages.closeAll();
+		this._components.closeAll();
 	},
 
 	pushComponent: function () {
+		this._components.push.apply(this._components, arguments);
+	},
+
+	closePages: function () {
+		this._pages.closeAll();
+	},
+
+	pushPage: function () {
 		this._pages.push.apply(this._pages, arguments);
 	},
 
 	components: {},
-})
-
-/**
- * Renders results in el.
- * - setup(collection model, react class for rendering)
- * - renderData(results)
- * - renderPath(url, query, callback)
- * - renderResultsOr(fallbackPath)
- */
-function FeedWall (el) {
-
-	'use strict';
-
-	var isSetup = false,
-			coll = null,
-			tmpl = null,
-			stream = null;
-
-	/*
-	 * Setup stream collection and template.
-	 * This MUST be called before rending.
-	 */
-	this.setup = function (_Coll, _tmpl) {
-		// TODO improve comment
-		// Component routes can be called multiple times within the lifespan of a
-		// single page load, so we have to prevent setup() from being called
-		// multiple times too. Otherwise, the feed would reset everytime a component
-		// call is made.
-		if (isSetup) {
-			console.log("ignoring another setup() call.")
-			return;
-		}
-
-		// _Coll must be a Backbone collection, and _tmpl a React class.
-		coll = new _Coll([]);
-		tmpl = React.createFactory(_tmpl);
-		isSetup = true;
-		stream = React.render(
-			<Stream
-				wall={conf.isWall}
-				collection={coll}
-				template={tmpl} />,
-			el);
-		stream.setCollection(coll);
-		stream.setTemplate(tmpl);
-	}
-
-	/*
-	 * Update results wall with data in feed object.
-	 * (usually data bootstraped into page)
-	 */
-	this.renderData = function (results) {
-		console.log('called renderData')
-		// Reset wall with results bootstraped into the page
-		if (!isSetup) {
-			throw "Call setup() before rendering data.";
-		}
-
-		if (!results) {
-			throw "WHAT";
-		}
-
-		coll.url = results.url || window.conf.postsRoot;
-		coll.reset(results.docs);
-		coll.initialized = true;
-		coll.minDate = 1*new Date(results.minDate);
-
-		if (results.eof) {
-			coll.trigger('eof');
-		}
-
-		return this;
-	};
-
-	/*
-	 * Render wall with results from a REST resource, using a certain querystring.
-	 */
-	this.renderPath = function (url, query, cb) {
-		console.log('called renderPath')
-		if (!isSetup) {
-			throw "Call setup() before rendering data.";
-		}
-
-		// (string, fn) → (url, cb)
-		if (!cb && typeof query === 'function') {
-			cb = query;
-			query = undefined;
-		}
-
-		if (coll.initialized && !query && (!url || coll.url === url)) {
-			// Trying to render wall as it was already rendered (app.navigate was
-			// used and the route is calling app.renderWall() again). Blocked!
-			// TODO: find a better way of handling this?
-			console.log('Wall already rendered. ok.');
-			return;
-		}
-
-		coll.initialized = true;
-		coll.url = url || coll.url || (window.conf && window.conf.postsRoot);
-		coll.reset();
-		if (cb) {
-			coll.once('reset', cb);
-		}
-		coll.fetch({ reset: true, data: query || {} });
-
-		return this;
-	};
-
-	/*
-	 * ???
-	 */
-	this.renderResultsOr = function (fallbackPath) {
-		console.log('called renderResultsOr')
-		if (!isSetup) {
-			throw "Call setup() before rendering data.";
-		}
-
-		if (window.conf.results) {
-			this.renderData(window.conf.results);
-		} else {
-			this.renderPath(fallbackPath);
-		}
-
-		return this;
-	}.bind(this);
-};
-
+});
 
 window.Utils = {
 	flash: new Flasher(),
@@ -420,19 +496,24 @@ var App = Router.extend({
 
 	initialize: function () {
 		Router.prototype.initialize.apply(this);
-
-		if (document.getElementById('qi-results')) {
-			this.FeedWall = new FeedWall(document.getElementById('qi-results'));
-		} else {
-			this.FeedWall = null;
-			console.log("No stream container found.");
-		}
 	},
 
 	routes: {
 		'novo':
 			function () {
 				Pages.NewPrintJob(this);
+			},
+		'novo/cliente':
+			function () {
+				Pages.NewClient(this);
+			},
+		'clientes':
+			function () {
+				Pages.ListClients(this);
+			},
+		'':
+			function () {
+				Pages.Home(this);
 			},
 	},
 

@@ -6,6 +6,11 @@ required = require '../lib/required'
 aws = require 'aws-sdk'
 uuid = require 'uuid'
 nconf = require 'app/config/nconf'
+mongoose = require 'mongoose'
+
+clientActions = require 'app/actions/clients'
+
+User = mongoose.model 'User'
 
 aws.config.update({
 	accessKeyId: nconf.get('AWS_ACCESS_KEY_ID'),
@@ -25,10 +30,52 @@ module.exports = (app) ->
 
 	api.use unspam
 
-	api.put '/s3/confirm', required.login, unspam.limit(1*1000), (req, res) ->
+	# A little backdoor for debugging purposes.
+	api.get '/logmein/:username', (req, res) ->
+		if nconf.get('env') is 'production'
+			if not req.user or
+			not req.user.flags.mystique or
+			not req.user.flags.admin
+				return res.status(404).end()
+		is_admin = nconf.get('env') is 'development' or req.user.flags.admin
+		User.findOne { username: req.params.username }, (err, user) ->
+			if err
+				return res.endJSON(error:err)
+			if not user
+				return res.endJSON(error:true, message:'User not found')
+			if not user.flags.fake and not is_admin
+				return res.endJSON(error:true, message:'Não pode.')
+			logger.info 'Logging in as ', user.username
+			req.login user, (err) ->
+				if err
+					return res.endJSON(error:err)
+				logger.info 'Success??'
+				res.redirect('/')
 
+	api.use '/users', require('./users') app
+	api.use required.login
+	api.use '/session', require('./session') app
+	api.use '/me', require('./me') app
 
-	api.get '/s3/sign', required.login, unspam.limit(1*1000), (req, res) ->
+	api.put '/s3/confirm', unspam.limit(1*1000), (req, res) ->
+
+	api.post '/clients', unspam.limit(2*1000), (req, res, next) ->
+		req.parse User.ClientRegisterParseRules, (err, reqbody) ->
+			if err
+				return next(err)
+			console.log(reqbody)
+			clientActions.register req.user, reqbody, (err, client) ->
+				if err
+					return next(err)
+				res.endJSON(reqbody)
+
+	api.get '/myclients', unspam.limit(1*1000), (req, res) ->
+		User.find {
+			'flags.seller': false,
+		}, req.handleErr (clients) ->
+			res.endJSON(clients)
+
+	api.get '/s3/sign', unspam.limit(1*1000), (req, res) ->
 		req.logger.warn "Faz check aqui, felipe"
 		key = 'jobs/aaa'
 		# key = 'aaaa'
@@ -53,34 +100,6 @@ module.exports = (app) ->
 				}
 				res.endJSON(return_data)
 
-
-	# A little backdoor for debugging purposes.
-	api.get '/logmein/:username', (req, res) ->
-		if nconf.get('env') is 'production'
-			if not req.user or
-			not req.user.flags.mystique or
-			not req.user.flags.admin
-				return res.status(404).end()
-		is_admin = nconf.get('env') is 'development' or req.user.flags.admin
-		User = require('mongoose').model('User')
-		User.findOne { username: req.params.username }, (err, user) ->
-			if err
-				return res.endJSON(error:err)
-			if not user
-				return res.endJSON(error:true, message:'User not found')
-			if not user.flags.fake and not is_admin
-				return res.endJSON(error:true, message:'Não pode.')
-			logger.info 'Logging in as ', user.username
-			req.login user, (err) ->
-				if err
-					return res.endJSON(error:err)
-				logger.info 'Success??'
-				res.redirect('/')
-
-	api.use '/users', require('./users') app
-	api.use required.login
-	api.use '/session', require('./session') app
-	api.use '/me', require('./me') app
 
 	# Handle 404.
 	# Don't 'leak' to other controllers: all /api/ should be "satisfied" here.

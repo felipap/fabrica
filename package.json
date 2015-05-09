@@ -120,6 +120,7 @@
     "autosize": "./app/static/js/vendor/autosize-1.18.7.min.js",
     "microplugin": "./app/static/js/vendor/microplugin.js",
     "selectize": "./app/static/js/vendor/selectize.js",
-    "es5-shim": "./app/static/js/vendor/es5-shim.min.js"
+    "es5-shim": "./app/static/js/vendor/es5-shim.min.js",
+    "es6-shim": "./app/static/js/vendor/es6-shim.min.js"
   }
 }

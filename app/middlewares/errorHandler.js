@@ -35,6 +35,13 @@ module.exports = function(err, req, res, next) {
 		return res.render404(); // 'Esse usuário não existe.');
 	}
 
+	if (err.type === 'APIError') {
+		res.renderError(403, {
+			error: err.name, msg: err.msg || 'Não foi possível completar a sua ligação.',
+		});
+		return;
+	}
+
 	// Test permissions and don't trace/log them.
 	if (err.permission) {
 		res.status(403);
