@@ -128,6 +128,10 @@ module.exports = function (grunt) {
 					src: 'assets/js/vendor/*',
 					dest: 'static/js/vendor/',
 				},
+				{
+					src: 'assets/css/vendor/*',
+					dest: 'static/css/vendor/',
+				},
 			]
 		},
 		deployAvatars: {
