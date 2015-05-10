@@ -546,13 +546,27 @@ var Models = require('../components/models.js')
 var Pages = {
 	Home: require('../pages/home.jsx'),
 	Login: require('../pages/login.jsx'),
-	Signup: require('../pages/signup.jsx'),
+	Login_Register: require('../pages/login_register.jsx'),
+	Login_Recover: require('../pages/login_recover.jsx'),
 	NewPrintJob: require('../pages/newPrintJob.jsx'),
 	NewClient: require('../pages/newClient.jsx'),
 	ListClients: require('../pages/listClients.jsx'),
 };
 
 $(function () {
+
+  if (window.__flash_messages && $("#flash-messages")[0]) {
+    var messages = window.__flash_messages;
+    var wrapper = $("#flash-messages");
+    for (var type in messages)
+    if (messages.hasOwnProperty(type)) {
+      for (var i=0; i<messages[type].length; ++i) {
+        var m = messages[type][i];
+        wrapper.append($("<li class='"+type+"'>"+m+"<i class='close-btn' onClick='$(this.parentElement).slideUp()'></i></li>"))
+      }
+    }
+  }
+
 
 	if (window.user) {
 		// require('../components/bell.jsx');
@@ -1035,11 +1049,15 @@ var App = Router.extend({
 	routes: {
 		'login':
 			function() {
-				LoginPage(this);
+				Pages.Login(this);
 			},
 		'signup':
 			function() {
-				SignupPage(this);
+				Pages.Login_Register(this);
+			},
+		'login/recover':
+			function() {
+				Pages.Login_Recover(this);
 			},
 		'novo/pedido':
 			function () {
@@ -1291,7 +1309,7 @@ module.exports = {
 	},
 };
 
-},{"../components/flasher.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","../pages/home.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx","../pages/listClients.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listClients.jsx","../pages/login.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx","../pages/newClient.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newClient.jsx","../pages/newPrintJob.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newPrintJob.jsx","../pages/signup.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/signup.jsx","backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/backbone-1.1.2.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","marked":"/home/felipe/Projects/fabrica/app/static/js/vendor/marked.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx":[function(require,module,exports){
+},{"../components/flasher.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","../pages/home.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx","../pages/listClients.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listClients.jsx","../pages/login.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx","../pages/login_recover.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx","../pages/login_register.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_register.jsx","../pages/newClient.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newClient.jsx","../pages/newPrintJob.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newPrintJob.jsx","backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/backbone-1.1.2.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","marked":"/home/felipe/Projects/fabrica/app/static/js/vendor/marked.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx":[function(require,module,exports){
 
 var $ = require('jquery')
 var React = require('react')
@@ -1446,6 +1464,84 @@ var $ = require('jquery')
 var selectize = require('selectize')
 
 module.exports = function (app) {
+};
+
+
+},{"jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx":[function(require,module,exports){
+
+var $ = require('jquery')
+var selectize = require('selectize')
+
+module.exports = function (app) {
+
+  var emailRegex = new RegExp("^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:[A-Z]{2}|com|org|net|edu|gov|mil|biz|info|mobi|name|aero|asia|jobs|museum)$");
+  function isValidEmail(str) {
+    return !!str.match(emailRegex);
+  }
+
+  var form = $('.LoginRecoverForm');
+  var email = form.find("[name=email]");
+
+  email.on('keyup', function (e) {
+    if (email.hasClass('is-wrong')) {
+      if (isValidEmail(email.val())) {
+        email.removeClass('is-wrong');
+      }
+    }
+  })
+
+  form.submit(function (e) {
+    e.preventDefault();
+    if (!isValidEmail(email.val())) {
+      email.addClass('is-wrong');
+    }
+    this.submit();
+    // if (isValidEmail(email.val())) {
+    // }
+  })
+};
+
+
+},{"jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_register.jsx":[function(require,module,exports){
+
+var $ = require('jquery')
+var selectize = require('selectize')
+
+module.exports = function (app) {
+  // Code below is exactly the reason why React the like exist.
+  // But fuck it. This is just a form, for christ's sake.
+
+  var form = $(".SignupForm");
+
+  var p1 = form.find('[name=password1]')
+  var p2 = form.find('[name=password2]')
+
+  form.find('[type=password]')
+    .on('focusout', function (e) {
+      if (p1.val() && p2.val() && p1.val() !== p2.val()) {
+        p2.addClass('is-wrong')
+      } else {
+        p2.removeClass('is-wrong')
+      }
+    })
+    .on('keyup', function (e) {
+      if (p1.val() && p2.val() && p1.val() == p2.val()) {
+        p2.removeClass('is-wrong')
+        $("is-wrong-stuff").remove()
+      }
+    })
+
+  form.submit(function (e) {
+    e.preventDefault();
+    e.stopPropagation()
+    $("is-wrong-stuff").remove()
+    if (p2.hasClass('is-wrong')) {
+      $("#flash-messages").append($("<li class='error' id='is-wrong-stuff'>Ops. As senhas estão diferentes.<i class='close-btn' onClick='$(this.parentElement).slideUp()'></i></li>"))
+    } else {
+      this.submit();
+    }
+  });
+
 };
 
 
@@ -2082,48 +2178,7 @@ module.exports = function(app) {
 	}
 };
 
-},{"../components/STLRenderer.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/signup.jsx":[function(require,module,exports){
-
-var $ = require('jquery')
-var selectize = require('selectize')
-
-module.exports = function (app) {
-
-  var form = $(".LoginForm");
-
-  var p1 = form.find('[name=password1]')
-  var p2 = form.find('[name=password2]')
-
-  form.find('[type=password]')
-    .on('focusout', function (e) {
-      if (p1.val() && p2.val() && p1.val() !== p2.val()) {
-        p2.addClass('is-wrong')
-      } else {
-        p2.removeClass('is-wrong')
-      }
-    })
-    .on('keyup', function (e) {
-      if (p1.val() && p2.val() && p1.val() == p2.val()) {
-        p2.removeClass('is-wrong')
-        $("is-wrong-stuff").remove()
-      }
-    })
-
-  form.submit(function (e) {
-    e.preventDefault();
-    e.stopPropagation()
-    $("is-wrong-stuff").remove()
-    if (p2.hasClass('is-wrong')) {
-      $("#flash-messages").append($("<li class='error' id='is-wrong-stuff'>Ops. As senhas estão diferentes.<i class='close-btn' onClick='$(this.parentElement).slideUp()'></i></li>"))
-    } else {
-      this.submit();
-    }
-  });
-
-};
-
-
-},{"jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js":[function(require,module,exports){
+},{"../components/STLRenderer.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js":[function(require,module,exports){
 /*!
 Autosize v1.18.7 - 2014-04-13
 Automatically adjust textarea height based on user input.

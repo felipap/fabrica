@@ -8,7 +8,7 @@ uuid = require 'uuid'
 nconf = require 'nconf'
 mongoose = require 'mongoose'
 
-clientActions = require 'app/actions/clients'
+userActions = require 'app/actions/users'
 pjobActions = require 'app/actions/printJobs'
 mail = require 'app/actions/mail'
 
@@ -67,12 +67,16 @@ module.exports = (app) ->
 			if err
 				return next(err)
 			console.log(reqbody)
-			clientActions.register req.user, reqbody, (err, client) ->
+			userActions.registerClient req.user, reqbody, (err, client) ->
 				if err
 					return next(err)
 				res.endJSON(reqbody)
 
-	api.get '/clients/exists', unspam.limit(1*1000), (req, res) ->
+	api.get '/clients/exists', unspam.limit(1*1000), (req, res, next) ->
+		if not validator.isEmail(req.query.email)
+			next(name:'APIError', message:'Esse endereço de email é inválido.')
+			return
+
 		User.findOne { email: req.query.email }, req.handleErr (user) ->
 			res.endJSON(exists: user and user.toJSON())
 

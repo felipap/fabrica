@@ -15,13 +15,33 @@ var Models = require('../components/models.js')
 var Pages = {
 	Home: require('../pages/home.jsx'),
 	Login: require('../pages/login.jsx'),
-	Signup: require('../pages/signup.jsx'),
+	Login_Register: require('../pages/login_register.jsx'),
+	Login_Recover: require('../pages/login_recover.jsx'),
 	NewPrintJob: require('../pages/newPrintJob.jsx'),
 	NewClient: require('../pages/newClient.jsx'),
 	ListClients: require('../pages/listClients.jsx'),
 };
 
 $(function () {
+
+  if (window.__flash_messages) {
+  	var wrapper = document.getElementById('flash-messages');
+  	if (!wrapper) {
+  		console.warn('We had flash messages to show here...'
+  			'Too bad the wrapper for those messsages was not found.');
+  		return;
+  	}
+    var messages = window.__flash_messages;
+    for (var type in messages)
+    if (messages.hasOwnProperty(type)) {
+      for (var i=0; i<messages[type].length; ++i) {
+        var m = messages[type][i];
+        wrapper.append($("<li class='"+type+"'>"+m+
+        	"<i class='close-btn' onClick='$(this.parentElement).slideUp()'></i></li>"))
+      }
+    }
+  }
+
 
 	if (window.user) {
 		// require('../components/bell.jsx');
@@ -504,11 +524,15 @@ var App = Router.extend({
 	routes: {
 		'login':
 			function() {
-				LoginPage(this);
+				Pages.Login(this);
 			},
 		'signup':
 			function() {
-				SignupPage(this);
+				Pages.Login_Register(this);
+			},
+		'login/recover':
+			function() {
+				Pages.Login_Recover(this);
 			},
 		'novo/pedido':
 			function () {
