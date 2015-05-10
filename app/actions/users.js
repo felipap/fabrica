@@ -1,6 +1,5 @@
 
 var mongoose = require('mongoose')
-var unportuguesizer = require('app/lib/unportuguesizer')
 var please = require('app/lib/please')
 var TMERA = require('app/lib/tmera')
 var mail = require('app/actions/mail')
@@ -36,8 +35,13 @@ module.exports.register = function (self, data, cb) {
 	}))
 }
 
-module.exports.initiateAccountRecovery = function (user, cb) {
-	please({$model:User}, '$skip', '$isFn')
 
-	mail.sendEm
+module.exports.initiateAccountRecovery = function (user, cb) {
+	please({$model:User}, '$isFn')
+
+
+
+	mail.sendMessage(mail.Templates.AccountRecovery(user, link),
+		(err, result) => {
+	})
 }
