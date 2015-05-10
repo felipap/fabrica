@@ -27,7 +27,7 @@ $(function () {
   if (window.__flash_messages) {
   	var wrapper = document.getElementById('flash-messages');
   	if (!wrapper) {
-  		console.warn('We had flash messages to show here...'
+  		console.warn('We had flash messages to show here...'+
   			'Too bad the wrapper for those messsages was not found.');
   		return;
   	}
@@ -36,7 +36,7 @@ $(function () {
     if (messages.hasOwnProperty(type)) {
       for (var i=0; i<messages[type].length; ++i) {
         var m = messages[type][i];
-        wrapper.append($("<li class='"+type+"'>"+m+
+        $(wrapper).append($("<li class='"+type+"'>"+m+
         	"<i class='close-btn' onClick='$(this.parentElement).slideUp()'></i></li>"))
       }
     }

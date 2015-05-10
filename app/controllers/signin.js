@@ -5,6 +5,7 @@ var passport = require('passport')
 var _ = require('lodash')
 
 var required = require('./lib/required')
+var ccaptcha = require('app/lib/checkCaptcha')
 var unspam = require('./lib/unspam')
 var TMERA = require('app/lib/tmera')
 var userActions = require('app/actions/users')
@@ -21,21 +22,28 @@ module.exports = function(app) {
 		res.render('app/login')
 	})
 
-	router.post('/login/recover', unspam.limit(2*1000), function(req, res, next) {
+	router.post('/login/recover', unspam.limit(5*1000), ccaptcha,
+		function(req, res, next) {
 		if (!validator.isEmail(req.body.email)) {
-			req.flash('error', 'Esse endereço de email é inválido.');
-			return res.redirect('/login/recover');
+			req.flash('error', 'Esse endereço de email é inválido.')
+			return res.redirect('/login/recover')
 		}
 
-		User.find({ email: req.body.email }, req.handleErr((user) => {
+		User.findOne({ email: req.body.email }, req.handleErr((user) => {
 			if (!user) {
-				req.flash('error', 'Não encontramos ')
-				return res.redirect('/login')
+				req.flash('error', 'Não encontramos um usuário com esse email.')
+				return res.redirect('/login/recover')
 			}
-			// userActions.initiateRecoverAccount(req.)
-			req.flash('info', 'Em pouco tempo você receberá um email com instruções'+
-				'com instruções de como resetar a sua senha.')
-			res.redirect('/login')
+			userActions.initiateAccountRecovery(user, (err) => {
+				if (err) {
+					throw err
+				}
+
+
+				req.flash('info', 'Em pouco tempo você receberá um email com '+
+					'instruções de como resetar a sua senha.')
+				res.redirect('/login')
+			})
 		}))
 	})
 
@@ -77,7 +85,7 @@ module.exports = function(app) {
 						res.redirect('/')
 					})
 				})
-			}));
+			}))
 		})
 	})
 

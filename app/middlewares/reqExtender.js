@@ -61,9 +61,6 @@ module.exports = function (req, res, next) {
 	 * fetch/validate/clean req.body according to de rules
 	 */
 	req.parse = function (rules, cb) {
-		// TODO!
-		// - improve logging.
-
 		var verbose = false;
 		var requestBody = req.body;
 
@@ -205,6 +202,7 @@ module.exports = function (req, res, next) {
 		}, function (err, results) {
 			results = flattenObjList(results.filter(function (e) { return !!e; }));
 			if (err) {
+
 				return res.status(400).endJSON({ error:true, message:err });
 			} else {
 				// FIXME: the err attribute in the callback is completely unused.

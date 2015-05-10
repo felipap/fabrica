@@ -2,42 +2,36 @@
 [data-page="404"],
 [data-page="500"] {
 
-	#global-container {
-		background: #333;
-	}
-
-	.jumbo {
+	.container {
 		max-width: 100%;
-		top: 10%;
 		color: #222;
 		text-align: left;
-		margin-left: 50px;
-
-		#malfunctioningBulb {
-			font-size: 100px;
-			color: #333;
-
-			&.yellow {
-				color: #ffe700;
-			}
-		}
+		padding-top: 50px;
+		padding-left: 50px;
+		font-size: 16px;
 
 		h1 {
-			font-weight: 600;
-			font-family: museo-sans;
-			font-size: 50px;
+			font-weight: 800;
+			font-size: 70px;
+			color: #333;
+		}
+
+		h2, h3, p {
+			color: #555;
 		}
 
 		p {
-			font-size: 22px;
-			font-weight: 500;
+			font-size: 19px;
+			font-weight: 400;
 		}
 
 		[data-action=go-back] {
 			.xbtn(white, @CBLUE);
 			font-weight: 500;
 			border-radius: 0;
+			font-size: 18px;
 			margin: 20px 0;
+			padding: 10px 15px;
 		}
 	}
 
@@ -46,6 +40,5 @@
 		color: #666;
 		text-transform: uppercase;
 		display: block;
-		text-align: center;
 	}
 }

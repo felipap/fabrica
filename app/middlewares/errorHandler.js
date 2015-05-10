@@ -69,7 +69,7 @@ module.exports = function(err, req, res, next) {
 	// Test mongoose errors.
 	if (err.name === 'ValidationError' || err.obj && err.obj.name === 'ValidationError') {
 		console.log('validationerror', err)
-		res.renderError(400, {msg:'Não foi possível completar a sua ligação.'})
+		res.renderError(400, {msg: 'Não foi possível completar a sua ligação.'})
 		return;
 	}
 
@@ -80,9 +80,16 @@ module.exports = function(err, req, res, next) {
 		return;
 	}
 
+	if (err.name === 'BotDetected') {
+		req.logger.info('BOT DETECTED!',
+			req.headers["x-forwarded-for"] || req.connection.remoteAddress);
+		res.renderError(403, {msg: 'Detectamos atividade maliciosa na sua sessão.'})
+		return;
+	}
+
 	if (err instanceof TypeError) {
 		// May be express complaining of a url with invalid stuff (%A23 or whatever)
-		// TODO: find a better way to distill the url problem from other TypeErrors!
+		// TODO: find a better way to discern the url problem from other TypeErrors!
 		if (err.stack)
 			req.logger.info(err.stack)
 		console.trace();
@@ -129,10 +136,9 @@ module.exports = function(err, req, res, next) {
 
 		// try to send error callback
 		res.renderError(500, {
-			errorCode: res.statusCode,
+			errorCode: err.statusCode,
 			errorMsg: err.msg,
 			errorStack: (err.stack || '').split('\n').slice(1).join('<br>'),
-			msg: err.human_message,
 		});
 	} catch (e) {
 		// oh well, not much we can do at this point.

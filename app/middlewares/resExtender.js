@@ -15,6 +15,7 @@ var options = {
 		title: "500 · Alguém vai ser mandado embora...",
 		h1: "Ops! <span>:(</span>",
 		h2: "Tivemos problemas técnicos.",
+		msg: "Avise-nos se o problema persistir.",
 		action: "Tente voltar para o site",
 	}
 };
@@ -44,17 +45,18 @@ module.exports = function (req, res, next) {
 	res.renderError = function (status, obj) {
 		res.status(status || 500);
 		if (req.accepts('html') && !req.isAPICall) { // respond with html page;
-			var data = _.extend(options[500], {
-				msg: (obj && obj.msg) || undefined,
-			});
+			var data = _.extend({}, options[500]);
 			if (nconf.get('env') === 'development') {
 				_.extend(data, obj);
+			} else {
+				// Be selective
+				data.msg = obj.msg || data.msg;
 			}
 			res.render('app/error', data);
 		} else {
 			var data = {
 				error: true,
-				message: (obj && obj.msg) || undefined,
+				message: obj && obj.msg,
 			};
 			if (nconf.get('env') === 'development') {
 				_.extend(data, obj);

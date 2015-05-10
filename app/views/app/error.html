@@ -16,36 +16,37 @@
 {% endblock %}
 
 {% block body %}
-	<div class="jumbo">
+<div class="container">
 
-		{% if h1 %}
-			<h1>{{ h1|safe }}</h1>
-		{% endif %}
+	{% if h1 %}
+		<h1>{{ h1|safe }}</h1>
+	{% endif %}
 
-		{% if h2 %}
-			<h2>{{ h2|safe }}</h2>
-		{% endif %}
+	{% if h2 %}
+		<h2>{{ h2|safe }}</h2>
+	{% endif %}
 
-		{% if msg %}
-			<h2>{{ msg|safe }}</h2>
-		{% endif %}
+	{% if msg %}
+		<p>{{ msg|safe }}</p>
+	{% endif %}
 
-		{% if nconf.get('env') === 'development' %}
-			<div style="">
-				<h2><em>{{ errorCode }}</em></h2>
-				<small>{{ errorMsg }}</small>
-				<ul>
-					<small>{{ errorStack|safe }}</small>
-				</ul>
-			</div>
-		{% endif %}
+	{% if nconf.get('env') === 'development' %}
+		<div style="">
+			<h2><em>{{ errorCode }}</em></h2>
+			<small>{{ errorMsg }}</small>
+			<ul>
+				<small>{{ errorStack|safe }}</small>
+			</ul>
+		</div>
+	{% endif %}
 
-		{% if action %}
-			<a href="/" class="button" data-action="go-back">
-				{{ action|safe }}
-			</a>
-		{% endif %}
-		<footer>
-		</footer>
-	</div>
+	{% if action %}
+		<a href="/" class="button" data-action="go-back">
+			{{ action|safe }}
+		</a>
+	{% endif %}
+	<footer>
+		&copy; deltathinkers.com
+	</footer>
+</div>
 {% endblock %}
