@@ -27,7 +27,12 @@
 		<input type="email" name="email" placeholder="Email" />
 		<input type="password" name="password" placeholder="Senha" />
     <input type="hidden" name="_csrf" value="{{ token }}" />
-    <button class="login">Entrar</button>
+    <div class="base">
+      <button class="login">Entrar</button>
+      <div class="recover">
+        <a href="/login/recover">Recuperar senha</a>
+      </div>
+    </div>
 	</form>
   <footer>
   </footer>

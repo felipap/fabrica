@@ -105,17 +105,31 @@
         border-color: @CRED;
       }
     }
+    .base {
+      margin-top: 15px;
 
-    button {
-      font-family: museo-sans;
-      .xbtn(white, @CBLUE);
-      margin-top: 10px;
-      padding: 15px 20px;
-      color: white;
-      font-weight: bold;
-      font-size: 16px;
-      text-transform: uppercase;
+      button {
+        font-family: museo-sans;
+        .xbtn(white, @CBLUE);
+        padding: 15px 20px;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+        text-transform: uppercase;
+      }
+
+      .recover {
+        display: inline-block;
+        line-height: 40px;
+        margin-left: 20px;
+
+        a {
+          color: #888;
+          vertical-align: middle;
+        }
+      }
     }
+
   }
 
   .Footer {

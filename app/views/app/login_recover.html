@@ -1,6 +1,6 @@
 {% extends '../default.html' %}
 {% set page = {
-  tag: 'signup',
+  tag: 'login',
 } %}
 
 {% block head %}
@@ -16,21 +16,20 @@
     DeltaThinkers
   </a>
   <h1>
-    Registrar usuário
+    Perdeu a sua senha?
   </h1>
   <p>
-    Já tem uma conta? <a href="/login">Entre por aqui.</a>
+    <strong>Escreva o seu email abaixo</strong> e vamos nós te mandaremos instruções de como recuperar a sua conta.
   </p>
   <div id="flash-messages" class="FlashWrapper"></div>
-
 	<form class="LoginForm" method="post" action="">
-    <input type="text" name="name" placeholder="Nome" />
-    <input type="email" name="email" placeholder="Email" />
-    <input type="password" name="password1" placeholder="Senha" />
-    <input type="password" name="password2" placeholder="Senha de novo (só pra confirmar)" />
+		<input type="email" name="email" placeholder="Email" />
     <input type="hidden" name="_csrf" value="{{ token }}" />
     <div class="base">
-      <button class="login">Criar</button>
+      <button class="login">Recuperar</button>
+      <div class="recover">
+        <a href="/login">Voltar</a>
+      </div>
     </div>
 	</form>
   <footer>

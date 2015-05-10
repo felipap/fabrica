@@ -62,7 +62,7 @@ module.exports = function (grunt) {
 			script: 'master.js',
 			options: {
 				args: ['dev'],
-				nodeArgs: ['--debug', '--es_staging', '--harmony_arrow_functions'],
+				nodeArgs: ['--debug', '--es_staging', '--harmony_arrow_functions', '--harmony_modules'],
 				ignore: ['node_modules/**','app/static/', 'assets/**'],
 				// watch: ['src'],
 				ext: 'js,coffee',
@@ -75,7 +75,7 @@ module.exports = function (grunt) {
 			script: 'app/consumer.js',
 			options: {
 				args: ['dev'],
-				nodeArgs: ['--debug', '--es_staging', '--harmony_arrow_functions'],
+				nodeArgs: ['--debug', '--es_staging', '--harmony_arrow_functions', '--harmony_modules'],
 				ignore: ['node_modules/**','app/static/**', 'app/static/js/app/components/', 'assets/**'],
 				// watch: ['src'],
 				// ext: 'js',

@@ -38,39 +38,4 @@ module.exports = (app) ->
 		else
 			res.endJSON req.requestedUser.toJSON()
 
-	router.get '/u/:username', (req, res) ->
-		if req.user.flags.admin
-			res.endJSON req.requestedUser.toObject()
-		else
-			res.endJSON req.requestedUser.toJSON()
-
-	router.get '/:userId/avatar', (req, res) ->
-		res.redirect req.requestedUser.avatarUrl
-
-	router.get '/:userId/posts', unspam.limit('api_follows', 500), (req, res) ->
-		lt = parseInt(req.query.lt)
-		if isNaN(lt)
-			lt = Date.now()
-
-		mongoose.model('Post')
-			.find { 'author.id':''+req.requestedUser.id, created_at: { $lt: lt-1 } }
-			.sort '-created_at'
-			.limit 7
-			.exec TMERA (docs) ->
-				res.endJSON(
-					eof: not docs[docs.length-1] # Couldn't fill limit: there's no more!
-					data: cardsActions.workPostCards(req.user, filterNull(docs))
-				)
-
-	filterNull = (list) -> _.filter(list, (i) -> !!i)
-
-
-	router.post '/:userId/follow', required.login, unspam.limit('api_follows', 500), (req, res) ->
-		dofollowUser req.user, req.requestedUser, (err) ->
-			res.endJSON(error: !!err)
-
-	router.post '/:userId/unfollow', required.login, unspam.limit('api_follows', 500), (req, res) ->
-		unfollowUser req.user, req.requestedUser, (err) ->
-			res.endJSON(error: !!err)
-
 	return router

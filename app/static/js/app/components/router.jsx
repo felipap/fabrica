@@ -502,6 +502,14 @@ var App = Router.extend({
 	},
 
 	routes: {
+		'login':
+			function() {
+				LoginPage(this);
+			},
+		'signup':
+			function() {
+				SignupPage(this);
+			},
 		'novo/pedido':
 			function () {
 				Pages.NewPrintJob(this);

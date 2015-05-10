@@ -11,18 +11,10 @@ User = mongoose.model 'User'
 module.exports = (app) ->
 	router = require('express').Router()
 
-	logger = app.get('logger').child(childs: 'APP')
-
 	router.use (req, res, next) ->
-		req.logger = logger
+		req.logger = app.get('logger').child(childs: 'APP')
 		logger.info("<#{req.user and req.user.username or 'anonymous@'+
 			req.connection.remoteAddress}>: HTTP #{req.method} #{req.url}")
-		next()
-
-	# router.use '/signup', (require './signup') app
-
-	# Deal with signups, new sessions, tours and etc.
-	router.use (req, res, next) ->
 		if req.user
 			req.user.meta.last_access = new Date()
 			req.user.save()
@@ -34,45 +26,7 @@ module.exports = (app) ->
 		else
 			res.render404()
 
-	router.get '/login', (req, res) ->
-		if req.user
-			return res.redirect('/')
-		res.render 'app/login', {}
-
-	router.get '/signup', (req, res) ->
-		res.render 'app/signup', {}
-
-	router.post '/signup', (req, res, next) ->
-		req.parse User.SingupParseRules, (err, body) ->
-			if body.password1 isnt req.body.password2
-				req.flash('error', 'As senhas não correspondem.')
-				return res.redirect('/signup')
-			u = new User {
-				name: body.name,
-				email: body.email,
-				password: body.password1,
-			}
-			u.save (err, user) ->
-				if err
-					return next(err)
-				req.flash('info', 'Bem-vindo, '+user.name)
-				req.logIn user, (err) ->
-					if err
-						return next(err)
-					res.redirect('/')
-
-	router.post '/login', (req, res, next) ->
-		authFn = (err, user, info) ->
-			if err
-				return next(err)
-			if not user
-				req.flash('error', info.message)
-				return res.redirect('/login')
-			req.logIn user, (err) ->
-			if err
-					return next(err)
-				res.redirect('/')
-		(passport.authenticate 'local', authFn)(req, res, next)
+	router.use '/', require('./signin')(app)
 
 	router.use '/', (req, res, next) ->
 		if not req.user
@@ -87,6 +41,7 @@ module.exports = (app) ->
 		'/novo/cliente'
 	]
 		router.get n, (req, res, next) ->
+			console.log('here')
 			res.render 'app/home'
 
 	router.get '/arquivos', (req, res, next) -> res.render 'app/files'
@@ -101,5 +56,10 @@ module.exports = (app) ->
 	router.get '/faq', (req, res) -> res.render('about/faq')
 	router.get '/blog', (req, res) -> res.redirect('http://blog.deltathinkers.com')
 	router.use '/auth', require('./passport')(app)
+
+	# Handle 404.
+	# Don't 'leak' to other controllers: all / should be "satisfied" here.
+	router.use (req, res) ->
+		res.render404()
 
 	return router
