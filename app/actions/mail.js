@@ -33,9 +33,9 @@ module.exports.Templates = {
     );
 
     return {
-        to: user.email,
-        subject: 'Recuperação de conta · Fabrica DeltaThinkers',
-        html: template({ user: user, link: link })
+      to: user.email,
+      subject: 'Recuperação de conta · Fabrica DeltaThinkers',
+      html: template({ user: user, link: link })
     }
   }
 }
@@ -50,8 +50,6 @@ var sendMessage = (data, cb) => {
   }
 
   lodash.extend(payload, data)
-
-  console.log(payload)
 
   for (var i in payload) {
     if (typeof payload[i] === "undefined") {

@@ -32,7 +32,7 @@ var STLRenderer = React.createClass({
 
 		window.t = this.getDOMNode();
 
-		var width = $(this.getDOMNode().parentElement).innerWidth();
+		var width = $(this.getDOMNode().parentElement).innerWidth()-15;
 		var height = $(this.getDOMNode().parentElement.parentElement).height();
 		console.log(width, height)
 
@@ -68,7 +68,7 @@ var STLRenderer = React.createClass({
 		this.renderer.gammaOutput = true;
 		this.renderer.shadowMapEnabled = true;
 		this.renderer.shadowMapCullFace = THREE.CullFaceBack;
-		// window.addEventListener('resize', onWindowResize, false);
+		window.addEventListener('resize', this._onWindowResize, false);
 		this.refs.container.getDOMNode().appendChild(this.renderer.domElement);
 		// this.renderer.setClearColor( this.scene.fog.color );
 		// this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -143,10 +143,13 @@ var STLRenderer = React.createClass({
 	},
 
 	_onWindowResize: function() {
+		var width = $(this.getDOMNode().parentElement).innerWidth()-15;
+		var height = $(this.getDOMNode().parentElement.parentElement).height();
+
 		this.controls.handleResize();
-		this.camera.aspect = window.innerWidth / window.innerHeight;
+		this.camera.aspect = width/height;
 		this.camera.updateProjectionMatrix();
-		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		this.renderer.setSize(width, height);
 	},
 
 	_animate: function() {

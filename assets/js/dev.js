@@ -226,7 +226,7 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 
 		window.t = this.getDOMNode();
 
-		var width = $(this.getDOMNode().parentElement).innerWidth();
+		var width = $(this.getDOMNode().parentElement).innerWidth()-15;
 		var height = $(this.getDOMNode().parentElement.parentElement).height();
 		console.log(width, height)
 
@@ -262,7 +262,7 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 		this.renderer.gammaOutput = true;
 		this.renderer.shadowMapEnabled = true;
 		this.renderer.shadowMapCullFace = THREE.CullFaceBack;
-		// window.addEventListener('resize', onWindowResize, false);
+		window.addEventListener('resize', this._onWindowResize, false);
 		this.refs.container.getDOMNode().appendChild(this.renderer.domElement);
 		// this.renderer.setClearColor( this.scene.fog.color );
 		// this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -337,10 +337,13 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 	},
 
 	_onWindowResize: function() {
+		var width = $(this.getDOMNode().parentElement).innerWidth()-15;
+		var height = $(this.getDOMNode().parentElement.parentElement).height();
+
 		this.controls.handleResize();
-		this.camera.aspect = window.innerWidth / window.innerHeight;
+		this.camera.aspect = width/height;
 		this.camera.updateProjectionMatrix();
-		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		this.renderer.setSize(width, height);
 	},
 
 	_animate: function() {
@@ -504,7 +507,7 @@ module.exports.TourDialog = function (data, onRender, onClose) {
 
 var Backbone = require('backbone');
 
-var PrintJob = Backbone.Model.extend({
+var Order = Backbone.Model.extend({
   urlRoot: '/api/printjobs',
 });
 
@@ -513,7 +516,7 @@ var Client = Backbone.Model.extend({
 });
 
 var Queue = Backbone.Collection.extend({
-  model: PrintJob,
+  model: Order,
 });
 
 var ClientList = Backbone.Collection.extend({
@@ -523,7 +526,7 @@ var ClientList = Backbone.Collection.extend({
 
 module.exports = {
 	Queue: Queue,
-  PrintJob: PrintJob,
+  Order: Order,
   Client: Client,
   ClientList: ClientList,
 }
@@ -549,7 +552,7 @@ var Pages = {
 	Login_Register: require('../pages/login_register.jsx'),
 	Login_Recover: require('../pages/login_recover.jsx'),
 	Login_Newpass: require('../pages/login_newpass.jsx'),
-	NewPrintJob: require('../pages/newPrintJob.jsx'),
+	NewOrder: require('../pages/newOrder.jsx'),
 	NewClient: require('../pages/newClient.jsx'),
 	ListClients: require('../pages/listClients.jsx'),
 };
@@ -1072,7 +1075,7 @@ var App = Router.extend({
 			},
 		'novo/pedido':
 			function () {
-				Pages.NewPrintJob(this);
+				Pages.NewOrder(this);
 			},
 		'novo/cliente':
 			function () {
@@ -1320,7 +1323,7 @@ module.exports = {
 	},
 };
 
-},{"../components/flasher.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","../pages/home.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx","../pages/listClients.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listClients.jsx","../pages/login.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx","../pages/login_newpass.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_newpass.jsx","../pages/login_recover.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx","../pages/login_register.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_register.jsx","../pages/newClient.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newClient.jsx","../pages/newPrintJob.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newPrintJob.jsx","backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/backbone-1.1.2.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","marked":"/home/felipe/Projects/fabrica/app/static/js/vendor/marked.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx":[function(require,module,exports){
+},{"../components/flasher.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","../pages/home.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx","../pages/listClients.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listClients.jsx","../pages/login.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx","../pages/login_newpass.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_newpass.jsx","../pages/login_recover.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx","../pages/login_register.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_register.jsx","../pages/newClient.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newClient.jsx","../pages/newOrder.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newOrder.jsx","backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/backbone-1.1.2.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","marked":"/home/felipe/Projects/fabrica/app/static/js/vendor/marked.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx":[function(require,module,exports){
 
 var $ = require('jquery')
 var React = require('react')
@@ -1642,7 +1645,6 @@ var NewClientForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
 			warnings: {
-				name: 'Esse nome é muito feio.'
 			},
 		};
 	},
@@ -1715,7 +1717,7 @@ var NewClientForm = React.createBackboneClass({
 						React.createElement("div", {className: "col-md-4"}, 
 							React.createElement("input", {type: "text", ref: "name", 
 								className: "form-control"+(this.state.warnings.name?" invalid":''), 
-								defaultValue: "André da Silva", required: true})
+								placeholder: "André da Silva", required: true})
 						), 
 						React.createElement("div", {className: "col-md-6"}, 
 						 this.state.warnings.name?(
@@ -1736,7 +1738,7 @@ var NewClientForm = React.createBackboneClass({
 						React.createElement("div", {className: "col-md-4"}, 
 							React.createElement("input", {type: "email", ref: "email", 
 								className: "form-control"+(this.state.warnings.email?" invalid":''), 
-								defaultValue: "andre@mail.com", required: true})
+								placeholder: "andre@mail.com", required: true})
 						), 
 						React.createElement("div", {className: "col-md-6"}, 
 						 this.state.warnings.email?(
@@ -1757,7 +1759,7 @@ var NewClientForm = React.createBackboneClass({
 						React.createElement("div", {className: "col-md-4"}, 
 							React.createElement("input", {type: "tel", ref: "phone", 
 								className: "form-control"+(this.state.warnings.phone?" invalid":''), 
-								defaultValue: "(21) 99999 1234", required: true})
+								placeholder: "(21) 99999 1234", required: true})
 						), 
 						React.createElement("div", {className: "col-md-6"}, 
 						 this.state.warnings.phone?(
@@ -1787,7 +1789,7 @@ module.exports = function(app) {
 };
 
 
-},{"../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/newPrintJob.jsx":[function(require,module,exports){
+},{"../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/newOrder.jsx":[function(require,module,exports){
 
 "use strict";
 
@@ -1872,26 +1874,18 @@ var DropdownInput = React.createClass({displayName: "DropdownInput",
 });
 
 var FormPart_Visualizer = React.createBackboneClass({
-	_send: function () {
-		this.getModel().set('material', this.refs.materials.getValue());
-
-		console.log('model', this.getModel().attributes)
-
-		this.getModel().save(null, {
-			success: function(model, response)  {
-			},
-			error: function(model, xhr, options)  {
-			},
-		})
-	},
-
 	render: function() {
+		var advance = function()  {
+			this.getModel().set('material', this.refs.materials.getValue());
+			this.props.parent.advancePosition();
+		}.bind(this);
+
 		var colorOptions = {blue:'#0bf', red:'#f54747', green:'#3ECC5A'};
 		var materialOptions = {pla:'PLA', pet: 'PET'};
 
 		return (
 			React.createElement("div", {className: "formPart renderer"}, 
-				React.createElement("h1", null, "Visualização ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps)), 
+				React.createElement("h1", null, "Visualização ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps-1)), 
 				React.createElement("div", {className: "row"}, 
 					React.createElement("div", {className: "col-md-4"}, 
 						React.createElement("div", {className: "field"}, 
@@ -1905,14 +1899,13 @@ var FormPart_Visualizer = React.createBackboneClass({
 							React.createElement(DropdownInput, {ref: "materials", options: materialOptions})
 						), 
 						React.createElement("div", {className: "field"}, 
-							React.createElement("h1", null, "Escolha o tamanho"), 
-							React.createElement(ColorSelect, {ref: "colors", model: this.getModel(), colors: colorOptions})
+							React.createElement("h1", null, "Escolha o tamanho")
 						), 
-						React.createElement("button", {className: "finalize", onClick: this._send}, 
-							"Enviar Pedido"
+						React.createElement("button", {className: "form-btn", onClick: advance}, 
+							"Continuar"
 						)
 					), 
-					React.createElement("div", {className: "col-md-8"}, 
+					React.createElement("div", {className: "col-md-8", style: {padding:0}}, 
 						React.createElement(STLRenderer, {file: this.getModel().get('file')})
 					)
 				)
@@ -2037,7 +2030,7 @@ var FormPart_Upload = React.createBackboneClass({
 	render: function() {
 		return (
 			React.createElement("div", {className: "formPart upload"}, 
-				React.createElement("h1", null, "Selecione um arquivo ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps)), 
+				React.createElement("h1", null, "Selecione um arquivo ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps-1)), 
 				React.createElement("p", null, "Escolha um arquivo 3D para ser impresso. Ele deve ter a extensão ", React.createElement("strong", null, ".stl"), "."), 
 				React.createElement("h3", {className: "status"}, 
 					this.state.status
@@ -2120,24 +2113,63 @@ var FormPart_ChooseClient = React.createBackboneClass({
 	render: function() {
 		return (
 			React.createElement("div", {className: "formPart chooseClient"}, 
-				React.createElement("h1", null, "Selecione um cliente ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps)), 
+				React.createElement("h1", null, "Selecione um cliente ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps-1)), 
 				React.createElement("p", null, "Registre um pedido de um cliente cadastrado entrando com o seu email. ", React.createElement("a", {href: "/novo/cliente"}, "Clique aqui para fazer o seu cadastro.")), 
-				React.createElement("form", {onSubmit: this._send}, 
+				React.createElement("form", {onSubmit: this._send, className: "form-horizontal"}, 
 					React.createElement("div", {className: "form-group"}, 
-						React.createElement("div", {className: "row"}, 
-							React.createElement("div", {className: "col-md-4"}, 
-								React.createElement("input", {type: "email", ref: "email", required: true, 
-									className: "form-control"+(this.state.warning?" invalid":''), 
-									placeholder: "joaozinho@mail.com"})
-							), 
-							React.createElement("div", {className: "col-md-6"}, 
-							 this.state.warning?(
-								React.createElement("div", {className: "warning"}, this.state.warning)
-							):null
-							)
+						React.createElement("div", {className: "col-md-4"}, 
+							React.createElement("input", {type: "email", ref: "email", required: true, 
+								className: "form-control"+(this.state.warning?" invalid":''), 
+								placeholder: "joaozinho@mail.com"})
 						), 
-						React.createElement("button", {className: "form-btn"}, 
-							"Salvar"
+						React.createElement("div", {className: "col-md-6"}, 
+						 this.state.warning?(
+							React.createElement("div", {className: "warning"}, this.state.warning)
+						):null
+						)
+					), 
+					React.createElement("div", {className: "form-group"}, 
+						React.createElement("div", {className: "col-md-3"}, 
+							React.createElement("button", {className: "form-btn"}, 
+								"Continuar"
+							)
+						)
+					)
+				)
+			)
+		);
+	}
+});
+
+
+var FormPart_Naming_Final = React.createBackboneClass({
+	componentDidMount: function() {
+	},
+
+	render: function() {
+		return (
+			React.createElement("div", {className: "formPart naming"}, 
+			React.createElement("h1", null, "Para terminar... ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps-1)), 
+				React.createElement("form", {onSubmit: this._send, className: "form-horizontal"}, 
+					React.createElement("div", {className: "form-group"}, 
+						React.createElement("div", {className: "col-md-6"}, 
+							React.createElement("label", null, "Identifique o modelo"), 
+							React.createElement("input", {type: "email", ref: "email", required: true, className: "form-control", 
+								placeholder: "Ex: Estrela da morte em miniatura"})
+						)
+					), 
+					React.createElement("div", {className: "form-group"}, 
+						React.createElement("div", {className: "col-md-6"}, 
+							React.createElement("label", null, "Faça comentários sobre a peça"), 
+							React.createElement("textarea", {ref: "comments", className: "form-control", 
+								placeholder: "Ex: É possível tapar o buraco da ventilação? É o único ponto fraco dela..."})
+						)
+					), 
+					React.createElement("div", {className: "form-group"}, 
+						React.createElement("div", {className: "col-md-3"}, 
+							React.createElement("button", {className: "form-btn"}, 
+								"Enviar"
+							)
 						)
 					)
 				)
@@ -2146,10 +2178,10 @@ var FormPart_ChooseClient = React.createBackboneClass({
 	}
 })
 
-var PrintJobForm = React.createBackboneClass({
+var OrderForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
-			formPosition: 2,
+			formPosition: 3,
 		}
 	},
 
@@ -2173,7 +2205,12 @@ var PrintJobForm = React.createBackboneClass({
 
 		console.log("rendered", this.getModel().attributes, this.state.formPosition)
 
-		var FormParts = [FormPart_ChooseClient, FormPart_Upload, FormPart_Visualizer];
+		var FormParts = [
+			FormPart_ChooseClient,
+			FormPart_Upload,
+			FormPart_Visualizer,
+			FormPart_Naming_Final,
+		];
 		var formParts = _.map(FormParts, function(P, i)  {
 			var restoreHere = function()  {
 				alert('não tá funcionando, fio')
@@ -2196,7 +2233,7 @@ var PrintJobForm = React.createBackboneClass({
 		}.bind(this));
 
 		return (
-			React.createElement("div", {className: "PrintJobForm"}, 
+			React.createElement("div", {className: "NewOrderForm"}, 
 				React.createElement("h1", null, "Novo Pedido"), 
 				formParts
 			)
@@ -2214,7 +2251,7 @@ function setupLeaveWarning() {
 }
 
 module.exports = function(app) {
-	var printJob = new Models.PrintJob({
+	var printJob = new Models.Order({
 		color: 'red',
 		file: 'https://s3-sa-east-1.amazonaws.com/deltathinkers/jobs/dfd691c6-3622-4dc1-9e8c-59d08d87e69c',
 	});
@@ -2247,7 +2284,7 @@ module.exports = function(app) {
 	})();
 
 	function start() {
-		app.pushPage(React.createElement(PrintJobForm, {model: printJob}), 'new-printjob', {
+		app.pushPage(React.createElement(OrderForm, {model: printJob}), 'new-printjob', {
 			onClose: function() {
 			},
 			container: document.querySelector('#page-container'),

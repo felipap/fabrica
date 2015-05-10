@@ -82,26 +82,18 @@ var DropdownInput = React.createClass({
 });
 
 var FormPart_Visualizer = React.createBackboneClass({
-	_send: function () {
-		this.getModel().set('material', this.refs.materials.getValue());
-
-		console.log('model', this.getModel().attributes)
-
-		this.getModel().save(null, {
-			success: (model, response) => {
-			},
-			error: (model, xhr, options) => {
-			},
-		})
-	},
-
 	render: function() {
+		var advance = () => {
+			this.getModel().set('material', this.refs.materials.getValue());
+			this.props.parent.advancePosition();
+		};
+
 		var colorOptions = {blue:'#0bf', red:'#f54747', green:'#3ECC5A'};
 		var materialOptions = {pla:'PLA', pet: 'PET'};
 
 		return (
 			<div className="formPart renderer">
-				<h1>Visualização <div className="position">passo {this.props.step} de {this.props.totalSteps}</div></h1>
+				<h1>Visualização <div className="position">passo {this.props.step} de {this.props.totalSteps-1}</div></h1>
 				<div className="row">
 					<div className="col-md-4">
 						<div className="field">
@@ -116,13 +108,12 @@ var FormPart_Visualizer = React.createBackboneClass({
 						</div>
 						<div className="field">
 							<h1>Escolha o tamanho</h1>
-							<ColorSelect ref="colors" model={this.getModel()} colors={colorOptions}/>
 						</div>
-						<button className="finalize" onClick={this._send}>
-							Enviar Pedido
+						<button className="form-btn" onClick={advance}>
+							Continuar
 						</button>
 					</div>
-					<div className="col-md-8">
+					<div className="col-md-8" style={{padding:0}}>
 						<STLRenderer file={this.getModel().get('file')} />
 					</div>
 				</div>
@@ -247,7 +238,7 @@ var FormPart_Upload = React.createBackboneClass({
 	render: function() {
 		return (
 			<div className="formPart upload">
-				<h1>Selecione um arquivo <div className="position">passo {this.props.step} de {this.props.totalSteps}</div></h1>
+				<h1>Selecione um arquivo <div className="position">passo {this.props.step} de {this.props.totalSteps-1}</div></h1>
 				<p>Escolha um arquivo 3D para ser impresso. Ele deve ter a extensão <strong>.stl</strong>.</p>
 				<h3 className="status">
 					{this.state.status}
@@ -330,25 +321,64 @@ var FormPart_ChooseClient = React.createBackboneClass({
 	render: function() {
 		return (
 			<div className="formPart chooseClient">
-				<h1>Selecione um cliente <div className="position">passo {this.props.step} de {this.props.totalSteps}</div></h1>
+				<h1>Selecione um cliente <div className="position">passo {this.props.step} de {this.props.totalSteps-1}</div></h1>
 				<p>Registre um pedido de um cliente cadastrado entrando com o seu email. <a href="/novo/cliente">Clique aqui para fazer o seu cadastro.</a></p>
-				<form onSubmit={this._send}>
+				<form onSubmit={this._send} className="form-horizontal">
 					<div className="form-group">
-						<div className="row">
-							<div className="col-md-4">
-								<input type="email" ref="email" required={true}
-									className={"form-control"+(this.state.warning?" invalid":'')}
-									placeholder="joaozinho@mail.com" />
-							</div>
-							<div className="col-md-6">
-							{ this.state.warning?(
-								<div className="warning">{this.state.warning}</div>
-							):null }
-							</div>
+						<div className="col-md-4">
+							<input type="email" ref="email" required={true}
+								className={"form-control"+(this.state.warning?" invalid":'')}
+								placeholder="joaozinho@mail.com" />
 						</div>
-						<button className="form-btn">
-							Salvar
-						</button>
+						<div className="col-md-6">
+						{ this.state.warning?(
+							<div className="warning">{this.state.warning}</div>
+						):null }
+						</div>
+					</div>
+					<div className="form-group">
+						<div className="col-md-3">
+							<button className="form-btn">
+								Continuar
+							</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		);
+	}
+});
+
+
+var FormPart_Naming_Final = React.createBackboneClass({
+	componentDidMount: function() {
+	},
+
+	render: function() {
+		return (
+			<div className="formPart naming">
+			<h1>Para terminar... <div className="position">passo {this.props.step} de {this.props.totalSteps-1}</div></h1>
+				<form onSubmit={this._send} className="form-horizontal">
+					<div className="form-group">
+						<div className="col-md-6">
+							<label>Identifique o modelo</label>
+							<input type="email" ref="email" required={true} className="form-control"
+								placeholder="Ex: Estrela da morte em miniatura" />
+						</div>
+					</div>
+					<div className="form-group">
+						<div className="col-md-6">
+							<label>Faça comentários sobre a peça</label>
+							<textarea ref="comments" className="form-control"
+								placeholder="Ex: É possível tapar o buraco da ventilação? É o único ponto fraco dela..."></textarea>
+						</div>
+					</div>
+					<div className="form-group">
+						<div className="col-md-3">
+							<button className="form-btn">
+								Enviar
+							</button>
+						</div>
 					</div>
 				</form>
 			</div>
@@ -356,10 +386,10 @@ var FormPart_ChooseClient = React.createBackboneClass({
 	}
 })
 
-var PrintJobForm = React.createBackboneClass({
+var OrderForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
-			formPosition: 2,
+			formPosition: 3,
 		}
 	},
 
@@ -383,7 +413,12 @@ var PrintJobForm = React.createBackboneClass({
 
 		console.log("rendered", this.getModel().attributes, this.state.formPosition)
 
-		var FormParts = [FormPart_ChooseClient, FormPart_Upload, FormPart_Visualizer];
+		var FormParts = [
+			FormPart_ChooseClient,
+			FormPart_Upload,
+			FormPart_Visualizer,
+			FormPart_Naming_Final,
+		];
 		var formParts = _.map(FormParts, (P, i) => {
 			var restoreHere = () => {
 				alert('não tá funcionando, fio')
@@ -406,7 +441,7 @@ var PrintJobForm = React.createBackboneClass({
 		});
 
 		return (
-			<div className="PrintJobForm">
+			<div className="NewOrderForm">
 				<h1>Novo Pedido</h1>
 				{formParts}
 			</div>
@@ -424,7 +459,7 @@ function setupLeaveWarning() {
 }
 
 module.exports = function(app) {
-	var printJob = new Models.PrintJob({
+	var printJob = new Models.Order({
 		color: 'red',
 		file: 'https://s3-sa-east-1.amazonaws.com/deltathinkers/jobs/dfd691c6-3622-4dc1-9e8c-59d08d87e69c',
 	});
@@ -457,7 +492,7 @@ module.exports = function(app) {
 	})();
 
 	function start() {
-		app.pushPage(<PrintJobForm model={printJob} />, 'new-printjob', {
+		app.pushPage(<OrderForm model={printJob} />, 'new-printjob', {
 			onClose: function() {
 			},
 			container: document.querySelector('#page-container'),

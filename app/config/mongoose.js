@@ -25,7 +25,7 @@ module.exports = function () {
 
 	var models = {
 		'notification': 'Notification',
-		'print_job': 'PrintJob',
+		'order': 'Order',
 		'user': 'User',
 		'company': 'Company',
 	}

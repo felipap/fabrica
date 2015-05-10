@@ -18,7 +18,7 @@ var Pages = {
 	Login_Register: require('../pages/login_register.jsx'),
 	Login_Recover: require('../pages/login_recover.jsx'),
 	Login_Newpass: require('../pages/login_newpass.jsx'),
-	NewPrintJob: require('../pages/newPrintJob.jsx'),
+	NewOrder: require('../pages/newOrder.jsx'),
 	NewClient: require('../pages/newClient.jsx'),
 	ListClients: require('../pages/listClients.jsx'),
 };
@@ -541,7 +541,7 @@ var App = Router.extend({
 			},
 		'novo/pedido':
 			function () {
-				Pages.NewPrintJob(this);
+				Pages.NewOrder(this);
 			},
 		'novo/cliente':
 			function () {

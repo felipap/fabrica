@@ -8,7 +8,7 @@ Status = {
 	Done: 'done'
 }
 
-PrintJob = new mongoose.Schema {
+OrderSchema = new mongoose.Schema {
 	status:			{ type: String, enum: _.values(Status), default: Status.Requested }
 	comments: 	{ type: String, required: false }
 
@@ -24,8 +24,22 @@ PrintJob = new mongoose.Schema {
 	color: 			{ type: String }
 	name: 			{ type: String }
 
+}, {
+	toObject:	{ virtuals: true }
+	toJSON: 	{ virtuals: true }
 }
 
+OrderSchema.statics.APISelect = '-password'
 
 
-module.exports = PrintJob
+OrderSchema.statics.SingupParseRules = {
+	color:
+		$valid: (str) -> true
+}
+
+OrderSchema.plugin(require('./lib/hookedModelPlugin'))
+OrderSchema.plugin(require('./lib/trashablePlugin'))
+OrderSchema.plugin(require('./lib/fromObjectPlugin'))
+OrderSchema.plugin(require('./lib/selectiveJSON'), OrderSchema.statics.APISelect)
+
+module.exports = OrderSchema

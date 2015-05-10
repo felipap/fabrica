@@ -42,7 +42,7 @@ module.exports = function(app) {
 				}
 
 				req.flash('info', 'Em pouco tempo você receberá um email com '+
-					'instruções de como resetar a sua senha.')
+					'instruções de como recuperar a sua conta.')
 				res.redirect('/login')
 			})
 		}))
@@ -103,6 +103,11 @@ module.exports = function(app) {
 							pass2 = req.body.password2
 					if (pass1 !== pass2) {
 						req.flash('error', 'As duas senhas não correspondem.')
+						res.redirect('/login/recover/'+req.params.hash)
+						return
+					}
+					if (pass1.length < 6) {
+						req.flash('error', 'Escolha uma senha com pelo menos 6 caracteres.')
 						res.redirect('/login/recover/'+req.params.hash)
 						return
 					}

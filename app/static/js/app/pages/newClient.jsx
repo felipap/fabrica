@@ -16,7 +16,6 @@ var NewClientForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
 			warnings: {
-				name: 'Esse nome é muito feio.'
 			},
 		};
 	},
@@ -89,7 +88,7 @@ var NewClientForm = React.createBackboneClass({
 						<div className="col-md-4">
 							<input type="text" ref="name"
 								className={"form-control"+(this.state.warnings.name?" invalid":'')}
-								defaultValue="André da Silva" required={true} />
+								placeholder="André da Silva" required={true} />
 						</div>
 						<div className="col-md-6">
 						{ this.state.warnings.name?(
@@ -110,7 +109,7 @@ var NewClientForm = React.createBackboneClass({
 						<div className="col-md-4">
 							<input type="email" ref="email"
 								className={"form-control"+(this.state.warnings.email?" invalid":'')}
-								defaultValue="andre@mail.com" required={true} />
+								placeholder="andre@mail.com" required={true} />
 						</div>
 						<div className="col-md-6">
 						{ this.state.warnings.email?(
@@ -131,7 +130,7 @@ var NewClientForm = React.createBackboneClass({
 						<div className="col-md-4">
 							<input type="tel" ref="phone"
 								className={"form-control"+(this.state.warnings.phone?" invalid":'')}
-								defaultValue="(21) 99999 1234" required={true} />
+								placeholder="(21) 99999 1234" required={true} />
 						</div>
 						<div className="col-md-6">
 						{ this.state.warnings.phone?(

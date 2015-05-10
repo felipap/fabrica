@@ -9,7 +9,7 @@ nconf = require 'nconf'
 mongoose = require 'mongoose'
 
 userActions = require 'app/actions/users'
-pjobActions = require 'app/actions/printJobs'
+orderActions = require 'app/actions/orders'
 mail = require 'app/actions/mail'
 
 User = mongoose.model 'User'
@@ -59,8 +59,9 @@ module.exports = (app) ->
 	api.use '/session', require('./session') app
 	api.use '/me', require('./me') app
 
-	api.post '/api/printjobs', unspam.limit(2*1000), (req, res, next) ->
-		req.parse
+	api.post '/printjobs', unspam.limit(2*1000), (req, res, next) ->
+		console.log(req.body)
+		# re
 
 	api.post '/clients', unspam.limit(2*1000), (req, res, next) ->
 		req.parse User.ClientRegisterParseRules, (err, reqbody) ->
