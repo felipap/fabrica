@@ -21,12 +21,19 @@
 	{% else %}
 		{% if user %}
 		<ul class="navbar-navigation">
-			<li data-activate-root="home">
-				<a class="button" href="/">
+			<li data-activate-root="list-orders">
+				<a class="button" href="/pedidos">
 					Pedidos
 				</a>
 			</li>
-			<li data-activate-root="new-printjob">
+			{% if user.flags.seller %}
+			<li data-activate-root="list-clients">
+				<a class="button" href="/clientes">
+					Meus clientes
+				</a>
+			</li>
+			{% endif %}
+			<li data-activate-root="new-order">
 				<a class="button" href="/novo/pedido">
 					Novo Pedido
 				</a>
@@ -34,12 +41,7 @@
 			{% if user.flags.seller %}
 			<li data-activate-root="new-client">
 				<a class="button" href="/novo/cliente">
-					Cadastrar cliente
-				</a>
-			</li>
-			<li data-activate-root="list-clients">
-				<a class="button" href="/clientes">
-					Meus clientes
+					Novo cliente
 				</a>
 			</li>
 			{% endif %}

@@ -2,7 +2,7 @@
 var Backbone = require('backbone');
 
 var Order = Backbone.Model.extend({
-  urlRoot: '/api/printjobs',
+  urlRoot: '/api/orders',
 });
 
 var Client = Backbone.Model.extend({
@@ -18,9 +18,15 @@ var ClientList = Backbone.Collection.extend({
   url: '/api/myclients',
 })
 
+var OrderList = Backbone.Collection.extend({
+  model: Order,
+  url: '/api/orders',
+})
+
 module.exports = {
 	Queue: Queue,
   Order: Order,
+  OrderList: OrderList,
   Client: Client,
   ClientList: ClientList,
 }

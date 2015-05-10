@@ -74,7 +74,7 @@ var NewClientForm = React.createBackboneClass({
 			<form className="NewClientForm" onSubmit={this._send}>
 				<h1>Cadastre um cliente</h1>
 				<p>
-					O comprador já é cliente? <a href="#">Registre pedido para ele.</a>
+					O comprador já é cliente? <a href="#">Faça um pedido para ele.</a>
 				</p>
 				<div className="form-group">
 					<div className="row">

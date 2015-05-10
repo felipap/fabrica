@@ -354,6 +354,20 @@ var FormPart_Naming_Final = React.createBackboneClass({
 	componentDidMount: function() {
 	},
 
+	_send: function (e) {
+		e.preventDefault();
+
+		this.getModel().set('name', this.refs.name.getDOMNode().value);
+		this.getModel().set('comments', this.refs.comments.getDOMNode().value);
+
+		this.getModel().save(null, {
+			success: (model, response) => {
+			},
+			error: (model, xhr, options) => {
+			},
+		});
+	},
+
 	render: function() {
 		return (
 			<div className="formPart naming">
@@ -362,7 +376,7 @@ var FormPart_Naming_Final = React.createBackboneClass({
 					<div className="form-group">
 						<div className="col-md-6">
 							<label>Identifique o modelo</label>
-							<input type="email" ref="email" required={true} className="form-control"
+							<input type="text" ref="name" required={true} className="form-control"
 								placeholder="Ex: Estrela da morte em miniatura" />
 						</div>
 					</div>
@@ -492,11 +506,11 @@ module.exports = function(app) {
 	})();
 
 	function start() {
-		app.pushPage(<OrderForm model={printJob} />, 'new-printjob', {
+		app.pushPage(<OrderForm model={printJob} />, 'new-order', {
 			onClose: function() {
 			},
 			container: document.querySelector('#page-container'),
-			pageRoot: 'new-printjob',
+			pageRoot: 'new-order',
 		});
 	}
 };

@@ -508,7 +508,7 @@ module.exports.TourDialog = function (data, onRender, onClose) {
 var Backbone = require('backbone');
 
 var Order = Backbone.Model.extend({
-  urlRoot: '/api/printjobs',
+  urlRoot: '/api/orders',
 });
 
 var Client = Backbone.Model.extend({
@@ -524,9 +524,15 @@ var ClientList = Backbone.Collection.extend({
   url: '/api/myclients',
 })
 
+var OrderList = Backbone.Collection.extend({
+  model: Order,
+  url: '/api/orders',
+})
+
 module.exports = {
 	Queue: Queue,
   Order: Order,
+  OrderList: OrderList,
   Client: Client,
   ClientList: ClientList,
 }
@@ -547,14 +553,15 @@ var Dialog = require('../components/modal.jsx')
 var Models = require('../components/models.js')
 
 var Pages = {
-	Home: require('../pages/home.jsx'),
-	Login: require('../pages/login.jsx'),
 	Login_Register: require('../pages/login_register.jsx'),
 	Login_Recover: require('../pages/login_recover.jsx'),
 	Login_Newpass: require('../pages/login_newpass.jsx'),
-	NewOrder: require('../pages/newOrder.jsx'),
-	NewClient: require('../pages/newClient.jsx'),
 	ListClients: require('../pages/listClients.jsx'),
+	ListOrders: require('../pages/listOrders.jsx'),
+	NewClient: require('../pages/newClient.jsx'),
+	NewOrder: require('../pages/newOrder.jsx'),
+	Login: require('../pages/login.jsx'),
+	Home: require('../pages/home.jsx'),
 };
 
 $(function () {
@@ -1085,6 +1092,10 @@ var App = Router.extend({
 			function () {
 				Pages.ListClients(this);
 			},
+		'pedidos':
+			function () {
+				Pages.ListOrders(this);
+			},
 		'':
 			function () {
 				Pages.Home(this);
@@ -1323,7 +1334,7 @@ module.exports = {
 	},
 };
 
-},{"../components/flasher.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","../pages/home.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx","../pages/listClients.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listClients.jsx","../pages/login.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx","../pages/login_newpass.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_newpass.jsx","../pages/login_recover.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx","../pages/login_register.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_register.jsx","../pages/newClient.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newClient.jsx","../pages/newOrder.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newOrder.jsx","backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/backbone-1.1.2.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","marked":"/home/felipe/Projects/fabrica/app/static/js/vendor/marked.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx":[function(require,module,exports){
+},{"../components/flasher.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","../pages/home.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx","../pages/listClients.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listClients.jsx","../pages/listOrders.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listOrders.jsx","../pages/login.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx","../pages/login_newpass.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_newpass.jsx","../pages/login_recover.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx","../pages/login_register.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_register.jsx","../pages/newClient.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newClient.jsx","../pages/newOrder.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newOrder.jsx","backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/backbone-1.1.2.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","marked":"/home/felipe/Projects/fabrica/app/static/js/vendor/marked.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx":[function(require,module,exports){
 
 var $ = require('jquery')
 var React = require('react')
@@ -1468,6 +1479,87 @@ module.exports = function(app) {
 		},
 		container: document.querySelector('#page-container'),
 		pageRoot: 'list-clients',
+	});
+};
+
+
+},{"../components/PrettyCheck.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/PrettyCheck.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/listOrders.jsx":[function(require,module,exports){
+
+"use strict"
+
+var React = require('react')
+var selectize = require('selectize')
+
+var Modal = require('../components/modal.jsx')
+var Models = require('../components/models.js')
+var PrettyCheck = require('../components/PrettyCheck.jsx')
+
+require('react.backbone')
+
+
+
+var ListOrders = React.createBackboneClass({
+
+	render: function() {
+		var orderList = this.getCollection().map(function (i) {
+			console.log('ele', i.attributes)
+			return (
+				React.createElement("li", {className: "orderItem"}, 
+					React.createElement("ul", {className: ""}, 
+						React.createElement("li", {className: "selection"}, 
+							React.createElement(PrettyCheck, null)
+						), 
+						React.createElement("li", {className: "info"}, 
+							React.createElement("div", {className: "name"}, 
+								i.get('name')
+							), 
+							React.createElement("div", {className: "comment"}, 
+								i.get('comment')
+							)
+						), 
+						React.createElement("li", {className: "stats"}, 
+							React.createElement("div", {className: "total"}, 
+								"3 Pedidos"
+							), 
+							React.createElement("div", {className: "ago"}, 
+								"Último pedido há 3 dias"
+							)
+						), 
+						React.createElement("li", {className: "renderer"}
+						)
+					), 
+					React.createElement("ul", {className: "right"}, 
+						React.createElement("li", {className: "buttons"}, 
+							React.createElement("button", null, "The")
+						)
+					)
+				)
+			);
+		});
+		return (
+			React.createElement("div", {className: "ListOrders"}, 
+				React.createElement("h1", null, 
+					"Seus pedidos"
+				), 
+				React.createElement("p", null, 
+					"Lista organizada por pedidos mais recentes."
+				), 
+				React.createElement("ul", {className: "orderList"}, 
+					orderList
+				)
+			)
+		);
+	}
+});
+
+module.exports = function(app) {
+	var collection = new Models.OrderList();
+	collection.fetch();
+	app.pushPage(React.createElement(ListOrders, {collection: collection}), 'list-orders', {
+		onClose: function() {
+		},
+		container: document.querySelector('#page-container'),
+		pageRoot: 'list-orders',
 	});
 };
 
@@ -1703,7 +1795,7 @@ var NewClientForm = React.createBackboneClass({
 			React.createElement("form", {className: "NewClientForm", onSubmit: this._send}, 
 				React.createElement("h1", null, "Cadastre um cliente"), 
 				React.createElement("p", null, 
-					"O comprador já é cliente? ", React.createElement("a", {href: "#"}, "Registre pedido para ele.")
+					"O comprador já é cliente? ", React.createElement("a", {href: "#"}, "Faça um pedido para ele.")
 				), 
 				React.createElement("div", {className: "form-group"}, 
 					React.createElement("div", {className: "row"}, 
@@ -2146,6 +2238,20 @@ var FormPart_Naming_Final = React.createBackboneClass({
 	componentDidMount: function() {
 	},
 
+	_send: function (e) {
+		e.preventDefault();
+
+		this.getModel().set('name', this.refs.name.getDOMNode().value);
+		this.getModel().set('comments', this.refs.comments.getDOMNode().value);
+
+		this.getModel().save(null, {
+			success: function(model, response)  {
+			},
+			error: function(model, xhr, options)  {
+			},
+		});
+	},
+
 	render: function() {
 		return (
 			React.createElement("div", {className: "formPart naming"}, 
@@ -2154,7 +2260,7 @@ var FormPart_Naming_Final = React.createBackboneClass({
 					React.createElement("div", {className: "form-group"}, 
 						React.createElement("div", {className: "col-md-6"}, 
 							React.createElement("label", null, "Identifique o modelo"), 
-							React.createElement("input", {type: "email", ref: "email", required: true, className: "form-control", 
+							React.createElement("input", {type: "text", ref: "name", required: true, className: "form-control", 
 								placeholder: "Ex: Estrela da morte em miniatura"})
 						)
 					), 
@@ -2284,11 +2390,11 @@ module.exports = function(app) {
 	})();
 
 	function start() {
-		app.pushPage(React.createElement(OrderForm, {model: printJob}), 'new-printjob', {
+		app.pushPage(React.createElement(OrderForm, {model: printJob}), 'new-order', {
 			onClose: function() {
 			},
 			container: document.querySelector('#page-container'),
-			pageRoot: 'new-printjob',
+			pageRoot: 'new-order',
 		});
 	}
 };

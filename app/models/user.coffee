@@ -24,7 +24,6 @@ UserSchema = new mongoose.Schema {
 	}
 
 	meta: {
-		registered: { type: Boolean, default: false }
 		session_count: Number
 		last_signin_ip: String
 		current_signin_ip: String
@@ -34,6 +33,7 @@ UserSchema = new mongoose.Schema {
 		last_access: { type: Date, default: Date.now }
 		last_seen_notifications: { type: Date, default: 0 }
 		last_received_notifications: { type: Date, default: 0 }
+		registerdBy: { type: mongoose.Schema.ObjectId, ref: 'User' } # seller
 	}
 
 	flags: {

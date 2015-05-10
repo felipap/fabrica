@@ -15,7 +15,7 @@ module.exports = function (app) {
 
 	router.use(function (req, res, next) {
 		req.logger = app.get('logger').child({ childs: 'APP' })
-		logger.info("<"+(req.user && req.user.username || 'anonymous@'+
+		logger.info("<"+(req.user && req.user.name || 'anonymous@'+
 			req.connection.remoteAddress)+">: HTTP "+req.method+" "+req.url+"")
 		if (req.user) {
 			req.user.meta.last_access = new Date()
@@ -43,10 +43,10 @@ module.exports = function (app) {
 
 	var homeRoutes = [
 		'/',
-		'/novo',
-		'/novo/pedido',
 		'/clientes',
 		'/novo/cliente',
+		'/pedidos',
+		'/novo/pedido',
 	]
 	_.map(homeRoutes, function (route) {
 		router.get(route, (req, res) => { res.render('app/home') })

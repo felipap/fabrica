@@ -13,14 +13,15 @@ var Dialog = require('../components/modal.jsx')
 var Models = require('../components/models.js')
 
 var Pages = {
-	Home: require('../pages/home.jsx'),
-	Login: require('../pages/login.jsx'),
 	Login_Register: require('../pages/login_register.jsx'),
 	Login_Recover: require('../pages/login_recover.jsx'),
 	Login_Newpass: require('../pages/login_newpass.jsx'),
-	NewOrder: require('../pages/newOrder.jsx'),
-	NewClient: require('../pages/newClient.jsx'),
 	ListClients: require('../pages/listClients.jsx'),
+	ListOrders: require('../pages/listOrders.jsx'),
+	NewClient: require('../pages/newClient.jsx'),
+	NewOrder: require('../pages/newOrder.jsx'),
+	Login: require('../pages/login.jsx'),
+	Home: require('../pages/home.jsx'),
 };
 
 $(function () {
@@ -550,6 +551,10 @@ var App = Router.extend({
 		'clientes':
 			function () {
 				Pages.ListClients(this);
+			},
+		'pedidos':
+			function () {
+				Pages.ListOrders(this);
 			},
 		'':
 			function () {

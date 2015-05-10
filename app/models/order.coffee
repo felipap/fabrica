@@ -11,6 +11,7 @@ Status = {
 OrderSchema = new mongoose.Schema {
 	status:			{ type: String, enum: _.values(Status), default: Status.Requested }
 	comments: 	{ type: String, required: false }
+	title: 			{ type: String }
 
 	created_at: { type: Date, default: Date.now }
 	updated_at: { type: Date, default: Date.now }
@@ -32,8 +33,15 @@ OrderSchema = new mongoose.Schema {
 OrderSchema.statics.APISelect = '-password'
 
 
-OrderSchema.statics.SingupParseRules = {
+OrderSchema.statics.ParseRules = {
 	color:
+		$valid: (str) -> true
+	file:
+		$valid: (str) ->
+			str.match(/^https:\/\/s3-sa-east-1\.amazonaws\.com\/deltathinkers\/jobs\/[a-z0-9-]+$/)
+	comments:
+		$valid: (str) -> true
+	name:
 		$valid: (str) -> true
 }
 

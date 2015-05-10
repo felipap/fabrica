@@ -409,6 +409,29 @@ body:not(.public) {
 }
 
 
+.ListOrders {
+
+  .orderList {
+    .orderItem {
+      border: 1px solid #EEE;
+
+      & > ul {
+        display: table;
+        float: left;
+        & > li {
+          display: table-cell;
+          border: 1px solid #08C;
+        }
+
+      }
+
+      & > ul.right {
+        float: right;
+      }
+    }
+  }
+}
+
 
 
 .PrettyCheck {

@@ -12,7 +12,8 @@ userActions = require 'app/actions/users'
 orderActions = require 'app/actions/orders'
 mail = require 'app/actions/mail'
 
-User = mongoose.model 'User'
+User = mongoose.model('User')
+Order = mongoose.model('Order')
 
 aws.config.update({
 	accessKeyId: nconf.get('AWS_ACCESS_KEY_ID'),
@@ -26,7 +27,7 @@ module.exports = (app) ->
 
 	api.use (req, res, next) ->
 		req.logger = logger
-		req.logger.info("<#{req.user and req.user.username or 'anonymous@'+req.connection.remoteAddress}>: HTTP #{req.method} #{req.url}")
+		req.logger.info("<#{req.user and req.user.name or 'anonymous@'+req.connection.remoteAddress}>: HTTP #{req.method} #{req.url}")
 		req.isAPICall = true
 		next()
 
@@ -59,9 +60,11 @@ module.exports = (app) ->
 	api.use '/session', require('./session') app
 	api.use '/me', require('./me') app
 
-	api.post '/printjobs', unspam.limit(2*1000), (req, res, next) ->
-		console.log(req.body)
-		# re
+	api.post '/orders', unspam.limit(2*1000), (req, res, next) ->
+		req.parse Order.ParseRules, req.handleErr (body) ->
+			console.log(body)
+			orderActions.register req.user, body, (err, result) ->
+				console.log("registerd?", result)
 
 	api.post '/clients', unspam.limit(2*1000), (req, res, next) ->
 		req.parse User.ClientRegisterParseRules, (err, reqbody) ->
@@ -81,10 +84,13 @@ module.exports = (app) ->
 		User.findOne { email: req.query.email }, req.handleErr (user) ->
 			res.endJSON(exists: user and user.toJSON())
 
+
+	api.get '/orders', unspam.limit(1*1000), (req, res) ->
+		Order.find { }, req.handleErr (docs) ->
+			res.endJSON(docs)
+
 	api.get '/myclients', unspam.limit(1*1000), (req, res) ->
-		User.find {
-			'flags.seller': false,
-		}, req.handleErr (clients) ->
+		User.find { 'flags.seller': false }, req.handleErr (clients) ->
 			res.endJSON(clients)
 
 	api.get '/s3/sign', unspam.limit(1*1000), (req, res) ->
