@@ -9,7 +9,7 @@ module.exports = function (app) {
     return !!str.match(emailRegex);
   }
 
-  var form = $('.LoginRecoverForm');
+  var form = $('.LoginForm');
   var email = form.find("[name=email]");
   var captcha = form.find(".captcha");
   var captchaResponse = form.find("[name=g-recaptcha-response]");

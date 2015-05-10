@@ -45,13 +45,7 @@ module.exports = function (req, res, next) {
 	res.renderError = function (status, obj) {
 		res.status(status || 500);
 		if (req.accepts('html') && !req.isAPICall) { // respond with html page;
-			var data = _.extend({}, options[500]);
-			if (nconf.get('env') === 'development') {
-				_.extend(data, obj);
-			} else {
-				// Be selective
-				data.msg = obj.msg || data.msg;
-			}
+			var data = _.extend({}, options[500], obj);
 			res.render('app/error', data);
 		} else {
 			var data = {

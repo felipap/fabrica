@@ -1,6 +1,7 @@
 {% extends '../default.html' %}
 {% set page = {
   tag: 'login_register',
+  root: 'login',
 } %}
 
 {% block head %}
@@ -21,7 +22,7 @@
     Já tem uma conta? <a href="/login">Entre por aqui.</a>
   </p>
   <div id="flash-messages" class="FlashWrapper"></div>
-	<form class="SignupForm" method="post" action="">
+	<form class="LoginForm" method="post" action="">
     <input type="text" name="name" placeholder="Nome" />
     <input type="email" name="email" placeholder="Email" />
     <input type="password" name="password1" placeholder="Senha" />

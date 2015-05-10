@@ -548,6 +548,7 @@ var Pages = {
 	Login: require('../pages/login.jsx'),
 	Login_Register: require('../pages/login_register.jsx'),
 	Login_Recover: require('../pages/login_recover.jsx'),
+	Login_Newpass: require('../pages/login_newpass.jsx'),
 	NewPrintJob: require('../pages/newPrintJob.jsx'),
 	NewClient: require('../pages/newClient.jsx'),
 	ListClients: require('../pages/listClients.jsx'),
@@ -1065,6 +1066,10 @@ var App = Router.extend({
 			function() {
 				Pages.Login_Recover(this);
 			},
+		'login/recover/:hash':
+			function() {
+				Pages.Login_Newpass(this);
+			},
 		'novo/pedido':
 			function () {
 				Pages.NewPrintJob(this);
@@ -1315,7 +1320,7 @@ module.exports = {
 	},
 };
 
-},{"../components/flasher.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","../pages/home.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx","../pages/listClients.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listClients.jsx","../pages/login.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx","../pages/login_recover.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx","../pages/login_register.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_register.jsx","../pages/newClient.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newClient.jsx","../pages/newPrintJob.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newPrintJob.jsx","backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/backbone-1.1.2.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","marked":"/home/felipe/Projects/fabrica/app/static/js/vendor/marked.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx":[function(require,module,exports){
+},{"../components/flasher.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","../pages/home.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx","../pages/listClients.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listClients.jsx","../pages/login.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx","../pages/login_newpass.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_newpass.jsx","../pages/login_recover.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx","../pages/login_register.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_register.jsx","../pages/newClient.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newClient.jsx","../pages/newPrintJob.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newPrintJob.jsx","backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/backbone-1.1.2.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","marked":"/home/felipe/Projects/fabrica/app/static/js/vendor/marked.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx":[function(require,module,exports){
 
 var $ = require('jquery')
 var React = require('react')
@@ -1473,6 +1478,49 @@ module.exports = function (app) {
 };
 
 
+},{"jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_newpass.jsx":[function(require,module,exports){
+
+var $ = require('jquery')
+var selectize = require('selectize')
+
+module.exports = function (app) {
+  // Code below is exactly the reason why React the like exist.
+  // But fuck it. This is just a form, for christ's sake.
+
+  var form = $(".LoginForm");
+
+  var p1 = form.find('[name=password1]')
+  var p2 = form.find('[name=password2]')
+
+  form.find('[type=password]')
+    .on('focusout', function (e) {
+      if (p1.val() && p2.val() && p1.val() !== p2.val()) {
+        p2.addClass('is-wrong')
+      } else {
+        p2.removeClass('is-wrong')
+      }
+    })
+    .on('keyup', function (e) {
+      if (p1.val() && p2.val() && p1.val() == p2.val()) {
+        p2.removeClass('is-wrong')
+        $("is-wrong-stuff").remove()
+      }
+    })
+
+  form.submit(function (e) {
+    e.preventDefault();
+    e.stopPropagation()
+    $("is-wrong-stuff").remove()
+    if (p2.hasClass('is-wrong')) {
+      $("#flash-messages").append($("<li class='error' id='is-wrong-stuff'>Ops. As senhas estão diferentes.<i class='close-btn' onClick='$(this.parentElement).slideUp()'></i></li>"))
+    } else {
+      this.submit();
+    }
+  });
+
+};
+
+
 },{"jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx":[function(require,module,exports){
 
 var $ = require('jquery')
@@ -1485,7 +1533,7 @@ module.exports = function (app) {
     return !!str.match(emailRegex);
   }
 
-  var form = $('.LoginRecoverForm');
+  var form = $('.LoginForm');
   var email = form.find("[name=email]");
   var captcha = form.find(".captcha");
   var captchaResponse = form.find("[name=g-recaptcha-response]");
@@ -1541,7 +1589,7 @@ module.exports = function (app) {
   // Code below is exactly the reason why React the like exist.
   // But fuck it. This is just a form, for christ's sake.
 
-  var form = $(".SignupForm");
+  var form = $(".LoginForm");
 
   var p1 = form.find('[name=password1]')
   var p2 = form.find('[name=password2]')

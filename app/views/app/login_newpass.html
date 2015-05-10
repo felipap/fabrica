@@ -1,18 +1,14 @@
 {% extends '../default.html' %}
 {% set page = {
-  tag: 'login',
+  tag: 'login_register',
   root: 'login',
 } %}
 
 {% block head %}
-	<link rel="stylesheet" href="{{ assetUrl('css/bundle.css') }}" />
+  <link rel="stylesheet" href="{{ assetUrl('css/bundle.css') }}" />
 {% endblock %}
 
 {% block body %}
-<script>
-window._form_messages={{ messages|json|safe }};
-</script>
-
 <div class="container">
   <a class="Logo" href="/">
     Fabrica
@@ -20,23 +16,21 @@ window._form_messages={{ messages|json|safe }};
     DeltaThinkers
   </a>
   <h1>
-    Fazer Login
+    Recuperação de conta
   </h1>
   <p>
-    Ainda não tem uma conta? <a href="/signup">Registre-se.</a>
+    Olá, <strong>{{ ruser.name|split(' ')|index(0) }}</strong><br />
+    Escolha uma nova senha para usar a partir de agora.
   </p>
   <div id="flash-messages" class="FlashWrapper"></div>
-	<form class="LoginForm" method="post" action="">
-		<input type="email" name="email" placeholder="Seu email aqui" />
-		<input type="password" name="password" placeholder="Senha" />
+  <form class="LoginForm" method="post" action="">
+    <input type="password" name="password1" placeholder="Nova senha" />
+    <input type="password" name="password2" placeholder="Nova senha de novo (só pra confirmar)" />
     <input type="hidden" name="_csrf" value="{{ token }}" />
     <div class="base">
-      <button class="form-btn">Entrar</button>
-      <div class="recover">
-        <a href="/login/recover">Recuperar senha</a>
-      </div>
+      <button class="form-btn">Salvar</button>
     </div>
-	</form>
+  </form>
   <footer>
   </footer>
 </div>

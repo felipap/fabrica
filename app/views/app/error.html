@@ -30,7 +30,7 @@
 		<p>{{ msg|safe }}</p>
 	{% endif %}
 
-	{% if nconf.get('env') === 'development' %}
+	{% development %}
 		<div style="">
 			<h2><em>{{ errorCode }}</em></h2>
 			<small>{{ errorMsg }}</small>
@@ -38,8 +38,8 @@
 				<small>{{ errorStack|safe }}</small>
 			</ul>
 		</div>
-	{% endif %}
 
+	{% enddevelopment %}
 	{% if action %}
 		<a href="/" class="button" data-action="go-back">
 			{{ action|safe }}

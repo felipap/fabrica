@@ -121,7 +121,7 @@ module.exports = function(err, req, res, next) {
 	}
 
 	req.logger.fatal('Error detected:', err, err.args &&
-		JSON.stringify(err.args.err && err.args.err.errors), lodash.keys(err), err.status);
+		JSON.stringify(err.args.err && err.args.err.errors), err.status);
 	Error.stackTraceLimit = 60
 	if (err.stack)
 		req.logger.info(err.stack)

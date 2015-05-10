@@ -16,24 +16,26 @@ var User = mongoose.model("User")
 
 module.exports.Templates = {
   AccountRecovery: function (user, link) {
-    please({$is:User},'$skip')
+    please({$model:User}, '$skip', arguments)
+
+    var template = lodash.template(
+      `<p>Oi, <%= user.name.split(' ')[0] %></p>
+      <p>
+        Para restorar acesso à sua conta, acesse esse link: <a href="<%= link %>"><%= link %></a>
+      </p>
+      <p>
+        Você recebeu esse email pois recebemos um pedido de recuperação da sua conta. Se não foi você que fez o pedido, pode ignorar esse email. Nada de mal vai acontecer.
+      </p>
+      <p>
+        Abraços.<br />
+        Fabrica
+      </p>`
+    );
 
     return {
         to: user.email,
         subject: 'Recuperação de conta · Fabrica DeltaThinkers',
-        html: lodash.template(
-          `<p>Oi, <%= user.name.split(' ')[0] %></p>
-          <p>
-            Para restorar acesso à sua conta, acesse esse link: <a href="<%= link %>"><%= link %></a>
-          </p>
-          <p>
-            Você recebeu esse email pois recebemos um pedido de recuperação da sua conta. Se não foi você que fez o pedido, pode ignorar esse email. Nada de mal vai acontecer.
-          </p>
-          <p>
-            Abraços.<br />
-            Fabrica
-          </p>`
-      ),
+        html: template({ user: user, link: link })
     }
   }
 }
@@ -65,6 +67,6 @@ module.exports.sendMessage = sendMessage
 
 
 module.exports.toNewSellerClient = function (seller, client, cb) {
-  please({$is:User}, {$is:User}, "$isFn")
+  please({$is:User}, {$is:User}, "$isFn", arguments)
 
 }

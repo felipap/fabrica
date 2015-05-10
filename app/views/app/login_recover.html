@@ -1,6 +1,7 @@
 {% extends '../default.html' %}
 {% set page = {
   tag: 'login_recover',
+  root: 'login',
 } %}
 
 {% block head %}
@@ -23,7 +24,7 @@
     <strong>Escreva o seu email abaixo</strong> e vamos nós te mandaremos instruções de como recuperar a sua conta.
   </p>
   <div id="flash-messages" class="FlashWrapper"></div>
-	<form class="LoginRecoverForm" method="post" action="">
+	<form class="LoginForm" method="post" action="">
     <div class="form-group">
       <input type="email" name="email" placeholder="Email" />
     </div>

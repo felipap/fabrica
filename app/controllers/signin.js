@@ -1,8 +1,10 @@
 
+'use strict'
+
 var validator = require('validator')
 var mongoose = require('mongoose')
 var passport = require('passport')
-var _ = require('lodash')
+var rclient = require('app/config/redis')
 
 var required = require('./lib/required')
 var ccaptcha = require('app/lib/checkCaptcha')
@@ -39,12 +41,81 @@ module.exports = function(app) {
 					throw err
 				}
 
-
 				req.flash('info', 'Em pouco tempo você receberá um email com '+
 					'instruções de como resetar a sua senha.')
 				res.redirect('/login')
 			})
 		}))
+	})
+
+	router.get('/login/recover/:hash', function(req, res) {
+		var hash = req.params.hash
+
+		rclient.get('acc_recovery:'+hash, (err, userId) => {
+			if (err) {
+				throw err
+			}
+
+			if (!userId) {
+				// Assume the key has expired. It's easier and harmless.
+				res.renderError(200, {
+					h2: 'Esse pedido de recuperação de conta expirou.',
+					msg: 'Clique <a href=\'/login/recover\'>aqui</a> para fazer outro.',
+					action: false,
+				})
+				return
+			}
+
+			User.findOne({ _id: userId }, req.handleErr((user) => {
+				if (!user) {
+					req.logger.error('WTF? Requesting user doesn\'t exist?', userId)
+					return // Don't bother responding. Usuário feio!
+				}
+				res.render('app/login_newpass', { ruser: user })
+			}))
+		})
+	})
+
+	router.post('/login/recover/:hash', unspam.limit(2*1000),
+		function(req, res, next) {
+			// Mind you this is the same work for the get request.
+			// We have to revalidate the hash again.
+			var hash = req.params.hash
+			rclient.get('acc_recovery:'+hash, (err, userId) => {
+				if (err) {
+					throw err
+				}
+				if (!userId) {
+					// Assume the key has expired. It's easier and harmless.
+					res.renderError(200, {
+						h2: 'Esse pedido de recuperação de conta expirou.',
+						msg: 'Clique <a href=\'/login/recover\'>aqui</a> para fazer outro.',
+						action: false,
+					})
+					return
+				}
+				User.findOne({ _id: userId }, req.handleErr((user) => {
+					if (!user) {
+						req.logger.error('WTF? Requesting user doesn\'t exist?', userId)
+						return // Don't bother responding. Usuário feio!
+					}
+					var pass1 = req.body.password1,
+							pass2 = req.body.password2
+					if (pass1 !== pass2) {
+						req.flash('error', 'As duas senhas não correspondem.')
+						res.redirect('/login/recover/'+req.params.hash)
+						return
+					}
+					user.password = pass1;
+					user.save(req.handleErr((user) => {
+						req.login(user, (err) => {
+							rclient.del('acc_recovery:'+hash, (err, userId) => {
+								res.redirect('/')
+							})
+						})
+					}))
+				}))
+			})
 	})
 
 	router.get('/login/recover', function(req, res) {
@@ -65,7 +136,7 @@ module.exports = function(app) {
 				}
 
 				if (body.password1 !== req.body.password2) {
-					req.flash('error', 'As senhas não correspondem.')
+					req.flash('error', 'As duas senhas não correspondem.')
 					return res.redirect('/signup')
 				}
 				var u = new User({

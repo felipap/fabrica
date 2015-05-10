@@ -17,6 +17,7 @@ var Pages = {
 	Login: require('../pages/login.jsx'),
 	Login_Register: require('../pages/login_register.jsx'),
 	Login_Recover: require('../pages/login_recover.jsx'),
+	Login_Newpass: require('../pages/login_newpass.jsx'),
 	NewPrintJob: require('../pages/newPrintJob.jsx'),
 	NewClient: require('../pages/newClient.jsx'),
 	ListClients: require('../pages/listClients.jsx'),
@@ -533,6 +534,10 @@ var App = Router.extend({
 		'login/recover':
 			function() {
 				Pages.Login_Recover(this);
+			},
+		'login/recover/:hash':
+			function() {
+				Pages.Login_Newpass(this);
 			},
 		'novo/pedido':
 			function () {
