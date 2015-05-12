@@ -2,15 +2,17 @@
 <nav class="bar {{ navbarClass }}" role="navigation" id="navbar">
 <div class="navbar-content">
 	<div class="navbar-brand">
+		{#
 		{% if user %}
 		<a class="inner letter" href="/">
 			<span>F</span>
 		</a>
 		{% else %}
+		{% endif %}
+		#}
 		<a class="inner" href="/">
 			<span>Fabrica</span>
 		</a>
-		{% endif %}
 	</div>
 	{% if wizard %}
 		<div class="navbar-wizard">

@@ -2,24 +2,41 @@
 var mongoose = require('mongoose')
 var please = require('app/lib/please')
 var TMERA = require('app/lib/tmera')
+var mail = require('app/actions/mail')
 
 var User = mongoose.model('User')
 var Company = mongoose.model('Company')
 var Order = mongoose.model('Order')
 var logger = global.logger.mchild()
 
-module.exports.register = function (self, data, cb) {
-	please({$model:User}, '$skip', '$isFn')
+// http://blog.tompawlak.org/how-to-generate-random-values-nodejs-javascript
+function randomValueBase64 (len) {
+	return crypto.randomBytes(Math.ceil(len * 3 / 4))
+		.toString('base64')   // convert to base64 format
+		.slice(0, len)        // return required number of characters
+		.replace(/\+/g, '0')  // replace '+' with '0'
+		.replace(/\//g, '0'); // replace '/' with '0'
+}
+
+module.exports.register = function (self, client, data, cb) {
+	please({$model:User}, {$model:User}, '$skip', '$isFn')
 
 	var order = new Order({
 		comments: data.comments,
 		name: data.name,
+		client: data.clientId,
 		color: data.color,
 		seller: self._id,
+		code: randomValueBase64(10),
 		s3_path: data.file,
 	})
 
 	order.save(TMERA((doc) => {
+		mail.send(mail.Templates.NewOrderFromVendor(user, link),
+			(err, result) => {
+				cb(err);
+		})
+
 		cb(null, doc)
 	}))
 }

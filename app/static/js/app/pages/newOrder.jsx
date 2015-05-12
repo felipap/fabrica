@@ -16,16 +16,14 @@ require('react.backbone')
 const SigninUrl = "/api/s3/sign";
 
 var ColorSelect = React.createBackboneClass({
-	changeOptions: "change:color",
-
 	render: function() {
-		var circles = _.map(this.props.colors, (value, key) => {
+		var selected = this.getModel().get(this.props.field);
+		var circles = _.map(this.props.options, (value, key) => {
 			var select = () => {
-				this.getModel().set({ color: key });
+				this.getModel().set(this.props.field, key);
 			};
-			var selected = this.getModel().get('color') === key;
 			return (
-				<div className={"circle-wrapper"+(selected?' selected':'')} key={key}>
+				<div className={"circle-wrapper"+(selected === key?' selected':'')} key={key}>
 					<div className="circle" onClick={select}
 						style={{backgroundColor: value}} />
 				</div>
@@ -39,27 +37,17 @@ var ColorSelect = React.createBackboneClass({
 	}
 });
 
-var DropdownInput = React.createClass({
+var DropdownInput = React.createBackboneClass({
 	changeOptions: "change:color",
 
-	getInitialState: function() {
-		return {
-			selected: null,
-		}
-	},
-
-	getValue: function() {
-		return this.state.selected;
-	},
-
 	render: function() {
+		var selected = this.getModel().get(this.props.field);
 		var options = _.map(this.props.options, (value, key) => {
 			var select = () => {
-				this.setState({ selected: key });
+				this.getModel().set(this.props.field, key);
 			};
-			var selected = this.state.selected === key;
 			return (
-				<li role="presentation" className={(selected?" selected":"")}>
+				<li role="presentation" className={(selected === key?" selected":"")}>
 					<button role="menuitem" tabindex="-1" onClick={select}>{value}</button>
 				</li>
 			);
@@ -69,7 +57,7 @@ var DropdownInput = React.createClass({
 				<div className="dropdown">
 					<button className="btn btn-default dropdown-toggle"
 						type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-						{this.props.options[this.state.selected] || "Escolha uma opção"}
+						{this.props.options[selected] || "Escolha uma opção"}
 						&nbsp;<span className="caret"></span>
 					</button>
 					<ul className="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
@@ -81,15 +69,20 @@ var DropdownInput = React.createClass({
 	}
 });
 
+var colorOptions = {blue:'#0bf', red:'#f54747', green:'#3ECC5A'};
+var materialOptions = {pla:'PLA', pet: 'PET'};
+
 var FormPart_Visualizer = React.createBackboneClass({
+	componentDidMount: function() {
+		this.getModel().on('change:color', () => {
+			this.refs.renderer.setColor(colorOptions[this.getModel().get('color')]);
+		});
+	},
+
 	render: function() {
 		var advance = () => {
-			this.getModel().set('material', this.refs.materials.getValue());
 			this.props.parent.advancePosition();
 		};
-
-		var colorOptions = {blue:'#0bf', red:'#f54747', green:'#3ECC5A'};
-		var materialOptions = {pla:'PLA', pet: 'PET'};
 
 		return (
 			<div className="formPart renderer">
@@ -99,12 +92,14 @@ var FormPart_Visualizer = React.createBackboneClass({
 						<div className="field">
 							<h1>Escolha uma cor</h1>
 							<p>Temos <strong>3 opções de cores</strong> para a sua peça.</p>
-							<ColorSelect ref="colors" model={this.getModel()} colors={colorOptions}/>
+							<ColorSelect ref="colors" model={this.getModel()}
+								field='color' options={colorOptions}/>
 						</div>
 						<div className="field">
 							<h1>Escolha um material</h1>
 							<p>Temos <strong>2 opções de materiais</strong> para a sua peça.</p>
-							<DropdownInput ref="materials" options={materialOptions} />
+							<DropdownInput ref="materials" model={this.getModel()}
+								field='material' options={materialOptions} />
 						</div>
 						<div className="field">
 							<h1>Escolha o tamanho</h1>
@@ -114,14 +109,13 @@ var FormPart_Visualizer = React.createBackboneClass({
 						</button>
 					</div>
 					<div className="col-md-8" style={{padding:0}}>
-						<STLRenderer file={this.getModel().get('file')} />
+						<STLRenderer ref="renderer" file={this.getModel().get('file')} />
 					</div>
 				</div>
 			</div>
 		);
 	}
 });
-
 
 var FormPart_Upload = React.createBackboneClass({
 	changeOptions: "change:file",
@@ -259,7 +253,7 @@ var FormPart_Upload = React.createBackboneClass({
 			</div>
 		);
 	}
-})
+});
 
 var FormPart_ChooseClient = React.createBackboneClass({
 	getInitialState: function() {
@@ -269,20 +263,22 @@ var FormPart_ChooseClient = React.createBackboneClass({
 		}
 	},
 
-	componentDidMount: function() {
-		var ef = this.refs.email.getDOMNode();
-		$(ef).on('keyup', (e) => {
-			var trimmed = this.refs.email.getDOMNode().value.replace(/^\s+|\s+$/, '');
-			if (trimmed in this.tried) {
-				// We know no user exists with this email, so warn user.
-				this.setState({ warning: 'Não existe usuário com esse email.'});
-			} else {
-				if (this.state.warning) {
-					// We don't know if the user exists, so remove warning.
-					this.setState({ warning: null });
+	componentDidUpdate: function() {
+		if (this.refs.email) {
+			var ef = this.refs.email.getDOMNode();
+			$(ef).on('keyup', (e) => {
+				var trimmed = this.refs.email.getDOMNode().value.replace(/^\s+|\s+$/, '');
+				if (trimmed in this.tried) {
+					// We know no user exists with this email, so warn user.
+					this.setState({ warning: 'Não existe usuário com esse email.'});
+				} else {
+					if (this.state.warning) {
+						// We don't know if the user exists, so remove warning.
+						this.setState({ warning: null });
+					}
 				}
-			}
-		});
+			});
+		}
 	},
 
 	_send: function(e) {
@@ -295,30 +291,86 @@ var FormPart_ChooseClient = React.createBackboneClass({
 		}
 
 		$.ajax({
-			url: '/api/clients/exists?',
+			method: 'GET',
+			url: '/api/get_client',
 			data: { email: email },
 			dataType: 'json',
 			success: (data) => {
-				if (!data.exists) {
+				this.getModel().set('client', data);
+			},
+			error: (xhr, options) => {
+				var data = xhr.responseJSON;
+				if (xhr.statusCode === 404) {
 					this.setState({ warning: 'Não existe usuário com esse email.' });
 					this.tried[email] = true;
 					return;
 				}
-				this.getModel().set('user', data);
-				this.props.parent.advancePosition();
-			},
-			error: (xhr, options) => {
-				var data = xhr.responseJSON;
+				if (data && data.error === 'APIError') {
+					this.setState({ warning: data.message || 'Erro ao processar esse email.' })
+					return;
+				}
 				if (data && data.message) {
 					Utils.flash.alert(data.message);
 				} else {
-					Utils.flash.alert('Milton Friedman.');
+					Utils.flash.alert('Um erro inesperado aconteceu.');
 				}
 			}
 		})
 	},
 
+	_unselectClient: function () {
+		this.getModel().set('client', null);
+	},
+
+	_advance: function () {
+		if (this.getModel().get('client')) {
+			this.props.parent.advancePosition();
+		}
+	},
+
 	render: function() {
+		var client = this.getModel().get('client');
+
+		if (client) {
+			return (
+				<div className="formPart chooseClient">
+					<h1>Selecione um cliente <div className="position">passo {this.props.step} de {this.props.totalSteps-1}</div></h1>
+					<p>
+						Cliente escolhido:
+					</p>
+					<div className="userDisplay">
+						<div className="left">
+							<div className="user-avatar">
+								<div className="avatar"
+									style={{backgroundImage:'url('+client.picture+')'}} />
+							</div>
+						</div>
+						<div className="right">
+							<div className="name">
+								{client.name}
+							</div>
+							<div className="email">
+								{client.email}
+							</div>
+							<div className="phone">
+								{client.phone}
+							</div>
+						</div>
+					</div>
+					<div className="row">
+						<div className="col-md-3">
+							<button className="form-btn" onClick={this._advance}>
+								Continuar
+							</button>
+							<button className="form-other-btn" onClick={this._unselectClient}>
+								Escolher outro
+							</button>
+						</div>
+					</div>
+				</div>
+			);
+		}
+
 		return (
 			<div className="formPart chooseClient">
 				<h1>Selecione um cliente <div className="position">passo {this.props.step} de {this.props.totalSteps-1}</div></h1>
@@ -339,7 +391,7 @@ var FormPart_ChooseClient = React.createBackboneClass({
 					<div className="form-group">
 						<div className="col-md-3">
 							<button className="form-btn">
-								Continuar
+								Procurar
 							</button>
 						</div>
 					</div>
@@ -349,30 +401,23 @@ var FormPart_ChooseClient = React.createBackboneClass({
 	}
 });
 
-
 var FormPart_Naming_Final = React.createBackboneClass({
 	componentDidMount: function() {
 	},
 
-	_send: function (e) {
+	_advance: function (e) {
 		e.preventDefault();
 
 		this.getModel().set('name', this.refs.name.getDOMNode().value);
 		this.getModel().set('comments', this.refs.comments.getDOMNode().value);
-
-		this.getModel().save(null, {
-			success: (model, response) => {
-			},
-			error: (model, xhr, options) => {
-			},
-		});
+		this.props.parent.advancePosition();
 	},
 
 	render: function() {
 		return (
 			<div className="formPart naming">
 			<h1>Para terminar... <div className="position">passo {this.props.step} de {this.props.totalSteps-1}</div></h1>
-				<form onSubmit={this._send} className="form-horizontal">
+				<form onSubmit={this._advance} className="form-horizontal">
 					<div className="form-group">
 						<div className="col-md-6">
 							<label>Identifique o modelo</label>
@@ -398,16 +443,38 @@ var FormPart_Naming_Final = React.createBackboneClass({
 			</div>
 		);
 	}
-})
+});
+
+
+var FormParts = [
+	FormPart_ChooseClient,
+	FormPart_Upload,
+	FormPart_Visualizer,
+	FormPart_Naming_Final,
+];
 
 var OrderForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
-			formPosition: 3,
+			formPosition: 2,
 		}
 	},
 
+	save: function() {
+		this.getModel().save(null, {
+			success: (model, response) => {
+			},
+			error: (model, xhr, options) => {
+			},
+		});
+	},
+
 	advancePosition: function() {
+		console.log('advancePosition!')
+		if (this.state.formPosition === FormParts.length-1) {
+			this._save();
+			return;
+		}
 		this.setState({ formPosition: this.state.formPosition+1 });
 	},
 
@@ -423,16 +490,6 @@ var OrderForm = React.createBackboneClass({
 	},
 
 	render: function() {
-		var self = this;
-
-		console.log("rendered", this.getModel().attributes, this.state.formPosition)
-
-		var FormParts = [
-			FormPart_ChooseClient,
-			FormPart_Upload,
-			FormPart_Visualizer,
-			FormPart_Naming_Final,
-		];
 		var formParts = _.map(FormParts, (P, i) => {
 			var restoreHere = () => {
 				alert('não tá funcionando, fio')
@@ -474,9 +531,18 @@ function setupLeaveWarning() {
 
 module.exports = function(app) {
 	var printJob = new Models.Order({
+		client: {
+			name: 'Felipe',
+			picture: 'http://localhost:3000/static/images/lavatars/F.png',
+			email: 'pires.a.felipe@gmail.com',
+			id: 'asdf',
+		},
 		color: 'red',
-		file: 'https://s3-sa-east-1.amazonaws.com/deltathinkers/jobs/dfd691c6-3622-4dc1-9e8c-59d08d87e69c',
+		// file: 'https://s3-sa-east-1.amazonaws.com/deltathinkers/jobs/dfd691c6-3622-4dc1-9e8c-59d08d87e69c',
+		file: 'https://deltathinkers.s3.amazonaws.com/jobs/f057cd47-1ca0-42be-80d1-7c5c1cee668c',
 	});
+
+	// Load THREE.js scripts into page.
 
 	function addScript(src, cb) {
 		var el = document.createElement('script');
@@ -501,7 +567,6 @@ module.exports = function(app) {
 			start()
 			return;
 		}
-		console.log('call', i)
 		addScript(queue[i++], loadNext);
 	})();
 

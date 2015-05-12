@@ -556,6 +556,9 @@ var App = Router.extend({
 			function () {
 				Pages.ListOrders(this);
 			},
+		'pedidos':
+			function () {
+			},
 		'':
 			function () {
 				Pages.Home(this);
@@ -563,7 +566,7 @@ var App = Router.extend({
 	},
 
 	components: {
-		viewPost: function (data) {
+		view: function (data) {
 			var postId = data.id;
 			var resource = window.conf.resource;
 
@@ -605,184 +608,6 @@ var App = Router.extend({
 						app.navigate(app.pageRoot, { trigger: false });
 					}.bind(this))
 			}
-		},
-
-		viewProblem: function (data) {
-			var postId = data.id;
-			var resource = window.conf.resource;
-			if (resource && resource.type === 'problem' && resource.data.id === postId) {
-				var postItem = new Models.Problem(resource.data);
-				// Remove window.conf.problem, so closing and re-opening post forces us to fetch
-				// it again. Otherwise, the use might lose updates.
-				window.conf.resource = undefined;
-				this.pushComponent(<BoxWrapper rclass={Views.Problem} model={postItem} />, 'problem', {
-					onClose: function () {
-						app.navigate(app.pageRoot, { trigger: false });
-					}
-				});
-			} else {
-				$.getJSON('/api/problems/'+postId)
-					.done(function (response) {
-						console.log('response, 2data', response);
-						var postItem = new Models.Problem(response.data);
-						this.pushComponent(<BoxWrapper rclass={Views.Problem} model={postItem} />, 'problem', {
-							onClose: function () {
-								app.navigate(app.pageRoot, { trigger: false });
-							}
-						});
-					}.bind(this))
-					.fail(function (xhr) {
-						if (xhr.status === 404) {
-							Utils.flash.alert('Ops! Não conseguimos encontrar essa publicação. Ela pode ter sido excluída.');
-						} else {
-							Utils.flash.alert('Ops.');
-						}
-						app.navigate(app.pageRoot, { trigger: false });
-					}.bind(this))
-			}
-		},
-
-		viewProblemSet: function (data) {
-			var postId = data.id;
-			var resource = window.conf.resource;
-
-			var onGetItemData = function (data) {
-				var model = new Models.ProblemSet(data);
-				this.pushComponent(<BoxWrapper rclass={Views.ProblemSet} model={model} />, 'problem-set', {
-					onClose: function () {
-						app.navigate(app.pageRoot, { trigger: false });
-					}
-				});
-			}.bind(this)
-
-			if (resource && resource.type === 'problem-set' && resource.data.id === postId) {
-				// Remove window.conf.problem, so closing and re-opening post forces us
-				// to fetch it again. Otherwise, the use might lose updates.
-				window.conf.resource = undefined;
-				onGetItemData(resource.data);
-			} else {
-				var psetSlug = data.slug;
-				$.getJSON('/api/psets/s/'+psetSlug)
-					.done(function (response) {
-						onGetItemData(response.data);
-					}.bind(this))
-					.fail(function (xhr) {
-						if (xhr.status === 404) {
-							Utils.flash.alert('Ops! Não conseguimos encontrar essa publicação. Ela pode ter sido excluída.');
-						} else {
-							Utils.flash.alert('Ops.');
-						}
-						app.navigate(app.pageRoot, { trigger: false });
-					}.bind(this))
-			}
-		},
-
-		viewProblemSetProblem: function (data) {
-			var postId = data.id;
-			var resource = window.conf.resource;
-
-			var onGetItemData = function (idata) {
-				var model = new Models.ProblemSet(idata);
-				this.pushComponent(<BoxWrapper rclass={Views.ProblemSet} pindex={data.pindex} model={model} />,
-					'problem-set', {
-					onClose: function () {
-						app.navigate(app.pageRoot, { trigger: false });
-					}
-				});
-			}.bind(this)
-
-			if (resource && resource.type === 'problem-set' && resource.data.id === postId) {
-				// Remove window.conf.problem, so closing and re-opening post forces us
-				// to fetch it again. Otherwise, the use might lose updates.
-				window.conf.resource = undefined;
-				onGetItemData(resource.data);
-			} else {
-				var psetSlug = data.slug;
-				$.getJSON('/api/psets/s/'+psetSlug)
-					.done(function (response) {
-						onGetItemData(response.data);
-					}.bind(this))
-					.fail(function (xhr) {
-						if (xhr.status === 404) {
-							Utils.flash.alert('Ops! Não conseguimos encontrar essa publicação. Ela pode ter sido excluída.');
-						} else {
-							Utils.flash.alert('Ops.');
-						}
-						app.navigate(app.pageRoot, { trigger: false });
-					}.bind(this))
-			}
-		},
-
-		createProblemSet: function (data) {
-			this.pushComponent(Forms.ProblemSet.Create({user: window.user}), 'psetForm');
-		},
-
-		editProblemSet: function (data) {
-			$.getJSON('/api/psets/s/'+data.slug)
-				.done(function (response) {
-					console.log('response, data', response);
-					var psetItem = new Models.ProblemSet(response.data);
-					this.pushComponent(Forms.ProblemSet({model: psetItem}), 'problemForm', {
-						onClose: function () {
-							app.navigate(app.pageRoot, { trigger: false });
-						},
-					});
-				}.bind(this))
-				.fail(function (xhr) {
-					Utils.flash.warn("Problema não encontrado.");
-					app.navigate(app.pageRoot, { trigger: true });
-				}.bind(this))
-		},
-
-		createProblem: function (data) {
-			this.pushComponent(Forms.Problem.create({user: window.user}), 'problemForm');
-		},
-
-		editProblem: function (data) {
-			$.getJSON('/api/problems/'+data.id)
-				.done(function (response) {
-					console.log('response, data', response);
-					var problemItem = new Models.Problem(response.data);
-					this.pushComponent(Forms.Problem.edit({model: problemItem}), 'problemForm', {
-						onClose: function () {
-							app.navigate(app.pageRoot, { trigger: false });
-						},
-					});
-				}.bind(this))
-				.fail(function (xhr) {
-					Utils.flash.warn("Problema não encontrado.");
-					app.navigate(app.pageRoot, { trigger: true });
-				}.bind(this))
-		},
-
-		editPost: function (data) {
-			$.getJSON('/api/posts/'+data.id)
-				.done(function (response) {
-					console.log('response, data', response);
-					var postItem = new Models.Post(response.data);
-					this.pushComponent(Forms.Post.edit({model: postItem}), 'postForm', {
-						onClose: function () {
-							app.navigate(app.pageRoot, { trigger: false });
-						}.bind(this),
-					});
-				}.bind(this))
-				.fail(function (xhr) {
-					Utils.flash.warn("Publicação não encontrada.");
-					app.navigate(app.pageRoot, { trigger: true });
-				}.bind(this))
-		},
-
-		createPost: function () {
-			this.pushComponent(Forms.Post.create({user: window.user}), 'postForm', {
-				onClose: function () {
-				}
-			});
-		},
-
-		selectInterests: function (data) {
-			var self = this;
-			new Interests({}, function () {
-			});
 		},
 	},
 });

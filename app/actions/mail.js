@@ -60,7 +60,7 @@ var sendMessage = (data, cb) => {
   sendgrid.send(payload, cb)
 }
 
-module.exports.sendMessage = sendMessage
+module.exports.send = sendMessage
 
 
 

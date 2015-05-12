@@ -2,9 +2,9 @@
 @import "../common.less";
 
 // @import "parts/formatting.less";
-// @import "parts/flasher.less";
 // @import "parts/labels.less";
 // @import "parts/tour.less";
+@import "parts/flasher.less";
 
 @import "parts/navbar.less";
 @import "parts/popoverlist.less";
@@ -372,10 +372,23 @@ body:not(.public) {
     .xbtn(white, @CBLUE);
     margin-top: 15px;
     padding: 15px 20px;
-    color: white;
     font-weight: bold;
     // font-size: 16px;
     text-transform: uppercase;
+  }
+
+  .form-other-btn {
+    font-family: museo-sans;
+    .xbtn(#888, white);
+    margin-top: 15px;
+    padding: 15px 20px;
+    font-weight: bold;
+    // font-size: 16px;
+    text-transform: uppercase;
+  }
+
+  .form-btn + .form-other-btn {
+    margin-left: 10px;
   }
 }
 
@@ -411,22 +424,39 @@ body:not(.public) {
 
 .ListOrders {
 
-  .orderList {
-    .orderItem {
-      border: 1px solid #EEE;
+  .orderList > .toolbar {
+    width: 100%;
+    display: table;
+    margin-bottom: 20px;
 
-      & > ul {
-        display: table;
-        float: left;
-        & > li {
-          display: table-cell;
-          border: 1px solid #08C;
-        }
+    ul {
+      float: left;
+    }
+    ul.right {
+      float: right;
+    }
+  }
 
+  .orderList table {
+    width: 100%;
+
+    & > .header,
+    & > .item {
+
+      td, th {
+        // display: table-cell;
+        vertical-align: top;
+        height: 40px;
+        padding: 10px;
+        border: 1px solid #08C;
+        width: 20%;
       }
 
-      & > ul.right {
-        float: right;
+      .selection { width: 40px; }
+      .type { width: 100px; }
+      .date { width: 100px; }
+      .name {
+        width: 250px;
       }
     }
   }
@@ -477,5 +507,9 @@ body:not(.public) {
     background-image: url(/static/images/mailchimp-checkmarks-sprite-2x.png);
     background-size: 24px 384px;
   }
+
+}
+
+.OrderView {
 
 }

@@ -17,8 +17,8 @@ module.exports.register = function (self, data, cb) {
 	User.findOne({ email: data.email }, TMERA((repeat) => {
 		if (repeat) {
 			return cb({
-				type: 'APIError',
-				name: 'ExistingUser',
+				name: 'APIError',
+				type: 'ExistingUser',
 				msg: 'Esse usuário já existe.',
 			})
 		}
@@ -63,7 +63,7 @@ module.exports.initiateAccountRecovery = function (user, cb) {
 		if (err) {
 			throw err
 		}
-		mail.sendMessage(mail.Templates.AccountRecovery(user, link),
+		mail.send(mail.Templates.AccountRecovery(user, link),
 			(err, result) => {
 				cb(err);
 		})

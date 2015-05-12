@@ -193,6 +193,17 @@ module.exports = PrettyCheck;
 
 },{"jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx":[function(require,module,exports){
 
+/**
+ *
+ * TODO:
+ * Ideally, we should look into replacing Trackball controls for our own
+ * solution in the near future (perhaps a lite version?), ala the github STL
+ * visualizer.
+ * Aside from it being slower than we would like, I haven't found a good way to
+ * lock the rotation of the x axis.
+ * See: https://github.com/mrdoob/three.js/issues/1230
+ */
+
 "use strict";
 
 var React = require('react');
@@ -211,6 +222,47 @@ function startStats() {
 	container.appendChild(stats.domElement);
 }
 
+var Panel = React.createClass({displayName: "Panel",
+
+	getInitialState: function() {
+		return {
+			state: 'solid',
+		};
+	},
+
+	render: function() {
+		var toSolidMaterial = function()  {
+			this.setState({ state: 'solid' });
+			this.props.parent.toSolidMaterial();
+		}.bind(this);
+		var toNormalMaterial = function()  {
+			this.setState({ state: 'normal' });
+			this.props.parent.toNormalMaterial();
+		}.bind(this);
+		var toWireframeMaterial = function()  {
+			this.setState({ state: 'wireframe' });
+			this.props.parent.toWireframeMaterial();
+		}.bind(this);
+
+		return (
+			React.createElement("div", {className: "panel"}, 
+				React.createElement("button", {className: this.state.state==="solid"?"active":"", 
+					onClick: toSolidMaterial}, 
+					"Sólido"
+				), 
+				React.createElement("button", {className: this.state.state==="normal"?"active":"", 
+					onClick: toNormalMaterial}, 
+					"Normal"
+				), 
+				React.createElement("button", {className: this.state.state==="wireframe"?"active":"", 
+					onClick: toWireframeMaterial}, 
+					"Wireframe"
+				)
+			)
+		);
+	}
+});
+
 var STLRenderer = React.createClass({displayName: "STLRenderer",
 
 	componentDidMount: function() {
@@ -224,11 +276,8 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 			Detector.addGetWebGLMessage();
 		}
 
-		window.t = this.getDOMNode();
-
-		var width = $(this.getDOMNode().parentElement).innerWidth()-15;
+		var width = $(this.getDOMNode().parentElement).innerWidth()-15; // magic num
 		var height = $(this.getDOMNode().parentElement.parentElement).height();
-		console.log(width, height)
 
 		var addShadowedLight = function(x, y, z, color, intensity)  {
 			var directionalLight = new THREE.DirectionalLight(color, intensity);
@@ -252,8 +301,8 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 		// setup scene and camera
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(45, width/height, 1, 1000);
-		this.camera.position.set(3, 0.15, 5);
-		// this.camera.position.z = 5;
+		// this.camera.position.set(3, 0.15, 5);
+		this.camera.position.z = 5;
 
 		// setup renderer
 		this.renderer = new THREE.WebGLRenderer({ antialias: false });
@@ -264,14 +313,15 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 		this.renderer.shadowMapCullFace = THREE.CullFaceBack;
 		window.addEventListener('resize', this._onWindowResize, false);
 		this.refs.container.getDOMNode().appendChild(this.renderer.domElement);
-		// this.renderer.setClearColor( this.scene.fog.color );
+		this.renderer.setClearColor(0xDDDDDD);
 		// this.renderer.setPixelRatio(window.devicePixelRatio);
 
 		// setup controls
-		this.controls = new THREE.TrackballControls(this.camera);
+		this.controls = new THREE.TrackballControls(this.camera,
+			this.refs.container.getDOMNode());
 		this.controls.rotateSpeed = 6.0;
 		this.controls.zoomSpeed = 5.2;
-		this.controls.panSpeed = 0.8;
+		this.controls.panSpeed = 5;
 		// this.controls.noZoom = false;
 		this.controls.noPan = false;
 		this.controls.staticMoving = true;
@@ -280,14 +330,11 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 		this.controls.addEventListener('change', this._render);
 
 		// Add plane
-		var plane = new THREE.Mesh(
-			new THREE.PlaneBufferGeometry(40, 40),
-			new THREE.MeshPhongMaterial({ color: 0x999999, specular: 0x101010 })
-		);
-		plane.rotation.x = -Math.PI/2;
-		// plane.receiveShadow = true;
-		// plane.position.y = 0;
-		this.scene.add(plane);
+		this.plane = new THREE.GridHelper(100, 10);
+		this.plane.rotation.x = -Math.PI/2;
+		// this.plane.position.y = 0;
+		// this.plane.receiveShadow = true;
+		this.scene.add(this.plane);
 
 		// Add cube
 		var cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1),
@@ -298,17 +345,9 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 
 		var loader = new THREE.STLLoader();
 		loader.load(this.props.file, function(geometry)  {
-
-			var material = new THREE.MeshPhongMaterial({
-				color: 0xff5533,
-				specular: 0x111111,
-				shininess: 200,
-			});
-			var mesh = new THREE.Mesh(geometry, material);
-			window.m = mesh;
-
-			window.position = function (mesh) {
-				var b = m.geometry.boundingBox;
+			function position(mesh, plane) {
+				mesh.geometry.computeBoundingBox()
+				var b = mesh.geometry.boundingBox;
 				mesh.applyMatrix(
 					new THREE.Matrix4().makeTranslation(
 						-(b.max.x + b.min.x)/4,
@@ -316,18 +355,26 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 						-(b.max.z + b.min.z)/4
 					)
 				);
-				plane.position.y = -(b.max.y - b.min.y)/4;
-			};
+				plane.position.z = -(b.max.z - b.min.z)/2;
+			}
 
-			position(m);
+			this.normalMaterial = new THREE.MeshPhongMaterial({
+				color: 0xff5533,
+				specular: 0x111111,
+				shininess: 200,
+			});
 
-			// CENTER!
-			// mesh.position.set(g.boundingBox.max.x/2, -g.boundingBox.min.y/2, 0);
-			// mesh.rotation.set( 0, - Math.PI / 2, 0 );
-			mesh.scale.set( 0.5, 0.5, 0.5 );
-			mesh.castShadow = true;
-			mesh.receiveShadow = true;
-			this.scene.add(mesh);
+			this.model = new THREE.Mesh(geometry, this.normalMaterial);
+			window.r = this;
+			// this.model.position.set(g.boundingBox.max.x/2, -g.boundingBox.min.y/2, 0);
+			// this.model.rotation.set( 0, - Math.PI / 2, 0 );
+			this.model.scale.set(0.5, 0.5, 0.5);
+			position(this.model, this.plane); // CENTER!
+
+			this.model.castShadow = true;
+			this.model.receiveShadow = true;
+
+			this.scene.add(this.model);
 		}.bind(this));
 
 		this.scene.add(new THREE.AmbientLight(0x777777));
@@ -364,11 +411,37 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 		this.renderer.render(this.scene, this.camera);
 	},
 
+	setColor: function(color) {
+		this.normalMaterial.color = new THREE.Color(color);
+		this.toSolidMaterial();
+	},
+
+	toNormalMaterial: function() {
+		this.model.material = new THREE.MeshNormalMaterial({
+		  color: this.model.material.color,
+		  specular: 10066329,
+		  transparent: false,
+		  opacity: 0,
+		});
+	},
+
+	toWireframeMaterial: function() {
+		this.model.material = this.normalMaterial;
+		this.model.material.wireframe = true;
+	},
+
+	toSolidMaterial: function() {
+		this.model.material = this.normalMaterial;
+		this.model.material.wireframe = false;
+	},
+
 	render: function() {
+
 		return (
 			React.createElement("div", {className: "STLRenderer"}, 
 				React.createElement("div", {ref: "container"}), 
-				React.createElement("div", {id: "StatsWrapper"})
+				React.createElement("div", {id: "StatsWrapper"}), 
+				React.createElement(Panel, {parent: this})
 			)
 		);
 	}
@@ -1096,6 +1169,9 @@ var App = Router.extend({
 			function () {
 				Pages.ListOrders(this);
 			},
+		'pedidos':
+			function () {
+			},
 		'':
 			function () {
 				Pages.Home(this);
@@ -1103,7 +1179,7 @@ var App = Router.extend({
 	},
 
 	components: {
-		viewPost: function (data) {
+		view: function (data) {
 			var postId = data.id;
 			var resource = window.conf.resource;
 
@@ -1145,184 +1221,6 @@ var App = Router.extend({
 						app.navigate(app.pageRoot, { trigger: false });
 					}.bind(this))
 			}
-		},
-
-		viewProblem: function (data) {
-			var postId = data.id;
-			var resource = window.conf.resource;
-			if (resource && resource.type === 'problem' && resource.data.id === postId) {
-				var postItem = new Models.Problem(resource.data);
-				// Remove window.conf.problem, so closing and re-opening post forces us to fetch
-				// it again. Otherwise, the use might lose updates.
-				window.conf.resource = undefined;
-				this.pushComponent(React.createElement(BoxWrapper, {rclass: Views.Problem, model: postItem}), 'problem', {
-					onClose: function () {
-						app.navigate(app.pageRoot, { trigger: false });
-					}
-				});
-			} else {
-				$.getJSON('/api/problems/'+postId)
-					.done(function (response) {
-						console.log('response, 2data', response);
-						var postItem = new Models.Problem(response.data);
-						this.pushComponent(React.createElement(BoxWrapper, {rclass: Views.Problem, model: postItem}), 'problem', {
-							onClose: function () {
-								app.navigate(app.pageRoot, { trigger: false });
-							}
-						});
-					}.bind(this))
-					.fail(function (xhr) {
-						if (xhr.status === 404) {
-							Utils.flash.alert('Ops! Não conseguimos encontrar essa publicação. Ela pode ter sido excluída.');
-						} else {
-							Utils.flash.alert('Ops.');
-						}
-						app.navigate(app.pageRoot, { trigger: false });
-					}.bind(this))
-			}
-		},
-
-		viewProblemSet: function (data) {
-			var postId = data.id;
-			var resource = window.conf.resource;
-
-			var onGetItemData = function (data) {
-				var model = new Models.ProblemSet(data);
-				this.pushComponent(React.createElement(BoxWrapper, {rclass: Views.ProblemSet, model: model}), 'problem-set', {
-					onClose: function () {
-						app.navigate(app.pageRoot, { trigger: false });
-					}
-				});
-			}.bind(this)
-
-			if (resource && resource.type === 'problem-set' && resource.data.id === postId) {
-				// Remove window.conf.problem, so closing and re-opening post forces us
-				// to fetch it again. Otherwise, the use might lose updates.
-				window.conf.resource = undefined;
-				onGetItemData(resource.data);
-			} else {
-				var psetSlug = data.slug;
-				$.getJSON('/api/psets/s/'+psetSlug)
-					.done(function (response) {
-						onGetItemData(response.data);
-					}.bind(this))
-					.fail(function (xhr) {
-						if (xhr.status === 404) {
-							Utils.flash.alert('Ops! Não conseguimos encontrar essa publicação. Ela pode ter sido excluída.');
-						} else {
-							Utils.flash.alert('Ops.');
-						}
-						app.navigate(app.pageRoot, { trigger: false });
-					}.bind(this))
-			}
-		},
-
-		viewProblemSetProblem: function (data) {
-			var postId = data.id;
-			var resource = window.conf.resource;
-
-			var onGetItemData = function (idata) {
-				var model = new Models.ProblemSet(idata);
-				this.pushComponent(React.createElement(BoxWrapper, {rclass: Views.ProblemSet, pindex: data.pindex, model: model}),
-					'problem-set', {
-					onClose: function () {
-						app.navigate(app.pageRoot, { trigger: false });
-					}
-				});
-			}.bind(this)
-
-			if (resource && resource.type === 'problem-set' && resource.data.id === postId) {
-				// Remove window.conf.problem, so closing and re-opening post forces us
-				// to fetch it again. Otherwise, the use might lose updates.
-				window.conf.resource = undefined;
-				onGetItemData(resource.data);
-			} else {
-				var psetSlug = data.slug;
-				$.getJSON('/api/psets/s/'+psetSlug)
-					.done(function (response) {
-						onGetItemData(response.data);
-					}.bind(this))
-					.fail(function (xhr) {
-						if (xhr.status === 404) {
-							Utils.flash.alert('Ops! Não conseguimos encontrar essa publicação. Ela pode ter sido excluída.');
-						} else {
-							Utils.flash.alert('Ops.');
-						}
-						app.navigate(app.pageRoot, { trigger: false });
-					}.bind(this))
-			}
-		},
-
-		createProblemSet: function (data) {
-			this.pushComponent(Forms.ProblemSet.Create({user: window.user}), 'psetForm');
-		},
-
-		editProblemSet: function (data) {
-			$.getJSON('/api/psets/s/'+data.slug)
-				.done(function (response) {
-					console.log('response, data', response);
-					var psetItem = new Models.ProblemSet(response.data);
-					this.pushComponent(Forms.ProblemSet({model: psetItem}), 'problemForm', {
-						onClose: function () {
-							app.navigate(app.pageRoot, { trigger: false });
-						},
-					});
-				}.bind(this))
-				.fail(function (xhr) {
-					Utils.flash.warn("Problema não encontrado.");
-					app.navigate(app.pageRoot, { trigger: true });
-				}.bind(this))
-		},
-
-		createProblem: function (data) {
-			this.pushComponent(Forms.Problem.create({user: window.user}), 'problemForm');
-		},
-
-		editProblem: function (data) {
-			$.getJSON('/api/problems/'+data.id)
-				.done(function (response) {
-					console.log('response, data', response);
-					var problemItem = new Models.Problem(response.data);
-					this.pushComponent(Forms.Problem.edit({model: problemItem}), 'problemForm', {
-						onClose: function () {
-							app.navigate(app.pageRoot, { trigger: false });
-						},
-					});
-				}.bind(this))
-				.fail(function (xhr) {
-					Utils.flash.warn("Problema não encontrado.");
-					app.navigate(app.pageRoot, { trigger: true });
-				}.bind(this))
-		},
-
-		editPost: function (data) {
-			$.getJSON('/api/posts/'+data.id)
-				.done(function (response) {
-					console.log('response, data', response);
-					var postItem = new Models.Post(response.data);
-					this.pushComponent(Forms.Post.edit({model: postItem}), 'postForm', {
-						onClose: function () {
-							app.navigate(app.pageRoot, { trigger: false });
-						}.bind(this),
-					});
-				}.bind(this))
-				.fail(function (xhr) {
-					Utils.flash.warn("Publicação não encontrada.");
-					app.navigate(app.pageRoot, { trigger: true });
-				}.bind(this))
-		},
-
-		createPost: function () {
-			this.pushComponent(Forms.Post.create({user: window.user}), 'postForm', {
-				onClose: function () {
-				}
-			});
-		},
-
-		selectInterests: function (data) {
-			var self = this;
-			new Interests({}, function () {
-			});
 		},
 	},
 });
@@ -1496,46 +1394,124 @@ var PrettyCheck = require('../components/PrettyCheck.jsx')
 
 require('react.backbone')
 
+window.formatOrderDate = function (date) {
+	date = new Date(date);
+	return ''+date.getDate()+' de '+['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio',
+	'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro',
+	'Dezembro'][date.getMonth()]+', '+date.getFullYear()+' '+(date.getHours()>12?
+		''+(date.getHours()-12)+':'+date.getMinutes()+'pm':
+		''+(date.getHours())+':'+date.getMinutes()+'am');
+};
 
+var FullOrderView = React.createBackboneClass({
+	render: function() {
+		return (
+			React.createElement("div", {className: "FullOrderView"}, 
+				React.createElement("div", {className: "renderer"}
+				)
+			)
+		);
+	}
+})
+
+
+var OrderItem = React.createBackboneClass({
+	getInitialState: function() {
+		return {
+			expanded: false,
+		}
+	},
+
+	render: function() {
+		var doc = this.getModel();
+
+		var goto = function()  {
+			app.navigate(i.path, { trigger: true });
+		}
+
+		return (
+			React.createElement("tr", {className: "item", onClick: goto}, 
+				React.createElement("td", {className: "selection"}, 
+					React.createElement(PrettyCheck, null)
+				), 
+				React.createElement("td", {className: "name"}, 
+					doc.get('name')
+				), 
+				React.createElement("td", {className: "type"}, 
+					doc.get('_cor')[0].toUpperCase()+doc.get('_cor').slice(1), "/", doc.get('_tipo')
+				), 
+				React.createElement("td", {className: "ctdent"}, 
+					"Mauro Iezzi"
+				), 
+				React.createElement("td", {className: "stats"}, 
+					"Avatdado", React.createElement("br", null), "Aguardando Impressão"
+				), 
+				React.createElement("td", {className: "elastic"}), 
+				React.createElement("td", {className: "date"}, 
+					React.createElement("span", {"data-time-count": doc.get('created_at'), "data-title": formatOrderDate(doc.get('created_at'))}, 
+						calcTimeFrom(doc.get('created_at'))
+					)
+				)
+			)
+		);
+	},
+});
 
 var ListOrders = React.createBackboneClass({
 
 	render: function() {
-		var orderList = this.getCollection().map(function (i) {
-			console.log('ele', i.attributes)
+		var GenerateOrderList = function()  {
+			return this.getCollection().map(function (i) {
+				return React.createElement(OrderItem, {model: i})
+			});
+		}.bind(this);
+
+		var GenerateHeader = function()  {
 			return (
-				React.createElement("li", {className: "orderItem"}, 
-					React.createElement("ul", {className: ""}, 
-						React.createElement("li", {className: "selection"}, 
-							React.createElement(PrettyCheck, null)
+				React.createElement("thead", {className: "header"}, 
+					React.createElement("tr", null, 
+						React.createElement("th", {className: "selection"}
 						), 
-						React.createElement("li", {className: "info"}, 
-							React.createElement("div", {className: "name"}, 
-								i.get('name')
-							), 
-							React.createElement("div", {className: "comment"}, 
-								i.get('comment')
-							)
+						React.createElement("th", {className: "name"}, 
+							"Indetificação"
 						), 
-						React.createElement("li", {className: "stats"}, 
-							React.createElement("div", {className: "total"}, 
-								"3 Pedidos"
-							), 
-							React.createElement("div", {className: "ago"}, 
-								"Último pedido há 3 dias"
-							)
+						React.createElement("th", {className: "type"}, 
+							"Tipo"
 						), 
-						React.createElement("li", {className: "renderer"}
-						)
-					), 
-					React.createElement("ul", {className: "right"}, 
-						React.createElement("li", {className: "buttons"}, 
-							React.createElement("button", null, "The")
+						React.createElement("th", {className: "cthent"}, 
+							"Cliente"
+						), 
+						React.createElement("th", {className: "stats"}, 
+							"Status"
+						), 
+						React.createElement("th", {className: "elastic"}), 
+						React.createElement("th", {className: "date"}, 
+							"Data"
 						)
 					)
 				)
 			);
-		});
+		};
+
+		var GenerateToolbar = function()  {
+			return (
+				React.createElement("div", {className: "toolbar"}, 
+					React.createElement("ul", null, 
+						React.createElement("li", null
+						)
+					), 
+					React.createElement("ul", {className: "right"}, 
+						React.createElement("li", null, 
+							React.createElement("button", {className: "btn btn-danger"}, 
+								"Excluir tudo"
+							)
+						)
+					)
+				)
+			);
+		};
+
+
 		return (
 			React.createElement("div", {className: "ListOrders"}, 
 				React.createElement("h1", null, 
@@ -1544,8 +1520,12 @@ var ListOrders = React.createBackboneClass({
 				React.createElement("p", null, 
 					"Lista organizada por pedidos mais recentes."
 				), 
-				React.createElement("ul", {className: "orderList"}, 
-					orderList
+				React.createElement("div", {className: "orderList"}, 
+					GenerateToolbar(), 
+					React.createElement("table", null, 
+						GenerateHeader(), 
+						GenerateOrderList()
+					)
 				)
 			)
 		);
@@ -1554,7 +1534,10 @@ var ListOrders = React.createBackboneClass({
 
 module.exports = function(app) {
 	var collection = new Models.OrderList();
+
 	collection.fetch();
+	window.c = collection;
+
 	app.pushPage(React.createElement(ListOrders, {collection: collection}), 'list-orders', {
 		onClose: function() {
 		},
@@ -1900,16 +1883,14 @@ require('react.backbone')
 const SigninUrl = "/api/s3/sign";
 
 var ColorSelect = React.createBackboneClass({
-	changeOptions: "change:color",
-
 	render: function() {
-		var circles = _.map(this.props.colors, function(value, key)  {
+		var selected = this.getModel().get(this.props.field);
+		var circles = _.map(this.props.options, function(value, key)  {
 			var select = function()  {
-				this.getModel().set({ color: key });
+				this.getModel().set(this.props.field, key);
 			}.bind(this);
-			var selected = this.getModel().get('color') === key;
 			return (
-				React.createElement("div", {className: "circle-wrapper"+(selected?' selected':''), key: key}, 
+				React.createElement("div", {className: "circle-wrapper"+(selected === key?' selected':''), key: key}, 
 					React.createElement("div", {className: "circle", onClick: select, 
 						style: {backgroundColor: value}})
 				)
@@ -1923,27 +1904,17 @@ var ColorSelect = React.createBackboneClass({
 	}
 });
 
-var DropdownInput = React.createClass({displayName: "DropdownInput",
+var DropdownInput = React.createBackboneClass({
 	changeOptions: "change:color",
 
-	getInitialState: function() {
-		return {
-			selected: null,
-		}
-	},
-
-	getValue: function() {
-		return this.state.selected;
-	},
-
 	render: function() {
+		var selected = this.getModel().get(this.props.field);
 		var options = _.map(this.props.options, function(value, key)  {
 			var select = function()  {
-				this.setState({ selected: key });
+				this.getModel().set(this.props.field, key);
 			}.bind(this);
-			var selected = this.state.selected === key;
 			return (
-				React.createElement("li", {role: "presentation", className: (selected?" selected":"")}, 
+				React.createElement("li", {role: "presentation", className: (selected === key?" selected":"")}, 
 					React.createElement("button", {role: "menuitem", tabindex: "-1", onClick: select}, value)
 				)
 			);
@@ -1953,7 +1924,7 @@ var DropdownInput = React.createClass({displayName: "DropdownInput",
 				React.createElement("div", {className: "dropdown"}, 
 					React.createElement("button", {className: "btn btn-default dropdown-toggle", 
 						type: "button", id: "dropdownMenu1", "data-toggle": "dropdown", "aria-expanded": "true"}, 
-						this.props.options[this.state.selected] || "Escolha uma opção", 
+						this.props.options[selected] || "Escolha uma opção", 
 						" ", React.createElement("span", {className: "caret"})
 					), 
 					React.createElement("ul", {className: "dropdown-menu", role: "menu", "aria-labelledby": "dropdownMenu1"}, 
@@ -1965,15 +1936,20 @@ var DropdownInput = React.createClass({displayName: "DropdownInput",
 	}
 });
 
+var colorOptions = {blue:'#0bf', red:'#f54747', green:'#3ECC5A'};
+var materialOptions = {pla:'PLA', pet: 'PET'};
+
 var FormPart_Visualizer = React.createBackboneClass({
+	componentDidMount: function() {
+		this.getModel().on('change:color', function()  {
+			this.refs.renderer.setColor(colorOptions[this.getModel().get('color')]);
+		}.bind(this));
+	},
+
 	render: function() {
 		var advance = function()  {
-			this.getModel().set('material', this.refs.materials.getValue());
 			this.props.parent.advancePosition();
 		}.bind(this);
-
-		var colorOptions = {blue:'#0bf', red:'#f54747', green:'#3ECC5A'};
-		var materialOptions = {pla:'PLA', pet: 'PET'};
 
 		return (
 			React.createElement("div", {className: "formPart renderer"}, 
@@ -1983,12 +1959,14 @@ var FormPart_Visualizer = React.createBackboneClass({
 						React.createElement("div", {className: "field"}, 
 							React.createElement("h1", null, "Escolha uma cor"), 
 							React.createElement("p", null, "Temos ", React.createElement("strong", null, "3 opções de cores"), " para a sua peça."), 
-							React.createElement(ColorSelect, {ref: "colors", model: this.getModel(), colors: colorOptions})
+							React.createElement(ColorSelect, {ref: "colors", model: this.getModel(), 
+								field: "color", options: colorOptions})
 						), 
 						React.createElement("div", {className: "field"}, 
 							React.createElement("h1", null, "Escolha um material"), 
 							React.createElement("p", null, "Temos ", React.createElement("strong", null, "2 opções de materiais"), " para a sua peça."), 
-							React.createElement(DropdownInput, {ref: "materials", options: materialOptions})
+							React.createElement(DropdownInput, {ref: "materials", model: this.getModel(), 
+								field: "material", options: materialOptions})
 						), 
 						React.createElement("div", {className: "field"}, 
 							React.createElement("h1", null, "Escolha o tamanho")
@@ -1998,14 +1976,13 @@ var FormPart_Visualizer = React.createBackboneClass({
 						)
 					), 
 					React.createElement("div", {className: "col-md-8", style: {padding:0}}, 
-						React.createElement(STLRenderer, {file: this.getModel().get('file')})
+						React.createElement(STLRenderer, {ref: "renderer", file: this.getModel().get('file')})
 					)
 				)
 			)
 		);
 	}
 });
-
 
 var FormPart_Upload = React.createBackboneClass({
 	changeOptions: "change:file",
@@ -2143,7 +2120,7 @@ var FormPart_Upload = React.createBackboneClass({
 			)
 		);
 	}
-})
+});
 
 var FormPart_ChooseClient = React.createBackboneClass({
 	getInitialState: function() {
@@ -2153,20 +2130,22 @@ var FormPart_ChooseClient = React.createBackboneClass({
 		}
 	},
 
-	componentDidMount: function() {
-		var ef = this.refs.email.getDOMNode();
-		$(ef).on('keyup', function(e)  {
-			var trimmed = this.refs.email.getDOMNode().value.replace(/^\s+|\s+$/, '');
-			if (trimmed in this.tried) {
-				// We know no user exists with this email, so warn user.
-				this.setState({ warning: 'Não existe usuário com esse email.'});
-			} else {
-				if (this.state.warning) {
-					// We don't know if the user exists, so remove warning.
-					this.setState({ warning: null });
+	componentDidUpdate: function() {
+		if (this.refs.email) {
+			var ef = this.refs.email.getDOMNode();
+			$(ef).on('keyup', function(e)  {
+				var trimmed = this.refs.email.getDOMNode().value.replace(/^\s+|\s+$/, '');
+				if (trimmed in this.tried) {
+					// We know no user exists with this email, so warn user.
+					this.setState({ warning: 'Não existe usuário com esse email.'});
+				} else {
+					if (this.state.warning) {
+						// We don't know if the user exists, so remove warning.
+						this.setState({ warning: null });
+					}
 				}
-			}
-		}.bind(this));
+			}.bind(this));
+		}
 	},
 
 	_send: function(e) {
@@ -2179,30 +2158,86 @@ var FormPart_ChooseClient = React.createBackboneClass({
 		}
 
 		$.ajax({
-			url: '/api/clients/exists?',
+			method: 'GET',
+			url: '/api/get_client',
 			data: { email: email },
 			dataType: 'json',
 			success: function(data)  {
-				if (!data.exists) {
+				this.getModel().set('client', data);
+			}.bind(this),
+			error: function(xhr, options)  {
+				var data = xhr.responseJSON;
+				if (xhr.statusCode === 404) {
 					this.setState({ warning: 'Não existe usuário com esse email.' });
 					this.tried[email] = true;
 					return;
 				}
-				this.getModel().set('user', data);
-				this.props.parent.advancePosition();
-			}.bind(this),
-			error: function(xhr, options)  {
-				var data = xhr.responseJSON;
+				if (data && data.error === 'APIError') {
+					this.setState({ warning: data.message || 'Erro ao processar esse email.' })
+					return;
+				}
 				if (data && data.message) {
 					Utils.flash.alert(data.message);
 				} else {
-					Utils.flash.alert('Milton Friedman.');
+					Utils.flash.alert('Um erro inesperado aconteceu.');
 				}
-			}
+			}.bind(this)
 		})
 	},
 
+	_unselectClient: function () {
+		this.getModel().set('client', null);
+	},
+
+	_advance: function () {
+		if (this.getModel().get('client')) {
+			this.props.parent.advancePosition();
+		}
+	},
+
 	render: function() {
+		var client = this.getModel().get('client');
+
+		if (client) {
+			return (
+				React.createElement("div", {className: "formPart chooseClient"}, 
+					React.createElement("h1", null, "Selecione um cliente ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps-1)), 
+					React.createElement("p", null, 
+						"Cliente escolhido:"
+					), 
+					React.createElement("div", {className: "userDisplay"}, 
+						React.createElement("div", {className: "left"}, 
+							React.createElement("div", {className: "user-avatar"}, 
+								React.createElement("div", {className: "avatar", 
+									style: {backgroundImage:'url('+client.picture+')'}})
+							)
+						), 
+						React.createElement("div", {className: "right"}, 
+							React.createElement("div", {className: "name"}, 
+								client.name
+							), 
+							React.createElement("div", {className: "email"}, 
+								client.email
+							), 
+							React.createElement("div", {className: "phone"}, 
+								client.phone
+							)
+						)
+					), 
+					React.createElement("div", {className: "row"}, 
+						React.createElement("div", {className: "col-md-3"}, 
+							React.createElement("button", {className: "form-btn", onClick: this._advance}, 
+								"Continuar"
+							), 
+							React.createElement("button", {className: "form-other-btn", onClick: this._unselectClient}, 
+								"Escolher outro"
+							)
+						)
+					)
+				)
+			);
+		}
+
 		return (
 			React.createElement("div", {className: "formPart chooseClient"}, 
 				React.createElement("h1", null, "Selecione um cliente ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps-1)), 
@@ -2223,7 +2258,7 @@ var FormPart_ChooseClient = React.createBackboneClass({
 					React.createElement("div", {className: "form-group"}, 
 						React.createElement("div", {className: "col-md-3"}, 
 							React.createElement("button", {className: "form-btn"}, 
-								"Continuar"
+								"Procurar"
 							)
 						)
 					)
@@ -2233,30 +2268,23 @@ var FormPart_ChooseClient = React.createBackboneClass({
 	}
 });
 
-
 var FormPart_Naming_Final = React.createBackboneClass({
 	componentDidMount: function() {
 	},
 
-	_send: function (e) {
+	_advance: function (e) {
 		e.preventDefault();
 
 		this.getModel().set('name', this.refs.name.getDOMNode().value);
 		this.getModel().set('comments', this.refs.comments.getDOMNode().value);
-
-		this.getModel().save(null, {
-			success: function(model, response)  {
-			},
-			error: function(model, xhr, options)  {
-			},
-		});
+		this.props.parent.advancePosition();
 	},
 
 	render: function() {
 		return (
 			React.createElement("div", {className: "formPart naming"}, 
 			React.createElement("h1", null, "Para terminar... ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps-1)), 
-				React.createElement("form", {onSubmit: this._send, className: "form-horizontal"}, 
+				React.createElement("form", {onSubmit: this._advance, className: "form-horizontal"}, 
 					React.createElement("div", {className: "form-group"}, 
 						React.createElement("div", {className: "col-md-6"}, 
 							React.createElement("label", null, "Identifique o modelo"), 
@@ -2282,16 +2310,38 @@ var FormPart_Naming_Final = React.createBackboneClass({
 			)
 		);
 	}
-})
+});
+
+
+var FormParts = [
+	FormPart_ChooseClient,
+	FormPart_Upload,
+	FormPart_Visualizer,
+	FormPart_Naming_Final,
+];
 
 var OrderForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
-			formPosition: 3,
+			formPosition: 2,
 		}
 	},
 
+	save: function() {
+		this.getModel().save(null, {
+			success: function(model, response)  {
+			},
+			error: function(model, xhr, options)  {
+			},
+		});
+	},
+
 	advancePosition: function() {
+		console.log('advancePosition!')
+		if (this.state.formPosition === FormParts.length-1) {
+			this._save();
+			return;
+		}
 		this.setState({ formPosition: this.state.formPosition+1 });
 	},
 
@@ -2307,16 +2357,6 @@ var OrderForm = React.createBackboneClass({
 	},
 
 	render: function() {
-		var self = this;
-
-		console.log("rendered", this.getModel().attributes, this.state.formPosition)
-
-		var FormParts = [
-			FormPart_ChooseClient,
-			FormPart_Upload,
-			FormPart_Visualizer,
-			FormPart_Naming_Final,
-		];
 		var formParts = _.map(FormParts, function(P, i)  {
 			var restoreHere = function()  {
 				alert('não tá funcionando, fio')
@@ -2358,9 +2398,18 @@ function setupLeaveWarning() {
 
 module.exports = function(app) {
 	var printJob = new Models.Order({
+		client: {
+			name: 'Felipe',
+			picture: 'http://localhost:3000/static/images/lavatars/F.png',
+			email: 'pires.a.felipe@gmail.com',
+			id: 'asdf',
+		},
 		color: 'red',
-		file: 'https://s3-sa-east-1.amazonaws.com/deltathinkers/jobs/dfd691c6-3622-4dc1-9e8c-59d08d87e69c',
+		// file: 'https://s3-sa-east-1.amazonaws.com/deltathinkers/jobs/dfd691c6-3622-4dc1-9e8c-59d08d87e69c',
+		file: 'https://deltathinkers.s3.amazonaws.com/jobs/f057cd47-1ca0-42be-80d1-7c5c1cee668c',
 	});
+
+	// Load THREE.js scripts into page.
 
 	function addScript(src, cb) {
 		var el = document.createElement('script');
@@ -2385,7 +2434,6 @@ module.exports = function(app) {
 			start()
 			return;
 		}
-		console.log('call', i)
 		addScript(queue[i++], loadNext);
 	})();
 

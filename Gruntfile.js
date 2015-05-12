@@ -45,18 +45,6 @@ module.exports = function (grunt) {
 		},
 	});
 
-	grunt.config.set('concurrent', {
-		server: {
-			tasks: ['nodemon:server', 'nodemon:consumer']
-		},
-		watch: {
-			tasks: ['browserify:dev', 'watch'],
-			options: {
-				logConcurrentOutput: true
-			}
-		}
-	});
-
 	grunt.config.set('nodemon', {
 		server: {
 			script: 'master.js',
@@ -203,12 +191,10 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-less');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
-	grunt.loadNpmTasks('grunt-concurrent');
 	grunt.loadNpmTasks('grunt-nodemon');
 	grunt.loadNpmTasks('grunt-s3');
 
 	grunt.registerTask('serve', ['nodemon:server']);
-	grunt.registerTask('watchy', ['concurrent:watch']);
 	grunt.registerTask('build', ['uglify:js']);
 	grunt.registerTask('deploy', ['s3:deploy']);
 };

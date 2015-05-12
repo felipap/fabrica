@@ -12,6 +12,7 @@ OrderSchema = new mongoose.Schema {
 	status:			{ type: String, enum: _.values(Status), default: Status.Requested }
 	comments: 	{ type: String, required: false }
 	title: 			{ type: String }
+	code: 			{ type: String }
 
 	created_at: { type: Date, default: Date.now }
 	updated_at: { type: Date, default: Date.now }
@@ -32,6 +33,19 @@ OrderSchema = new mongoose.Schema {
 
 OrderSchema.statics.APISelect = '-password'
 
+
+OrderSchema.virtual('_cor').get ->
+	{
+		red: 'vermelho',
+		green: 'verde',
+		azul: 'azul',
+	}[@color]
+
+OrderSchema.virtual('_tipo').get ->
+	'PLA'
+
+OrderSchema.virtual('path').get ->
+	'/pedidos/'+@code
 
 OrderSchema.statics.ParseRules = {
 	color:

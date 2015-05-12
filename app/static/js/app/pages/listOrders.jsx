@@ -10,46 +10,124 @@ var PrettyCheck = require('../components/PrettyCheck.jsx')
 
 require('react.backbone')
 
+window.formatOrderDate = function (date) {
+	date = new Date(date);
+	return ''+date.getDate()+' de '+['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio',
+	'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro',
+	'Dezembro'][date.getMonth()]+', '+date.getFullYear()+' '+(date.getHours()>12?
+		''+(date.getHours()-12)+':'+date.getMinutes()+'pm':
+		''+(date.getHours())+':'+date.getMinutes()+'am');
+};
 
+var FullOrderView = React.createBackboneClass({
+	render: function() {
+		return (
+			<div className="FullOrderView">
+				<div className="renderer">
+				</div>
+			</div>
+		);
+	}
+})
+
+
+var OrderItem = React.createBackboneClass({
+	getInitialState: function() {
+		return {
+			expanded: false,
+		}
+	},
+
+	render: function() {
+		var doc = this.getModel();
+
+		var goto = () => {
+			app.navigate(i.path, { trigger: true });
+		}
+
+		return (
+			<tr className="item" onClick={goto}>
+				<td className="selection">
+					<PrettyCheck />
+				</td>
+				<td className="name">
+					{doc.get('name')}
+				</td>
+				<td className="type">
+					{doc.get('_cor')[0].toUpperCase()+doc.get('_cor').slice(1)}/{doc.get('_tipo')}
+				</td>
+				<td className="ctdent">
+					Mauro Iezzi
+				</td>
+				<td className="stats">
+					Avatdado<br />Aguardando Impressão
+				</td>
+				<td className="elastic"></td>
+				<td className="date">
+					<span data-time-count={doc.get('created_at')} data-title={formatOrderDate(doc.get('created_at'))}>
+						{calcTimeFrom(doc.get('created_at'))}
+					</span>
+				</td>
+			</tr>
+		);
+	},
+});
 
 var ListOrders = React.createBackboneClass({
 
 	render: function() {
-		var orderList = this.getCollection().map(function (i) {
-			console.log('ele', i.attributes)
+		var GenerateOrderList = () => {
+			return this.getCollection().map(function (i) {
+				return <OrderItem model={i} />
+			});
+		};
+
+		var GenerateHeader = () => {
 			return (
-				<li className="orderItem">
-					<ul className="">
-						<li className="selection">
-							<PrettyCheck />
-						</li>
-						<li className="info">
-							<div className="name">
-								{i.get('name')}
-							</div>
-							<div className="comment">
-								{i.get('comment')}
-							</div>
-						</li>
-						<li className="stats">
-							<div className="total">
-								3 Pedidos
-							</div>
-							<div className="ago">
-								Último pedido há 3 dias
-							</div>
-						</li>
-						<li className="renderer">
+				<thead className="header">
+					<tr>
+						<th className="selection">
+						</th>
+						<th className="name">
+							Indetificação
+						</th>
+						<th className="type">
+							Tipo
+						</th>
+						<th className="cthent">
+							Cliente
+						</th>
+						<th className="stats">
+							Status
+						</th>
+						<th className="elastic"></th>
+						<th className="date">
+							Data
+						</th>
+					</tr>
+				</thead>
+			);
+		};
+
+		var GenerateToolbar = () => {
+			return (
+				<div className="toolbar">
+					<ul>
+						<li>
 						</li>
 					</ul>
 					<ul className="right">
-						<li className="buttons">
-							<button>The</button>
+						<li>
+							<button className="btn btn-danger">
+								Excluir tudo
+							</button>
 						</li>
 					</ul>
-				</li>
+				</div>
 			);
-		});
+		};
+
+
 		return (
 			<div className="ListOrders">
 				<h1>
@@ -58,9 +136,13 @@ var ListOrders = React.createBackboneClass({
 				<p>
 					Lista organizada por pedidos mais recentes.
 				</p>
-				<ul className="orderList">
-					{orderList}
-				</ul>
+				<div className="orderList">
+					{GenerateToolbar()}
+					<table>
+						{GenerateHeader()}
+						{GenerateOrderList()}
+					</table>
+				</div>
 			</div>
 		);
 	}
@@ -68,7 +150,10 @@ var ListOrders = React.createBackboneClass({
 
 module.exports = function(app) {
 	var collection = new Models.OrderList();
+
 	collection.fetch();
+	window.c = collection;
+
 	app.pushPage(<ListOrders collection={collection} />, 'list-orders', {
 		onClose: function() {
 		},

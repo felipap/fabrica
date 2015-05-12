@@ -12,9 +12,10 @@ var User = mongoose.model('User')
 
 module.exports = function (app) {
 	var router = require('express').Router()
+	var logger = app.get('logger').child({ childs: 'APP' })
 
 	router.use(function (req, res, next) {
-		req.logger = app.get('logger').child({ childs: 'APP' })
+		req.logger = logger;
 		logger.info("<"+(req.user && req.user.name || 'anonymous@'+
 			req.connection.remoteAddress)+">: HTTP "+req.method+" "+req.url+"")
 		if (req.user) {
@@ -46,6 +47,7 @@ module.exports = function (app) {
 		'/clientes',
 		'/novo/cliente',
 		'/pedidos',
+		'/pedidos/:code',
 		'/novo/pedido',
 	]
 	_.map(homeRoutes, function (route) {

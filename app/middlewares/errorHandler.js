@@ -35,9 +35,11 @@ module.exports = function(err, req, res, next) {
 		return res.render404(); // 'Esse usuário não existe.');
 	}
 
-	if (err.type === 'APIError') {
+	if (err.name === 'APIError') {
 		res.renderError(403, {
-			error: err.name, msg: err.msg || 'Não foi possível completar a sua ligação.',
+			name: err.type,
+			error: err.name,
+			msg: err.msg || 'Não foi possível completar a sua ligação.',
 		});
 		return;
 	}
