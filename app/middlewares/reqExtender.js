@@ -101,6 +101,10 @@ module.exports = function (req, res, next) {
 		}
 
 		function parseObj (key, requestValue, rule, cb) {
+			function onError(message) {
+				cb({ message: message, key: key, value: requestValue });
+			}
+
 			if (typeof rule === 'undefined') {
 				warn("No rule defined for key "+key);
 				cb();
@@ -113,7 +117,7 @@ module.exports = function (req, res, next) {
 				&& typeof requestValue === 'undefined'
 				&& requestValue) { // Default is required
 				warn("Attribute '"+key+"' is required.");
-				cb("Attribute '"+key+"' is required.");
+				onError("Attribute '"+key+"' is required.");
 				return;
 			} else if (!requestValue && rule.$required === false) {
 				// If the object is not required, don't even try to validate it.
@@ -121,11 +125,11 @@ module.exports = function (req, res, next) {
 			} else if (rule.$valid && !rule.$valid(requestValue, req.body, req.user)) {
 				if ('$msg' in rule) {
 					if (typeof rule.$msg === 'function')
-						cb(rule.$msg(requestValue));
+						onError(rule.$msg(requestValue));
 					else
-						cb(rule.$msg)
+						onError(rule.$msg)
 				} else {
-					cb("Attribute '"+key+"' fails validation function: "+
+					onError("Attribute '"+key+"' fails validation function: "+
 						JSON.stringify(requestValue));
 				}
 				return;
@@ -133,15 +137,15 @@ module.exports = function (req, res, next) {
 				var ret = rule.$validate(requestValue, req.body, req.user);
 				if (ret) { // Error!
 					if (typeof ret === 'string') {
-						cb(ret);
+						onError(ret);
 					} else if (typeof ret === 'function') {
-						cb(ret(requestValue));
+						onError(ret(requestValue));
 					} else if (typeof rule['$msg'] === 'string') {
-						cb(rule['$msg']);
+						onError(rule['$msg']);
 					} else if (typeof rule['$msg'] === 'function') {
-						cb(rule['$msg'](requestValue));
+						onError(rule['$msg'](requestValue));
 					} else {
-						cb("Attribute '"+key+"' fails validation function: "+
+						onError("Attribute '"+key+"' fails validation function: "+
 							JSON.stringify(requestValue));
 					}
 					return;
@@ -202,8 +206,7 @@ module.exports = function (req, res, next) {
 		}, function (err, results) {
 			results = flattenObjList(results.filter(function (e) { return !!e; }));
 			if (err) {
-
-				return res.status(400).endJSON({ error:true, message:err });
+				next(_.extend({ error: 'ReqParse' }, err));
 			} else {
 				// FIXME: the err attribute in the callback is completely unused.
 				cb(null, results);

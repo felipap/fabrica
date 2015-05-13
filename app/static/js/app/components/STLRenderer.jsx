@@ -10,9 +10,54 @@
  * See: https://github.com/mrdoob/three.js/issues/1230
  */
 
+
 "use strict";
 
 var React = require('react');
+
+// Load THREE.js scripts into page.
+// DON'T require() this file unless you're gonna use the renderer!
++(function ThreeJSLoader() {
+	function addScript(src, cb) {
+		var el = document.createElement('script');
+		el.src = src;
+		el.onload = function(){
+			cb();
+		}
+		document.head.appendChild(el);
+	}
+
+	var callbacks = [];
+	var loaded = false;
+	var files = [
+		'/static/js/vendor/three.min.js',
+		'/static/js/vendor/stats.min.js',
+		'/static/js/vendor/three.STLLoader.js',
+		'/static/js/vendor/three.Detector.js',
+		'/static/js/vendor/three.TrackballControls.js'
+	];
+
+	var index = 0;
+	(function loadNext() {
+		if (files.length === index) {
+			loaded = true;
+			for (var i=0; i<callbacks.length; ++i) {
+				callbacks[i]();
+			}
+			return;
+		}
+		addScript(files[index++], loadNext);
+	})();
+
+	window.onLoadThreeJS = function (cb) {
+		if (loaded) {
+			cb();
+		} else {
+			callbacks.push(cb);
+		}
+	}
+
+})();
 
 var stats = null;
 
@@ -20,7 +65,11 @@ function startStats() {
 	var container = document.querySelector('#StatsWrapper');
 	if (!container) {
 		console.warn("Wrapper for stats not found. Quitting.");
-		return
+		return;
+	}
+	if (!window.Stats) {
+		console.warn("Stats lib not found. Quitting.");
+		return;
 	}
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -72,7 +121,9 @@ var Panel = React.createClass({
 var STLRenderer = React.createClass({
 
 	componentDidMount: function() {
-		startStats();
+		if (this.props.stats) {
+			startStats();
+		}
 		this._init();
 		this._animate();
 	},
@@ -82,7 +133,7 @@ var STLRenderer = React.createClass({
 			Detector.addGetWebGLMessage();
 		}
 
-		var width = $(this.getDOMNode().parentElement).innerWidth()-15; // magic num
+		var width = $(this.getDOMNode().parentElement).width(); // magic num
 		var height = $(this.getDOMNode().parentElement.parentElement).height();
 
 		var addShadowedLight = (x, y, z, color, intensity) => {
@@ -187,10 +238,11 @@ var STLRenderer = React.createClass({
 
 		addShadowedLight(1, 1, 1, 0xffffff, 1.35);
 		addShadowedLight(0.5, 1, -1, 0xffaa00, 1);
+		addShadowedLight(-1, 0.5, 1, 0xffffff, 1);
 	},
 
 	_onWindowResize: function() {
-		var width = $(this.getDOMNode().parentElement).innerWidth()-15;
+		var width = $(this.getDOMNode().parentElement).width();
 		var height = $(this.getDOMNode().parentElement.parentElement).height();
 
 		this.controls.handleResize();

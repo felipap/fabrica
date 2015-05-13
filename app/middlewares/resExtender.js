@@ -48,13 +48,7 @@ module.exports = function (req, res, next) {
 			var data = _.extend({}, options[500], obj);
 			res.render('app/error', data);
 		} else {
-			var data = {
-				error: true,
-				message: obj && obj.msg,
-			};
-			if (nconf.get('env') === 'development') {
-				_.extend(data, obj);
-			}
+			// Looks dangerous? → DON'T SEND SENSITIVE DATA TO renderError!!!
 			res.send(data);
 		}
 	};

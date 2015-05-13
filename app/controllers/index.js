@@ -42,6 +42,10 @@ module.exports = function (app) {
 		next()
 	})
 
+	router.get('/', function (req, res) {
+		res.redirect('/pedidos');
+	})
+
 	var homeRoutes = [
 		'/',
 		'/clientes',

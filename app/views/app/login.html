@@ -23,8 +23,14 @@ window._form_messages={{ messages|json|safe }};
     Fazer Login
   </h1>
   <p>
+    Esse é o acesso ao painel de vendas. <br />
+    Você quer acompanhar o seu pedido? <a href="#">Clique aqui.</a>
+  </p>
+{#
+  <p>
     Ainda não tem uma conta? <a href="/signup">Registre-se.</a>
   </p>
+#}
   <div id="flash-messages" class="FlashWrapper"></div>
 	<form class="LoginForm" method="post" action="">
 		<input type="email" name="email" placeholder="Seu email aqui" />

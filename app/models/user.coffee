@@ -38,6 +38,7 @@ UserSchema = new mongoose.Schema {
 
 	flags: {
 		admin: 	{ type: Boolean, default: false }
+		dthinker:{ type: Boolean, default: false }
 		seller:	{ type: Boolean, default: false }
 	}
 

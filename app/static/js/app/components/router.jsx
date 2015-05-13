@@ -26,7 +26,7 @@ var Pages = {
 
 $(function () {
 
-  if (window.__flash_messages) {
+  if (window.__flash_messages && window.__flash_messages.length) {
   	var wrapper = document.getElementById('flash-messages');
   	if (!wrapper) {
   		console.warn('We had flash messages to show here...'+
@@ -556,7 +556,7 @@ var App = Router.extend({
 			function () {
 				Pages.ListOrders(this);
 			},
-		'pedidos':
+		'pedidos/:code':
 			function () {
 			},
 		'':
@@ -567,47 +567,32 @@ var App = Router.extend({
 
 	components: {
 		view: function (data) {
-			var postId = data.id;
+			var postCode = data.code;
 			var resource = window.conf.resource;
 
-			if (!postId) {
-				console.warn("No postId supplied to viewPost.", data, resource);
+			if (!postCode) {
+				console.warn("No code supplied to viewPost.", data, resource);
 				throw "WTF";
 			}
 
-			// Check if resource object came with the html
-			if (resource && resource.type === 'post' && resource.data.id === postId) {
-			// Resource available on page
-				var postItem = new Models.Post(resource.data);
-				// Remove window.conf.post, so closing and re-opening post forces us to fetch
-				// it again. Otherwise, the use might lose updates.
-				window.conf.resource = undefined;
-				this.pushComponent(<BoxWrapper rclass={Views.Post} model={postItem} />, 'post', {
-					onClose: function () {
-						app.navigate(app.pageRoot, { trigger: false });
-					}
-				});
-			} else {
-			// No. Fetch it by hand.
-				$.getJSON('/api/posts/'+postId)
-					.done(function (response) {
-						console.log('response, data', response);
-						var postItem = new Models.Post(response.data);
-						this.pushComponent(<BoxWrapper rclass={Views.Post} model={postItem} />, 'post', {
-							onClose: function () {
-								app.navigate(app.pageRoot, { trigger: false });
-							}
-						});
-					}.bind(this))
-					.fail(function (xhr) {
-						if (xhr.responseJSON && xhr.responseJSON.error) {
-							Utils.flash.alert(xhr.responseJSON.message || 'Erro! <i class="icon-sad"></i>');
-						} else {
-							Utils.flash.alert('Contato com o servidor perdido. Tente novamente.');
+			$.getJSON('/api/posts/'+postCode)
+				.done(function (response) {
+					console.log('response, data', response);
+					var postItem = new Models.Post(response.data);
+					this.pushComponent(<BoxWrapper rclass={Views.Post} model={postItem} />, 'post', {
+						onClose: function () {
+							app.navigate(app.pageRoot, { trigger: false });
 						}
-						app.navigate(app.pageRoot, { trigger: false });
-					}.bind(this))
-			}
+					});
+				}.bind(this))
+				.fail(function (xhr) {
+					if (xhr.responseJSON && xhr.responseJSON.error) {
+						Utils.flash.alert(xhr.responseJSON.message || 'Erro! <i class="icon-sad"></i>');
+					} else {
+						Utils.flash.alert('Contato com o servidor perdido. Tente novamente.');
+					}
+					app.navigate(app.pageRoot, { trigger: false });
+				}.bind(this))
 		},
 	},
 });

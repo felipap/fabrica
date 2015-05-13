@@ -142,7 +142,46 @@ $('form[data-ajax-form=true]').submit(function (evt) {
 	});
 });
 
-},{"../vendor/bootstrap/button.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/button.js","../vendor/bootstrap/dropdown.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/dropdown.js","../vendor/bootstrap/tooltip.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/tooltip.js","autosize":"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js","es5-shim":"/home/felipe/Projects/fabrica/app/static/js/vendor/es5-shim.min.js","es6-shim":"/home/felipe/Projects/fabrica/app/static/js/vendor/es6-shim.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","modernizr":"/home/felipe/Projects/fabrica/app/static/js/vendor/modernizr-3.0.0-beta.min.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/PrettyCheck.jsx":[function(require,module,exports){
+},{"../vendor/bootstrap/button.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/button.js","../vendor/bootstrap/dropdown.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/dropdown.js","../vendor/bootstrap/tooltip.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/tooltip.js","autosize":"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js","es5-shim":"/home/felipe/Projects/fabrica/app/static/js/vendor/es5-shim.min.js","es6-shim":"/home/felipe/Projects/fabrica/app/static/js/vendor/es6-shim.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","modernizr":"/home/felipe/Projects/fabrica/app/static/js/vendor/modernizr-3.0.0-beta.min.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/OrderView.jsx":[function(require,module,exports){
+
+"use strict"
+
+var React = require('react')
+var selectize = require('selectize')
+
+var Modal = require('../components/modal.jsx')
+var Models = require('../components/models.js')
+var STLRenderer = require('../components/STLRenderer.jsx')
+
+require('react.backbone')
+
+var OrderView = React.createBackboneClass({
+  render: function() {
+    var doc = this.getModel().attributes;
+
+    return (
+      React.createElement("div", {className: "OrderView"}, 
+        React.createElement("div", {className: "row"}, 
+          React.createElement("div", {className: "col-md-8"}, 
+            React.createElement("div", {className: "name"}, 
+              doc.name
+            ), 
+            React.createElement("div", {className: "comments"}, 
+              doc.comments
+            )
+          ), 
+          React.createElement("div", {className: "col-md-4 renderer"}, 
+            React.createElement(STLRenderer, {ref: "renderer", file: this.getModel().get('s3_path')})
+          )
+        )
+      )
+    );
+  }
+})
+
+module.exports = OrderView;
+
+},{"../components/STLRenderer.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/PrettyCheck.jsx":[function(require,module,exports){
 
 var React = require('react');
 var $ = require('jquery');
@@ -204,9 +243,54 @@ module.exports = PrettyCheck;
  * See: https://github.com/mrdoob/three.js/issues/1230
  */
 
+
 "use strict";
 
 var React = require('react');
+
+// Load THREE.js scripts into page.
+// DON'T require() this file unless you're gonna use the renderer!
++(function ThreeJSLoader() {
+	function addScript(src, cb) {
+		var el = document.createElement('script');
+		el.src = src;
+		el.onload = function(){
+			cb();
+		}
+		document.head.appendChild(el);
+	}
+
+	var callbacks = [];
+	var loaded = false;
+	var files = [
+		'/static/js/vendor/three.min.js',
+		'/static/js/vendor/stats.min.js',
+		'/static/js/vendor/three.STLLoader.js',
+		'/static/js/vendor/three.Detector.js',
+		'/static/js/vendor/three.TrackballControls.js'
+	];
+
+	var index = 0;
+	(function loadNext() {
+		if (files.length === index) {
+			loaded = true;
+			for (var i=0; i<callbacks.length; ++i) {
+				callbacks[i]();
+			}
+			return;
+		}
+		addScript(files[index++], loadNext);
+	})();
+
+	window.onLoadThreeJS = function (cb) {
+		if (loaded) {
+			cb();
+		} else {
+			callbacks.push(cb);
+		}
+	}
+
+})();
 
 var stats = null;
 
@@ -214,7 +298,11 @@ function startStats() {
 	var container = document.querySelector('#StatsWrapper');
 	if (!container) {
 		console.warn("Wrapper for stats not found. Quitting.");
-		return
+		return;
+	}
+	if (!window.Stats) {
+		console.warn("Stats lib not found. Quitting.");
+		return;
 	}
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -266,7 +354,9 @@ var Panel = React.createClass({displayName: "Panel",
 var STLRenderer = React.createClass({displayName: "STLRenderer",
 
 	componentDidMount: function() {
-		startStats();
+		if (this.props.stats) {
+			startStats();
+		}
 		this._init();
 		this._animate();
 	},
@@ -276,7 +366,7 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 			Detector.addGetWebGLMessage();
 		}
 
-		var width = $(this.getDOMNode().parentElement).innerWidth()-15; // magic num
+		var width = $(this.getDOMNode().parentElement).width(); // magic num
 		var height = $(this.getDOMNode().parentElement.parentElement).height();
 
 		var addShadowedLight = function(x, y, z, color, intensity)  {
@@ -381,10 +471,11 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 
 		addShadowedLight(1, 1, 1, 0xffffff, 1.35);
 		addShadowedLight(0.5, 1, -1, 0xffaa00, 1);
+		addShadowedLight(-1, 0.5, 1, 0xffffff, 1);
 	},
 
 	_onWindowResize: function() {
-		var width = $(this.getDOMNode().parentElement).innerWidth()-15;
+		var width = $(this.getDOMNode().parentElement).width();
 		var height = $(this.getDOMNode().parentElement.parentElement).height();
 
 		this.controls.handleResize();
@@ -468,7 +559,7 @@ var FlashDiv = React.createClass({displayName: "FlashDiv",
 				}.bind(this), wait || 5000);
 			}
 			$(this.refs.messageContent.getDOMNode()).html(text);
-			$(wp).prop('class', 'message '+className).fadeIn('fast', removeAfterWait);
+			$(wp).prop('class', 'message '+className).slideDown('fast', removeAfterWait);
 		}.bind(this));
 	},
 	hide: function () {
@@ -639,7 +730,7 @@ var Pages = {
 
 $(function () {
 
-  if (window.__flash_messages) {
+  if (window.__flash_messages && window.__flash_messages.length) {
   	var wrapper = document.getElementById('flash-messages');
   	if (!wrapper) {
   		console.warn('We had flash messages to show here...'+
@@ -1169,7 +1260,7 @@ var App = Router.extend({
 			function () {
 				Pages.ListOrders(this);
 			},
-		'pedidos':
+		'pedidos/:code':
 			function () {
 			},
 		'':
@@ -1180,47 +1271,32 @@ var App = Router.extend({
 
 	components: {
 		view: function (data) {
-			var postId = data.id;
+			var postCode = data.code;
 			var resource = window.conf.resource;
 
-			if (!postId) {
-				console.warn("No postId supplied to viewPost.", data, resource);
+			if (!postCode) {
+				console.warn("No code supplied to viewPost.", data, resource);
 				throw "WTF";
 			}
 
-			// Check if resource object came with the html
-			if (resource && resource.type === 'post' && resource.data.id === postId) {
-			// Resource available on page
-				var postItem = new Models.Post(resource.data);
-				// Remove window.conf.post, so closing and re-opening post forces us to fetch
-				// it again. Otherwise, the use might lose updates.
-				window.conf.resource = undefined;
-				this.pushComponent(React.createElement(BoxWrapper, {rclass: Views.Post, model: postItem}), 'post', {
-					onClose: function () {
-						app.navigate(app.pageRoot, { trigger: false });
-					}
-				});
-			} else {
-			// No. Fetch it by hand.
-				$.getJSON('/api/posts/'+postId)
-					.done(function (response) {
-						console.log('response, data', response);
-						var postItem = new Models.Post(response.data);
-						this.pushComponent(React.createElement(BoxWrapper, {rclass: Views.Post, model: postItem}), 'post', {
-							onClose: function () {
-								app.navigate(app.pageRoot, { trigger: false });
-							}
-						});
-					}.bind(this))
-					.fail(function (xhr) {
-						if (xhr.responseJSON && xhr.responseJSON.error) {
-							Utils.flash.alert(xhr.responseJSON.message || 'Erro! <i class="icon-sad"></i>');
-						} else {
-							Utils.flash.alert('Contato com o servidor perdido. Tente novamente.');
+			$.getJSON('/api/posts/'+postCode)
+				.done(function (response) {
+					console.log('response, data', response);
+					var postItem = new Models.Post(response.data);
+					this.pushComponent(React.createElement(BoxWrapper, {rclass: Views.Post, model: postItem}), 'post', {
+						onClose: function () {
+							app.navigate(app.pageRoot, { trigger: false });
 						}
-						app.navigate(app.pageRoot, { trigger: false });
-					}.bind(this))
-			}
+					});
+				}.bind(this))
+				.fail(function (xhr) {
+					if (xhr.responseJSON && xhr.responseJSON.error) {
+						Utils.flash.alert(xhr.responseJSON.message || 'Erro! <i class="icon-sad"></i>');
+					} else {
+						Utils.flash.alert('Contato com o servidor perdido. Tente novamente.');
+					}
+					app.navigate(app.pageRoot, { trigger: false });
+				}.bind(this))
 		},
 	},
 });
@@ -1391,6 +1467,7 @@ var selectize = require('selectize')
 var Modal = require('../components/modal.jsx')
 var Models = require('../components/models.js')
 var PrettyCheck = require('../components/PrettyCheck.jsx')
+var OrderView = require('../components/OrderView.jsx')
 
 require('react.backbone')
 
@@ -1403,18 +1480,6 @@ window.formatOrderDate = function (date) {
 		''+(date.getHours())+':'+date.getMinutes()+'am');
 };
 
-var FullOrderView = React.createBackboneClass({
-	render: function() {
-		return (
-			React.createElement("div", {className: "FullOrderView"}, 
-				React.createElement("div", {className: "renderer"}
-				)
-			)
-		);
-	}
-})
-
-
 var OrderItem = React.createBackboneClass({
 	getInitialState: function() {
 		return {
@@ -1423,11 +1488,12 @@ var OrderItem = React.createBackboneClass({
 	},
 
 	render: function() {
-		var doc = this.getModel();
+		var doc = this.getModel().attributes;
 
 		var goto = function()  {
-			app.navigate(i.path, { trigger: true });
-		}
+			// app.navigate(i.path, { trigger: true });
+			this.props.toggle();
+		}.bind(this)
 
 		return (
 			React.createElement("tr", {className: "item", onClick: goto}, 
@@ -1435,10 +1501,10 @@ var OrderItem = React.createBackboneClass({
 					React.createElement(PrettyCheck, null)
 				), 
 				React.createElement("td", {className: "name"}, 
-					doc.get('name')
+					doc.name
 				), 
 				React.createElement("td", {className: "type"}, 
-					doc.get('_cor')[0].toUpperCase()+doc.get('_cor').slice(1), "/", doc.get('_tipo')
+					doc._cor[0].toUpperCase()+doc._cor.slice(1), "/", doc._tipo
 				), 
 				React.createElement("td", {className: "ctdent"}, 
 					"Mauro Iezzi"
@@ -1448,8 +1514,8 @@ var OrderItem = React.createBackboneClass({
 				), 
 				React.createElement("td", {className: "elastic"}), 
 				React.createElement("td", {className: "date"}, 
-					React.createElement("span", {"data-time-count": doc.get('created_at'), "data-title": formatOrderDate(doc.get('created_at'))}, 
-						calcTimeFrom(doc.get('created_at'))
+					React.createElement("span", {"data-time-count": doc.created_at, "data-title": formatOrderDate(doc.created_at)}, 
+						calcTimeFrom(doc.created_at)
 					)
 				)
 			)
@@ -1459,11 +1525,44 @@ var OrderItem = React.createBackboneClass({
 
 var ListOrders = React.createBackboneClass({
 
+	getInitialState: function () {
+		return {
+			expanded: null,
+		}
+	},
+
+
 	render: function() {
 		var GenerateOrderList = function()  {
-			return this.getCollection().map(function (i) {
-				return React.createElement(OrderItem, {model: i})
-			});
+			var collection = this.getCollection();
+			var rows = [];
+			var i = 0;
+			window.c = collection;
+			while (i < collection.length) {
+				!(function(i)  {
+					var toggle = function()  {
+						if (this.state.expanded === i) {
+							this.setState({ expanded: null });
+						} else {
+							this.setState({ expanded: i });
+						}
+					}.bind(this);
+
+					// Hack: add expanded item as table row with a single colum
+					rows.push(React.createElement(OrderItem, {model: collection.at(i), toggle: toggle}))
+					if (this.state.expanded === i) {
+						rows.push((
+							React.createElement("li", {className: "order"}, 
+								React.createElement("td", {colSpan: "100"}, 
+									React.createElement(OrderView, {model: collection.at(i)})
+								)
+							)
+						))
+					}
+				}.bind(this))(i);
+				++i;
+			}
+			return rows;
 		}.bind(this);
 
 		var GenerateHeader = function()  {
@@ -1495,10 +1594,8 @@ var ListOrders = React.createBackboneClass({
 
 		var GenerateToolbar = function()  {
 			return (
-				React.createElement("div", {className: "toolbar"}, 
-					React.createElement("ul", null, 
-						React.createElement("li", null
-						)
+				React.createElement("div", {className: "listToolbar"}, 
+					React.createElement("ul", null
 					), 
 					React.createElement("ul", {className: "right"}, 
 						React.createElement("li", null, 
@@ -1514,18 +1611,19 @@ var ListOrders = React.createBackboneClass({
 
 		return (
 			React.createElement("div", {className: "ListOrders"}, 
-				React.createElement("h1", null, 
-					"Seus pedidos"
-				), 
-				React.createElement("p", null, 
-					"Lista organizada por pedidos mais recentes."
-				), 
-				React.createElement("div", {className: "orderList"}, 
-					GenerateToolbar(), 
-					React.createElement("table", null, 
-						GenerateHeader(), 
-						GenerateOrderList()
+				React.createElement("div", {className: "left"}, 
+					React.createElement("h1", null, 
+						"Pedidos"
 					)
+				), 
+				React.createElement("div", {className: "right"}, 
+					React.createElement("a", {className: "button newOrder", href: "/novo/pedido"}, 
+						"Novo Pedido"
+					)
+				), 
+				GenerateToolbar(), 
+				React.createElement("div", {className: "orderList"}, 
+					GenerateOrderList()
 				)
 			)
 		);
@@ -1547,7 +1645,7 @@ module.exports = function(app) {
 };
 
 
-},{"../components/PrettyCheck.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/PrettyCheck.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx":[function(require,module,exports){
+},{"../components/OrderView.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/OrderView.jsx","../components/PrettyCheck.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/PrettyCheck.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx":[function(require,module,exports){
 
 var $ = require('jquery')
 var selectize = require('selectize')
@@ -1976,7 +2074,7 @@ var FormPart_Visualizer = React.createBackboneClass({
 						)
 					), 
 					React.createElement("div", {className: "col-md-8", style: {padding:0}}, 
-						React.createElement(STLRenderer, {ref: "renderer", file: this.getModel().get('file')})
+						React.createElement(STLRenderer, {ref: "renderer", stats: true, file: this.getModel().get('file')})
 					)
 				)
 			)
@@ -2339,7 +2437,7 @@ var OrderForm = React.createBackboneClass({
 	advancePosition: function() {
 		console.log('advancePosition!')
 		if (this.state.formPosition === FormParts.length-1) {
-			this._save();
+			this.save();
 			return;
 		}
 		this.setState({ formPosition: this.state.formPosition+1 });
@@ -2409,42 +2507,15 @@ module.exports = function(app) {
 		file: 'https://deltathinkers.s3.amazonaws.com/jobs/f057cd47-1ca0-42be-80d1-7c5c1cee668c',
 	});
 
-	// Load THREE.js scripts into page.
 
-	function addScript(src, cb) {
-		var el = document.createElement('script');
-		el.src = src;
-		el.onload = function(){
-			cb();
-		}
-		document.head.appendChild(el);
-	}
-
-	var queue = [
-		'/static/js/vendor/three.min.js',
-		'/static/js/vendor/stats.min.js',
-		'/static/js/vendor/three.STLLoader.js',
-		'/static/js/vendor/three.Detector.js',
-		'/static/js/vendor/three.TrackballControls.js'
-	];
-
-	var i=0;
-	(function loadNext() {
-		if (queue.length === i) {
-			start()
-			return;
-		}
-		addScript(queue[i++], loadNext);
-	})();
-
-	function start() {
+	onLoadThreeJS(function() {
 		app.pushPage(React.createElement(OrderForm, {model: printJob}), 'new-order', {
 			onClose: function() {
 			},
 			container: document.querySelector('#page-container'),
 			pageRoot: 'new-order',
 		});
-	}
+	});
 };
 
 },{"../components/STLRenderer.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js":[function(require,module,exports){

@@ -392,6 +392,7 @@ body:not(.public) {
   }
 }
 
+
 .ListClients {
 
   .clientList {
@@ -424,7 +425,24 @@ body:not(.public) {
 
 .ListOrders {
 
-  .orderList > .toolbar {
+  & > .left {
+    display: table;
+    float: left;
+    h1 {
+      font-weight: 600;
+    }
+  }
+
+  & > .right {
+    float: right;
+
+    .newOrder {
+      .xbtn(white, @CBLUE);
+      margin-top: 30px;
+    }
+  }
+
+  .listToolbar {
     width: 100%;
     display: table;
     margin-bottom: 20px;
@@ -436,6 +454,8 @@ body:not(.public) {
       float: right;
     }
   }
+
+  padding-bottom: 30px;
 
   .orderList table {
     width: 100%;
@@ -461,7 +481,6 @@ body:not(.public) {
     }
   }
 }
-
 
 
 .PrettyCheck {
@@ -507,9 +526,13 @@ body:not(.public) {
     background-image: url(/static/images/mailchimp-checkmarks-sprite-2x.png);
     background-size: 24px 384px;
   }
-
 }
 
-.OrderView {
 
+.OrderView {
+  background: #EEE;
+
+  .renderer {
+    height: 300px;
+  }
 }

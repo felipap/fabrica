@@ -108,7 +108,7 @@ module.exports = function(app) {
 
   api.get('/get_client', unspam.limit(1*1000), function(req, res, next) {
     if (!validator.isEmail(req.query.email)) {
-      next({ name: 'APIError', msg: 'Esse endereço de email é inválido.' });
+      next({ err: 'APIError', msg: 'Esse endereço de email é inválido.' });
       return;
     }
 

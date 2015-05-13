@@ -12,6 +12,8 @@
 		#}
 		<a class="inner" href="/">
 			<span>Fabrica</span>
+		</a><a class="inner delta" href="/">
+			<span>Delta Thinkers</span>
 		</a>
 	</div>
 	{% if wizard %}
@@ -31,19 +33,26 @@
 			{% if user.flags.seller %}
 			<li data-activate-root="list-clients">
 				<a class="button" href="/clientes">
-					Meus clientes
+					Clientes
 				</a>
 			</li>
 			{% endif %}
-			<li data-activate-root="new-order">
+			{% if user.flags.dthinker %}
+			<li data-activate-root="list-vendors">
+				<a class="button" href="/parceiros">
+					Parceiros
+				</a>
+			</li>
+			{% endif %}
+			<li data-activate-root="new-order" class="activeOrHidden">
 				<a class="button" href="/novo/pedido">
 					Novo Pedido
 				</a>
 			</li>
 			{% if user.flags.seller %}
-			<li data-activate-root="new-client">
+			<li data-activate-root="new-client" class="activeOrHidden">
 				<a class="button" href="/novo/cliente">
-					Novo cliente
+					Novo Cliente
 				</a>
 			</li>
 			{% endif %}

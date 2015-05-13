@@ -17,8 +17,8 @@ module.exports.register = function (self, data, cb) {
 	User.findOne({ email: data.email }, TMERA((repeat) => {
 		if (repeat) {
 			return cb({
-				name: 'APIError',
-				type: 'ExistingUser',
+				err: 'APIError',
+				name: 'ExistingUser',
 				msg: 'Esse usuário já existe.',
 			})
 		}
@@ -34,6 +34,12 @@ module.exports.register = function (self, data, cb) {
 		})
 
 		u.save(TMERA((doc) => {
+
+			mail.send(mail.Templates.NewSellerAccount(user),
+				(err, result) => {
+					cb(err);
+			})
+
 			cb(null, doc)
 		}))
 	}))

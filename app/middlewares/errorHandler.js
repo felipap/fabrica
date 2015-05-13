@@ -20,7 +20,7 @@ module.exports = function(err, req, res, next) {
 		// Can't user renderError here!, because the method is only attached to the
 		// res object after the csrf middleware is run.
 		req.logger.info("Auth error: Wrong CSRF token.");
-		return res.status(401).send({ msg: "Erro de autenticação." });
+		return res.renderError(401, { msg: "Erro de autenticação." });
 	}
 
 	// Check for errors of type 404
@@ -35,11 +35,20 @@ module.exports = function(err, req, res, next) {
 		return res.render404(); // 'Esse usuário não existe.');
 	}
 
-	if (err.name === 'APIError') {
+	if (err.err === 'APIError') {
+		res.renderError(403, {
+			name: err.name,
+			error: err.err,
+			msg: err.msg || 'Não foi possível completar a sua ligação.',
+		});
+		return;
+	}
+
+	if (err.error === 'ReqParse') {
 		res.renderError(403, {
 			name: err.type,
 			error: err.name,
-			msg: err.msg || 'Não foi possível completar a sua ligação.',
+			msg: err.message,
 		});
 		return;
 	}
@@ -105,14 +114,6 @@ module.exports = function(err, req, res, next) {
 	else if (res.statusCode < 400)
 		res.status(500);
 
-	// hack to use middleware conditionally
-	// require('express-bunyan-logger').errorLogger({
-	// 	format: ':remote-address - - :method :url',
-	// })(err, res, res, function(){});
-	// app.use(require('express-bunyan-logger')({
-	// 	format: ':remote-address - :user-agent[major] custom logger'
-	// }));
-
 	if (req.app.get('env') === 'production') {
 		try {
 			var newrelic = require('newrelic');
@@ -136,12 +137,18 @@ module.exports = function(err, req, res, next) {
 			req.app.preKill(10*1000);
 		}
 
-		// try to send error callback
-		res.renderError(500, {
-			errorCode: err.statusCode,
-			errorMsg: err.msg,
-			errorStack: (err.stack || '').split('\n').slice(1).join('<br>'),
-		});
+		if (nconf.get('env') === 'development') {
+			// try to send error callback
+			res.renderError(500, {
+				errorCode: err.statusCode,
+				errorMsg: err.msg,
+				errorStack: (err.stack || '').split('\n').slice(1).join('<br>'),
+			});
+		} else {
+			res.renderError(500, {
+				message: err.msg || "Ops.",
+			});
+		}
 	} catch (e) {
 		// oh well, not much we can do at this point.
 		res.end();

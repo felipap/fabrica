@@ -7,6 +7,7 @@ var selectize = require('selectize')
 var Modal = require('../components/modal.jsx')
 var Models = require('../components/models.js')
 var PrettyCheck = require('../components/PrettyCheck.jsx')
+var OrderView = require('../components/OrderView.jsx')
 
 require('react.backbone')
 
@@ -19,18 +20,6 @@ window.formatOrderDate = function (date) {
 		''+(date.getHours())+':'+date.getMinutes()+'am');
 };
 
-var FullOrderView = React.createBackboneClass({
-	render: function() {
-		return (
-			<div className="FullOrderView">
-				<div className="renderer">
-				</div>
-			</div>
-		);
-	}
-})
-
-
 var OrderItem = React.createBackboneClass({
 	getInitialState: function() {
 		return {
@@ -39,10 +28,11 @@ var OrderItem = React.createBackboneClass({
 	},
 
 	render: function() {
-		var doc = this.getModel();
+		var doc = this.getModel().attributes;
 
 		var goto = () => {
-			app.navigate(i.path, { trigger: true });
+			// app.navigate(i.path, { trigger: true });
+			this.props.toggle();
 		}
 
 		return (
@@ -51,10 +41,10 @@ var OrderItem = React.createBackboneClass({
 					<PrettyCheck />
 				</td>
 				<td className="name">
-					{doc.get('name')}
+					{doc.name}
 				</td>
 				<td className="type">
-					{doc.get('_cor')[0].toUpperCase()+doc.get('_cor').slice(1)}/{doc.get('_tipo')}
+					{doc._cor[0].toUpperCase()+doc._cor.slice(1)}/{doc._tipo}
 				</td>
 				<td className="ctdent">
 					Mauro Iezzi
@@ -64,8 +54,8 @@ var OrderItem = React.createBackboneClass({
 				</td>
 				<td className="elastic"></td>
 				<td className="date">
-					<span data-time-count={doc.get('created_at')} data-title={formatOrderDate(doc.get('created_at'))}>
-						{calcTimeFrom(doc.get('created_at'))}
+					<span data-time-count={doc.created_at} data-title={formatOrderDate(doc.created_at)}>
+						{calcTimeFrom(doc.created_at)}
 					</span>
 				</td>
 			</tr>
@@ -75,11 +65,44 @@ var OrderItem = React.createBackboneClass({
 
 var ListOrders = React.createBackboneClass({
 
+	getInitialState: function () {
+		return {
+			expanded: null,
+		}
+	},
+
+
 	render: function() {
 		var GenerateOrderList = () => {
-			return this.getCollection().map(function (i) {
-				return <OrderItem model={i} />
-			});
+			var collection = this.getCollection();
+			var rows = [];
+			var i = 0;
+			window.c = collection;
+			while (i < collection.length) {
+				!((i) => {
+					var toggle = () => {
+						if (this.state.expanded === i) {
+							this.setState({ expanded: null });
+						} else {
+							this.setState({ expanded: i });
+						}
+					};
+
+					// Hack: add expanded item as table row with a single colum
+					rows.push(<OrderItem model={collection.at(i)} toggle={toggle} />)
+					if (this.state.expanded === i) {
+						rows.push((
+							<li className="order">
+								<td colSpan="100">
+									<OrderView model={collection.at(i)} />
+								</td>
+							</li>
+						))
+					}
+				})(i);
+				++i;
+			}
+			return rows;
 		};
 
 		var GenerateHeader = () => {
@@ -111,10 +134,8 @@ var ListOrders = React.createBackboneClass({
 
 		var GenerateToolbar = () => {
 			return (
-				<div className="toolbar">
+				<div className="listToolbar">
 					<ul>
-						<li>
-						</li>
 					</ul>
 					<ul className="right">
 						<li>
@@ -130,18 +151,19 @@ var ListOrders = React.createBackboneClass({
 
 		return (
 			<div className="ListOrders">
-				<h1>
-					Seus pedidos
-				</h1>
-				<p>
-					Lista organizada por pedidos mais recentes.
-				</p>
+				<div className="left">
+					<h1>
+						Pedidos
+					</h1>
+				</div>
+				<div className="right">
+					<a className="button newOrder" href="/novo/pedido">
+						Novo Pedido
+					</a>
+				</div>
+				{GenerateToolbar()}
 				<div className="orderList">
-					{GenerateToolbar()}
-					<table>
-						{GenerateHeader()}
-						{GenerateOrderList()}
-					</table>
+					{GenerateOrderList()}
 				</div>
 			</div>
 		);

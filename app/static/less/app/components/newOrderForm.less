@@ -174,9 +174,31 @@
 
 
 .STLRenderer {
+  position: relative;
+
+  canvas {
+    vertical-align: top;
+  }
+
   .panel {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+
     button {
-      margin-right: 5px;
+      // margin-right: 5px;
+      background: white;
+      border-radius: 0;
+      border: 0;
+      font-size: 13px;
+    }
+
+    button:not(:last-child) {
+      border-right: 1px solid #DDD;
+    }
+
+    button.active {
+      font-weight: bold;
     }
   }
 }

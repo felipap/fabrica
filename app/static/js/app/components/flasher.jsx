@@ -15,7 +15,7 @@ var FlashDiv = React.createClass({
 				}.bind(this), wait || 5000);
 			}
 			$(this.refs.messageContent.getDOMNode()).html(text);
-			$(wp).prop('class', 'message '+className).fadeIn('fast', removeAfterWait);
+			$(wp).prop('class', 'message '+className).slideDown('fast', removeAfterWait);
 		}.bind(this));
 	},
 	hide: function () {

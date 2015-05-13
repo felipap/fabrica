@@ -109,7 +109,7 @@ var FormPart_Visualizer = React.createBackboneClass({
 						</button>
 					</div>
 					<div className="col-md-8" style={{padding:0}}>
-						<STLRenderer ref="renderer" file={this.getModel().get('file')} />
+						<STLRenderer ref="renderer" stats={true} file={this.getModel().get('file')} />
 					</div>
 				</div>
 			</div>
@@ -472,7 +472,7 @@ var OrderForm = React.createBackboneClass({
 	advancePosition: function() {
 		console.log('advancePosition!')
 		if (this.state.formPosition === FormParts.length-1) {
-			this._save();
+			this.save();
 			return;
 		}
 		this.setState({ formPosition: this.state.formPosition+1 });
@@ -542,40 +542,13 @@ module.exports = function(app) {
 		file: 'https://deltathinkers.s3.amazonaws.com/jobs/f057cd47-1ca0-42be-80d1-7c5c1cee668c',
 	});
 
-	// Load THREE.js scripts into page.
 
-	function addScript(src, cb) {
-		var el = document.createElement('script');
-		el.src = src;
-		el.onload = function(){
-			cb();
-		}
-		document.head.appendChild(el);
-	}
-
-	var queue = [
-		'/static/js/vendor/three.min.js',
-		'/static/js/vendor/stats.min.js',
-		'/static/js/vendor/three.STLLoader.js',
-		'/static/js/vendor/three.Detector.js',
-		'/static/js/vendor/three.TrackballControls.js'
-	];
-
-	var i=0;
-	(function loadNext() {
-		if (queue.length === i) {
-			start()
-			return;
-		}
-		addScript(queue[i++], loadNext);
-	})();
-
-	function start() {
+	onLoadThreeJS(function() {
 		app.pushPage(<OrderForm model={printJob} />, 'new-order', {
 			onClose: function() {
 			},
 			container: document.querySelector('#page-container'),
 			pageRoot: 'new-order',
 		});
-	}
+	});
 };

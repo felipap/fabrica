@@ -37,7 +37,30 @@ module.exports.Templates = {
       subject: 'Recuperação de conta · Fabrica DeltaThinkers',
       html: template({ user: user, link: link })
     }
+  },
+  NewSellerAccount: function (user) {
+    please({$model:User}, arguments)
+
+    var template = lodash.template(
+      `<p>Olá, <%= user.name.split(' ')[0] %></p>
+      <p>
+        Você se registrou com sucesso na Fábrica DeltaThinkers, um site para impressão remota de...
+      </p>
+      <p>
+        Imprima e exponha o cartaz da DeltaThinkers na sua loja: linkdocartazasd.
+      </p>
+      <p>
+        Qualquer dúvida bla bla bla.<br />
+      </p>`
+    );
+
+    return {
+      to: user.email,
+      subject: 'Bem-vindo à Fábrica DeltaThinkers',
+      html: template({ user: user })
+    }
   }
+
 }
 
 var sendMessage = (data, cb) => {
@@ -61,7 +84,6 @@ var sendMessage = (data, cb) => {
 }
 
 module.exports.send = sendMessage
-
 
 
 module.exports.toNewSellerClient = function (seller, client, cb) {
