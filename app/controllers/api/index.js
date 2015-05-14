@@ -108,7 +108,9 @@ module.exports = function(app) {
 
   api.get('/orders/:orderId', unspam.limit(1000),
     function(req, res, next) {
-      res.endJSON(req.order.toJSON());
+      orderActions.stuff(req.user, req.order, req.handleErr((json) => {
+        res.endJSON(json);
+      }));
   });
 
   api.put('/orders', required.self.dthinker,

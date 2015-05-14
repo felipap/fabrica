@@ -15,7 +15,7 @@ SALT_WORK_FACTOR = 10
 UserSchema = new mongoose.Schema {
 	name:			{ type: String, required: true }
 	email:		{ type: String, required: true, unique: true, index: true }
-	password:	{ type: String, required: false }
+	password:	{ type: String, required: false, select: false }
 	phone:		{ type: String, required: false }
 
 	company: {
@@ -47,7 +47,8 @@ UserSchema = new mongoose.Schema {
 	toJSON: 	{ virtuals: true }
 }
 
-UserSchema.statics.APISelect = '-password'
+UserSchema.statics.APISelect = '-password -meta -flags'
+UserSchema.statics.APISelectSelf = '-password'
 
 
 UserSchema.pre 'save', (next) ->
@@ -70,7 +71,7 @@ UserSchema.virtual('picture').get ->
 	'http://www.gravatar.com/avatar/'+hash+'?d='+encodeURIComponent(fallback)
 
 UserSchema.virtual('path').get ->
-	'/@'+@username
+	'/users/'+@id
 
 UserSchema.methods.usesPassword = (candidate, cb) ->
 	console.log(@)

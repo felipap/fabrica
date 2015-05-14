@@ -99,6 +99,20 @@ $('a[data-ajax-post-href],button[data-ajax-post-href]').click(function () {
 });
 
 
+function bindProgressLoader() {
+	var NProgress = require('nprogress')
+	$(document).ajaxStart(function() {
+		NProgress.start()
+	});
+	$(document).ajaxComplete(function() {
+		NProgress.done()
+	});
+}
+
+bindProgressLoader();
+
+
+
 $('form[data-ajax-form=true]').submit(function (evt) {
 	evt.preventDefault();
 

@@ -16,7 +16,7 @@
 var React = require('react');
 
 // Load THREE.js scripts into page.
-// DON'T require() this file unless you're gonna use the renderer!
+// So DON'T require() this file unless you're gonna use the renderer, dummy!
 +(function ThreeJSLoader() {
 	function addScript(src, cb) {
 		var el = document.createElement('script');
@@ -56,7 +56,6 @@ var React = require('react');
 			callbacks.push(cb);
 		}
 	}
-
 })();
 
 var stats = null;
@@ -128,13 +127,21 @@ var STLRenderer = React.createClass({
 		this._animate();
 	},
 
+	_determineDimensions: function() {
+		var d = {
+			width: $(this.getDOMNode()).width(),
+			height: $(this.getDOMNode()).height(),
+		};
+		console.log("Dimensions determined for stl viewer:", d);
+		return d;
+	},
+
 	_init: function () {
 		if (!Detector.webgl) {
 			Detector.addGetWebGLMessage();
 		}
 
-		var width = $(this.getDOMNode().parentElement).width(); // magic num
-		var height = $(this.getDOMNode().parentElement.parentElement).height();
+		var {width, height} = this._determineDimensions();
 
 		var addShadowedLight = (x, y, z, color, intensity) => {
 			var directionalLight = new THREE.DirectionalLight(color, intensity);
@@ -232,6 +239,7 @@ var STLRenderer = React.createClass({
 			this.model.receiveShadow = true;
 
 			this.scene.add(this.model);
+			this._onWindowResize();
 		});
 
 		this.scene.add(new THREE.AmbientLight(0x777777));
@@ -242,8 +250,7 @@ var STLRenderer = React.createClass({
 	},
 
 	_onWindowResize: function() {
-		var width = $(this.getDOMNode().parentElement).width();
-		var height = $(this.getDOMNode().parentElement.parentElement).height();
+		var {width, height} = this._determineDimensions();
 
 		this.controls.handleResize();
 		this.camera.aspect = width/height;

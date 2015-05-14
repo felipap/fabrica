@@ -1,0 +1,144 @@
+
+[data-page=order] {
+  background: fadeout(black, 45%);
+  z-index: 60 !important;
+
+  .component-box {
+    .transition-transform(.4s, linear);
+
+    & > .close-btn {
+      position: fixed;
+      top: 10px;
+      right: 34px;
+      font-weight: bold;
+    }
+  }
+
+}
+
+.OrderView {
+  background: #FFF;
+  padding: 30px;
+
+  .orderFields {
+    // .name {
+    //   font-size: 20px;
+    // }
+
+    label {
+      color: #444;
+      font-weight: 500;
+      font-size: 1em;
+      margin-bottom: .4em;
+    }
+
+    input {
+      font-size: 15px;
+      display: block;
+      width: 100%;
+      // font-size: 18px;
+      border: 1px solid transparent;
+      background: #EEE;
+      font-weight: bold;
+      border-radius: 0;
+      height: auto;
+      line-height: 1;
+      padding: .5em .5em;
+      font-size: 1.1em;
+      font-family: museo-sans;
+
+      color: #222;
+
+      &:focus {
+        .no-box-shadow;
+        .transition;
+        outline: 0;
+        border: 1px solid #DDD;
+      }
+
+      &.invalid {
+        border-color: fadeout(@CRED, 30%);
+      }
+    }
+
+    textarea {
+      display: block;
+      width: 100%;
+      // font-size: 18px;
+      border: 1px solid transparent;
+      background: #EEE;
+      font-weight: bold;
+      border-radius: 0;
+      height: auto;
+      padding: .5em;
+      font-size: 1.1em;
+      font-family: museo-sans;
+
+      color: #222;
+
+      &:focus {
+        .no-box-shadow;
+        .transition;
+        outline: 0;
+        border: 1px solid #DDD;
+      }
+
+      &.invalid {
+        border-color: fadeout(@CRED, 30%);
+      }
+    }
+
+    textarea[disabled] {
+      resize: none;
+    }
+
+    input[type=password].is-wrong {
+      background: mix(@CRED, #DDD);
+      &:focus {
+        border-color: @CRED;
+      }
+    }
+
+    .userNClient {
+      width: 100%;
+      display: table;
+      clear: both;
+    }
+
+    .userDisplay {
+      display: table;
+      padding: 10px;
+      float: left;
+      // border: 1px solid #DDD;
+
+      .left {
+        float: left;
+      }
+      .right {
+        float: left;
+        margin-left: 10px;
+      }
+
+      .user-avatar {
+        width: 50px;
+        border-radius: 50px;
+        height: 50px;
+      }
+
+      .name {
+        font-size: 15px;
+        font-weight: bold;
+      }
+    }
+
+  }
+
+  .fileView {
+    width: 450px;
+  }
+
+  .STLRenderer {
+    height: 400px;
+    width: 375px;
+  }
+}

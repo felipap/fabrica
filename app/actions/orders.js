@@ -21,6 +21,17 @@ function randomValueBase64 (len) {
 		.replace(/\//g, '0'); // replace '/' with '0'
 }
 
+module.exports.stuff = function (self, order, cb) {
+	please({$model:User}, {$model:Order}, '$isFn')
+
+	order.populate({
+		path: 'vendor client',
+		select: User.APISelect,
+	}, TMERA((order) => {
+		cb(null, order.toJSON())
+	}))
+}
+
 module.exports.place = function (seller, client, data, cb) {
 	please({$model:User}, {$model:User}, '$skip', '$isFn')
 

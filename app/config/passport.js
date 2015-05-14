@@ -1,7 +1,6 @@
 
 var passport = require('passport');
 var nconf = require('nconf');
-var actions = require('app/actions/passport');
 
 var mongoose = require('mongoose')
 
@@ -17,7 +16,6 @@ function setUpPassport(app) {
 	  },
 		function(email, password, done) {
 			User.findOne({ email: email }, function (err, user) {
-				console.log('user found?', user)
 				if (err) { return done(err); }
 				if (!user) {
 					return done(null, false, { message: 'Email ou senha incorretos.' })

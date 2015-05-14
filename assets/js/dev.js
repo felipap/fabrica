@@ -111,6 +111,20 @@ $('a[data-ajax-post-href],button[data-ajax-post-href]').click(function () {
 });
 
 
+function bindProgressLoader() {
+	var NProgress = require('nprogress')
+	$(document).ajaxStart(function() {
+		NProgress.start()
+	});
+	$(document).ajaxComplete(function() {
+		NProgress.done()
+	});
+}
+
+bindProgressLoader();
+
+
+
 $('form[data-ajax-form=true]').submit(function (evt) {
 	evt.preventDefault();
 
@@ -142,7 +156,7 @@ $('form[data-ajax-form=true]').submit(function (evt) {
 	});
 });
 
-},{"../vendor/bootstrap/button.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/button.js","../vendor/bootstrap/dropdown.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/dropdown.js","../vendor/bootstrap/tooltip.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/tooltip.js","autosize":"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js","es5-shim":"/home/felipe/Projects/fabrica/app/static/js/vendor/es5-shim.min.js","es6-shim":"/home/felipe/Projects/fabrica/app/static/js/vendor/es6-shim.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","modernizr":"/home/felipe/Projects/fabrica/app/static/js/vendor/modernizr-3.0.0-beta.min.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/OrderView.jsx":[function(require,module,exports){
+},{"../vendor/bootstrap/button.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/button.js","../vendor/bootstrap/dropdown.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/dropdown.js","../vendor/bootstrap/tooltip.js":"/home/felipe/Projects/fabrica/app/static/js/vendor/bootstrap/tooltip.js","autosize":"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js","es5-shim":"/home/felipe/Projects/fabrica/app/static/js/vendor/es5-shim.min.js","es6-shim":"/home/felipe/Projects/fabrica/app/static/js/vendor/es6-shim.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","modernizr":"/home/felipe/Projects/fabrica/app/static/js/vendor/modernizr-3.0.0-beta.min.js","nprogress":"/home/felipe/Projects/fabrica/app/static/js/vendor/nprogress.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/OrderView.jsx":[function(require,module,exports){
 
 "use strict"
 
@@ -163,18 +177,96 @@ var OrderView = React.createBackboneClass({
   render: function() {
     var doc = this.getModel().attributes;
 
+    var GenClientBlock = function()  {
+      var client = doc.client;
+      return (
+        React.createElement("div", {className: "userDisplay"}, 
+          React.createElement("div", null, 
+            React.createElement("label", null, 
+              "Cliente"
+            )
+          ), 
+
+          React.createElement("div", {className: "left"}, 
+            React.createElement("div", {className: "user-avatar"}, 
+              React.createElement("div", {className: "avatar", 
+                style: {backgroundImage:'url('+client.picture+')'}})
+            )
+          ), 
+          React.createElement("div", {className: "right"}, 
+            React.createElement("div", {className: "name"}, 
+              client.name
+            ), 
+            React.createElement("div", {className: "email"}, 
+              client.email
+            ), 
+            React.createElement("div", {className: "phone"}, 
+              client.phone
+            )
+          )
+        )
+      );
+    };
+
+    var GenVendorBlock = function()  {
+      var vendor = doc.vendor;
+      return (
+        React.createElement("div", {className: "userDisplay"}, 
+          React.createElement("div", null, 
+            React.createElement("label", null, 
+              "Vendedor"
+            )
+          ), 
+          React.createElement("div", {className: "left"}, 
+            React.createElement("div", {className: "user-avatar"}, 
+              React.createElement("div", {className: "avatar", 
+                style: {backgroundImage:'url('+vendor.picture+')'}})
+            )
+          ), 
+          React.createElement("div", {className: "right"}, 
+            React.createElement("div", {className: "name"}, 
+              vendor.name
+            ), 
+            React.createElement("div", {className: "email"}, 
+              vendor.email
+            ), 
+            React.createElement("div", {className: "phone"}, 
+              vendor.phone
+            )
+          )
+        )
+      );
+    };
+
     return (
       React.createElement("div", {className: "OrderView"}, 
         React.createElement("div", {className: "row"}, 
-          React.createElement("div", {className: "col-md-8"}, 
-            React.createElement("div", {className: "name"}, 
-              doc.name
-            ), 
-            React.createElement("div", {className: "comments"}, 
-              doc.comments
+          React.createElement("div", {className: "col-md-7"}, 
+            React.createElement("div", {className: "orderFields"}, 
+              React.createElement("form", null, 
+                React.createElement("div", {className: "form-group"}, 
+                  React.createElement("label", null, 
+                    "Nome"
+                  ), 
+                  React.createElement("input", {type: "text", name: "name", className: "name", 
+                    disabled: true, defaultValue: doc.name})
+                ), 
+                React.createElement("div", {className: "form-group"}, 
+                  React.createElement("label", null, 
+                    "Comentário do Pedido"
+                  ), 
+                  React.createElement("textarea", {name: "comments", className: "comments", 
+                    disabled: true, defaultValue: doc.comments}
+                  )
+                ), 
+                React.createElement("div", {className: "userNVendor"}, 
+                  GenClientBlock(), 
+                  GenVendorBlock()
+                )
+              )
             )
           ), 
-          React.createElement("div", {className: "col-md-4 renderer"}, 
+          React.createElement("div", {className: "col-md-5"}, 
             React.createElement(STLRenderer, {ref: "renderer", file: this.getModel().get('file')})
           )
         )
@@ -433,7 +525,7 @@ module.exports = PrettyCheck;
 var React = require('react');
 
 // Load THREE.js scripts into page.
-// DON'T require() this file unless you're gonna use the renderer!
+// So DON'T require() this file unless you're gonna use the renderer, dummy!
 +(function ThreeJSLoader() {
 	function addScript(src, cb) {
 		var el = document.createElement('script');
@@ -473,7 +565,6 @@ var React = require('react');
 			callbacks.push(cb);
 		}
 	}
-
 })();
 
 var stats = null;
@@ -545,13 +636,21 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 		this._animate();
 	},
 
+	_determineDimensions: function() {
+		var d = {
+			width: $(this.getDOMNode()).width(),
+			height: $(this.getDOMNode()).height(),
+		};
+		console.log("Dimensions determined for stl viewer:", d);
+		return d;
+	},
+
 	_init: function () {
 		if (!Detector.webgl) {
 			Detector.addGetWebGLMessage();
 		}
 
-		var width = $(this.getDOMNode().parentElement).width(); // magic num
-		var height = $(this.getDOMNode().parentElement.parentElement).height();
+		var $__0=   this._determineDimensions(),width=$__0.width,height=$__0.height;
 
 		var addShadowedLight = function(x, y, z, color, intensity)  {
 			var directionalLight = new THREE.DirectionalLight(color, intensity);
@@ -649,6 +748,7 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 			this.model.receiveShadow = true;
 
 			this.scene.add(this.model);
+			this._onWindowResize();
 		}.bind(this));
 
 		this.scene.add(new THREE.AmbientLight(0x777777));
@@ -659,8 +759,7 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 	},
 
 	_onWindowResize: function() {
-		var width = $(this.getDOMNode().parentElement).width();
-		var height = $(this.getDOMNode().parentElement.parentElement).height();
+		var $__0=   this._determineDimensions(),width=$__0.width,height=$__0.height;
 
 		this.controls.handleResize();
 		this.camera.aspect = width/height;
@@ -2765,7 +2864,7 @@ var FormParts = [
 var OrderForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
-			formPosition: 1,
+			formPosition: 2,
 		}
 	},
 
@@ -2866,7 +2965,7 @@ module.exports = function(app) {
 			id: '5519997fec4783e8608bf9df',
 		},
 		color: 'red',
-		file: 'https://deltathinkers.s3.amazonaws.com/jobs/f057cd47-1ca0-42be-80d1-7c5c1cee668c',
+		file: 'https://deltathinkers.s3.amazonaws.com/jobs/15256c45-34f8-4ff6-b3af-13d32ad27151',
 	});
 
 
@@ -3740,6 +3839,484 @@ u.prototype[n]=function(){var n=this.__wrapped__;return r.apply(n,arguments),zr.
  *  Build: http://modernizr.com/download/#-applicationcache-audio-backgroundsize-borderimage-borderradius-boxshadow-canvas-canvastext-cssanimations-csscolumns-cssgradients-cssreflections-csstransforms-csstransforms3d-csstransitions-draganddrop-flexbox-flexboxlegacy-fontface-generatedcontent-geolocation-hashchange-history-hsla-indexeddb-inlinesvg-input-inputtypes-localstorage-multiplebgs-opacity-postmessage-rgba-sessionstorage-smil-svg-svgclippaths-textshadow-video-webgl-websockets-websqldatabase-webworkers-addtest-cssclasses-domprefixes-hasevent-prefixed-prefixes-shiv-testallprops-testprop-teststyles
  */
 (function(e,t,n){var r,a,o,Modernizr,i,s,c,l,d,u,f,p,m,g,h,v,y,b,T,x,w,C,S,k,E,P,_,$;function A(e,t){return typeof e===t}function z(){var e,t,n,o,i,s,c,l;for(l in a){if(e=[],t=a[l],t.name&&(e.push(t.name.toLowerCase()),t.options&&t.options.aliases&&t.options.aliases.length))for(n=0;t.options.aliases.length>n;n++)e.push(t.options.aliases[n].toLowerCase());for(o=A(t.fn,"function")?t.fn():t.fn,i=0;e.length>i;i++)s=e[i],c=s.split("."),1===c.length?Modernizr[c[0]]=o:2===c.length&&(!Modernizr[c[0]]||Modernizr[c[0]]instanceof Boolean||(Modernizr[c[0]]=new Boolean(Modernizr[c[0]])),Modernizr[c[0]][c[1]]=o),r.push((o?"":"no-")+c.join("-"))}}function N(e){var t,n,r;t=s.className,n=Modernizr._config.classPrefix||"",r=RegExp("(^|\\s)"+n+"no-js(\\s|$)"),t=t.replace(r,"$1"+n+"js$2"),Modernizr._config.enableClasses&&(t+=" "+n+e.join(" "+n),s.className=t)}function R(e,t){var r,a,o;if("object"==typeof e)for(r in e)c(e,r)&&R(r,e[r]);else{if(e=e.toLowerCase(),a=e.split("."),o=Modernizr[a[0]],2==a.length&&(o=o[a[1]]),o!==n)return Modernizr;t="function"==typeof t?t():t,1==a.length?Modernizr[a[0]]=t:2==a.length&&(!Modernizr[a[0]]||Modernizr[a[0]]instanceof Boolean||(Modernizr[a[0]]=new Boolean(Modernizr[a[0]])),Modernizr[a[0]][a[1]]=t),N([(t?"":"no-")+a.join("-")]),Modernizr._trigger(e,t)}return Modernizr}function B(e){return e.replace(/([a-z])-([a-z])/g,function(e,t,n){return t+n.toUpperCase()}).replace(/^-/,"")}function L(e,t){return!!~(""+e).indexOf(t)}function M(){var e=t.body;return e||(e=u("body"),e.fake=!0),e}function j(e,t,n,r){var a,o,i,c,l,d,f;if(a="modernizr",d=u("div"),f=M(),parseInt(n,10))for(;n--;)c=u("div"),c.id=r?r[n]:a+(n+1),d.appendChild(c);return o=["­",'<style id="s',a,'">',e,"</style>"].join(""),d.id=a,(f.fake?f:d).innerHTML+=o,f.appendChild(d),f.fake&&(f.style.background="",f.style.overflow="hidden",l=s.style.overflow,s.style.overflow="hidden",s.appendChild(f)),i=t(d,e),f.fake?(f.parentNode.removeChild(f),s.style.overflow=l,s.offsetHeight):d.parentNode.removeChild(d),!!i}function F(e,t){return function(){return e.apply(t,arguments)}}function O(e,t,n){var r,a;for(a in e)if(e[a]in t)return n===!1?e[a]:(r=t[e[a]],A(r,"function")?F(r,n||t):r);return!1}function D(e){return e.replace(/([A-Z])/g,function(e,t){return"-"+t.toLowerCase()}).replace(/^ms-/,"-ms-")}function I(t,r){var a,o;if(a=t.length,"CSS"in e&&"supports"in e.CSS){for(;a--;)if(e.CSS.supports(D(t[a]),r))return!0;return!1}if("CSSSupportsRule"in e){for(o=[];a--;)o.push("("+D(t[a])+":"+r+")");return o=o.join(" or "),j("@supports ("+o+") { #modernizr { position: absolute; } }",function(t){return"absolute"==(e.getComputedStyle?getComputedStyle(t,null):t.currentStyle).position})}return n}function H(e,t,r,a){var o,i,s,c,l;function d(){i&&(delete k.style,delete k.modElem)}if(a=A(a,"undefined")?!1:a,!A(r,"undefined")&&(o=I(e,r),!A(o,"undefined")))return o;k.style||(i=!0,k.modElem=u("modernizr"),k.style=k.modElem.style);for(s in e)if(c=e[s],l=k.style[c],!L(c,"-")&&k.style[c]!==n){if(a||A(r,"undefined"))return d(),"pfx"==t?c:!0;try{k.style[c]=r}catch(f){}if(k.style[c]!=l)return d(),"pfx"==t?c:!0}return d(),!1}function q(e,t,n,r,a){var o=e.charAt(0).toUpperCase()+e.slice(1),i=(e+" "+x.join(o+" ")+o).split(" ");return A(t,"string")||A(t,"undefined")?H(i,t,r,a):(i=(e+" "+d.join(o+" ")+o).split(" "),O(i,t,n))}function W(e,t,r){return q(e,n,n,t,r)}r=[],function(e,t){var r,a,o,i,s,c,l,d,u,f;function p(e,t){var n=e.createElement("p"),r=e.getElementsByTagName("head")[0]||e.documentElement;return n.innerHTML="x<style>"+t+"</style>",r.insertBefore(n.lastChild,r.firstChild)}function m(){var e=f.elements;return"string"==typeof e?e.split(" "):e}function g(e){var t=d[e[c]];return t||(t={},l++,e[c]=l,d[l]=t),t}function h(e,n,r){if(n||(n=t),u)return n.createElement(e);r||(r=g(n));var a;return a=r.cache[e]?r.cache[e].cloneNode():i.test(e)?(r.cache[e]=r.createElem(e)).cloneNode():r.createElem(e),!a.canHaveChildren||o.test(e)||a.tagUrn?a:r.frag.appendChild(a)}function v(e,n){if(e||(e=t),u)return e.createDocumentFragment();n=n||g(e);for(var r=n.frag.cloneNode(),a=0,o=m(),i=o.length;i>a;a++)r.createElement(o[a]);return r}function y(e,t){t.cache||(t.cache={},t.createElem=e.createElement,t.createFrag=e.createDocumentFragment,t.frag=t.createFrag()),e.createElement=function(n){return f.shivMethods?h(n,e,t):t.createElem(n)},e.createDocumentFragment=Function("h,f","return function(){var n=f.cloneNode(),c=n.createElement;h.shivMethods&&("+m().join().replace(/[\w\-:]+/g,function(e){return t.createElem(e),t.frag.createElement(e),'c("'+e+'")'})+");return n}")(f,t.frag)}function b(e){e||(e=t);var n=g(e);return!f.shivCSS||s||n.hasCSS||(n.hasCSS=!!p(e,"article,aside,dialog,figcaption,figure,footer,header,hgroup,main,nav,section{display:block}mark{background:#FF0;color:#000}template{display:none}")),u||y(e,n),e}r="3.7.0",a=e.html5||{},o=/^<|^(?:button|map|select|textarea|object|iframe|option|optgroup)$/i,i=/^(?:a|b|code|div|fieldset|h1|h2|h3|h4|h5|h6|i|label|li|ol|p|q|span|strong|style|table|tbody|td|th|tr|ul)$/i,c="_html5shiv",l=0,d={},function(){try{var e=t.createElement("a");e.innerHTML="<xyz></xyz>",s="hidden"in e,u=1==e.childNodes.length||function(){t.createElement("a");var e=t.createDocumentFragment();return e.cloneNode===n||e.createDocumentFragment===n||e.createElement===n}()}catch(r){s=!0,u=!0}}(),f={elements:a.elements||"abbr article aside audio bdi canvas data datalist details dialog figcaption figure footer header hgroup main mark meter nav output picture progress section summary template time video",version:r,shivCSS:a.shivCSS!==!1,supportsUnknownElements:u,shivMethods:a.shivMethods!==!1,type:"default",shivDocument:b,createElement:h,createDocumentFragment:v},e.html5=f,b(t)}(this,t),a=[],o={_version:"v3.0.0pre",_config:{classPrefix:"",enableClasses:!0,usePrefixes:!0},_q:[],on:function(e,t){setTimeout(function(){t(this[e])},0)},addTest:function(e,t,n){a.push({name:e,fn:t,options:n})},addAsyncTest:function(e){a.push({name:null,fn:e})}},Modernizr=function(){},Modernizr.prototype=o,Modernizr=new Modernizr,Modernizr.addTest("applicationcache","applicationCache"in e),Modernizr.addTest("geolocation","geolocation"in navigator),Modernizr.addTest("history",function(){var t=navigator.userAgent;return-1===t.indexOf("Android 2.")&&-1===t.indexOf("Android 4.0")||-1===t.indexOf("Mobile Safari")||-1!==t.indexOf("Chrome")?e.history&&"pushState"in e.history:!1}),Modernizr.addTest("localstorage",function(){var e="modernizr";try{return localStorage.setItem(e,e),localStorage.removeItem(e),!0}catch(t){return!1}}),Modernizr.addTest("postmessage","postMessage"in e),Modernizr.addTest("sessionstorage",function(){var e="modernizr";try{return sessionStorage.setItem(e,e),sessionStorage.removeItem(e),!0}catch(t){return!1}}),Modernizr.addTest("svg",!!t.createElementNS&&!!t.createElementNS("http://www.w3.org/2000/svg","svg").createSVGRect),Modernizr.addTest("websqldatabase","openDatabase"in e),Modernizr.addTest("webworkers","Worker"in e),Modernizr.addTest("websockets","WebSocket"in e&&2===e.WebSocket.CLOSING),i=o._config.usePrefixes?" -webkit- -moz- -o- -ms- ".split(" "):[],o._prefixes=i,s=t.documentElement,function(){var e={}.hasOwnProperty;c=A(e,"undefined")||A(e.call,"undefined")?function(e,t){return t in e&&A(e.constructor.prototype[t],"undefined")}:function(t,n){return e.call(t,n)}}(),o._l={},o.on=function(e,t){this._l[e]||(this._l[e]=[]),this._l[e].push(t),Modernizr.hasOwnProperty(e)&&setTimeout(function(){Modernizr._trigger(e,Modernizr[e])},0)},o._trigger=function(e,t){if(this._l[e]){var n=this._l[e];setTimeout(function(){var e,r;for(e=0;n.length>e;e++)r=n[e],r(t)},0),delete this._l[e]}},Modernizr._q.push(function(){o.addTest=R}),l="Webkit Moz O ms",d=o._config.usePrefixes?l.toLowerCase().split(" "):[],o._domPrefixes=d,u=function(){return t.createElement.apply(t,arguments)},Modernizr.addTest("canvas",function(){var e=u("canvas");return!(!e.getContext||!e.getContext("2d"))}),Modernizr.addTest("canvastext",function(){return Modernizr.canvas===!1?!1:"function"==typeof u("canvas").getContext("2d").fillText}),Modernizr.addTest("cssgradients",function(){var e,t,n,r,a,o;return e="background-image:",t="gradient(linear,left top,right bottom,from(#9f9),to(white));",n="linear-gradient(left top,#9f9, white);",r=e+i.join(n+e).slice(0,-e.length),Modernizr._config.usePrefixes&&(r+=e+"-webkit-"+t),a=u("div"),o=a.style,o.cssText=r,(""+o.backgroundImage).indexOf("gradient")>-1}),Modernizr.addTest("multiplebgs",function(){var e,t;return e=u("div"),t=e.style,t.cssText="background:url(https://),url(https://),red url(https://)",/(url\s*\(.*?){3}/.test(t.background)}),Modernizr.addTest("opacity",function(){var e,t;return e=u("div"),t=e.style,t.cssText=i.join("opacity:.55;"),/^0.55$/.test(t.opacity)}),Modernizr.addTest("rgba",function(){var e,t;return e=u("div"),t=e.style,t.cssText="background-color:rgba(150,255,150,.5)",(""+t.backgroundColor).indexOf("rgba")>-1}),Modernizr.addTest("draganddrop",function(){var e=u("div");return"draggable"in e||"ondragstart"in e&&"ondrop"in e}),Modernizr.addTest("audio",function(){var e,t;e=u("audio"),t=!1;try{(t=!!e.canPlayType)&&(t=new Boolean(t),t.ogg=e.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/,""),t.mp3=e.canPlayType("audio/mpeg;").replace(/^no$/,""),t.opus=e.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/,""),t.wav=e.canPlayType('audio/wav; codecs="1"').replace(/^no$/,""),t.m4a=(e.canPlayType("audio/x-m4a;")||e.canPlayType("audio/aac;")).replace(/^no$/,""))}catch(n){}return t}),Modernizr.addTest("video",function(){var e,t;e=u("video"),t=!1;try{(t=!!e.canPlayType)&&(t=new Boolean(t),t.ogg=e.canPlayType('video/ogg; codecs="theora"').replace(/^no$/,""),t.h264=e.canPlayType('video/mp4; codecs="avc1.42E01E"').replace(/^no$/,""),t.webm=e.canPlayType('video/webm; codecs="vp8, vorbis"').replace(/^no$/,""),t.vp9=e.canPlayType('video/webm; codecs="vp9"').replace(/^no$/,""),t.hls=e.canPlayType('application/x-mpegURL; codecs="avc1.42E01E"').replace(/^no$/,""))}catch(n){}return t}),Modernizr.addTest("inlinesvg",function(){var e=u("div");return e.innerHTML="<svg/>","http://www.w3.org/2000/svg"==(e.firstChild&&e.firstChild.namespaceURI)}),Modernizr.addTest("webgl",function(){var t=u("canvas");return"supportsContext"in t?t.supportsContext("webgl")||t.supportsContext("experimental-webgl"):!!e.WebGLRenderingContext}),f=function(e){function n(t,n){var a;return t?(n&&"string"!=typeof n||(n=u(n||"div")),t="on"+t,a=t in n,!a&&r&&(n.setAttribute||(n=u("div")),n.setAttribute&&n.removeAttribute&&(n.setAttribute(t,""),a="function"==typeof n[t],n[t]!==e&&(n[t]=e),n.removeAttribute(t))),a):!1}var r=!("onblur"in t.documentElement);return n}(),p=o.hasEvent=f,Modernizr.addTest("hashchange",function(){return p("hashchange",e)===!1?!1:t.documentMode===n||t.documentMode>7}),Modernizr.addTest("hsla",function(){var e,t;return e=u("div"),t=e.style,t.cssText="background-color:hsla(120,40%,100%,.5)",L(t.backgroundColor,"rgba")||L(t.backgroundColor,"hsla")}),m=u("input"),g="search tel url email datetime date month week time datetime-local number range color".split(" "),h={},v=":)",Modernizr.inputtypes=function(e){var r,a,o,i,c;for(i=e.length,c=0;i>c;c++)m.setAttribute("type",a=e[c]),r="text"!==m.type,r&&(m.value=v,m.style.cssText="position:absolute;visibility:hidden;",/^range$/.test(a)&&m.style.WebkitAppearance!==n?(s.appendChild(m),o=t.defaultView,r=o.getComputedStyle&&"textfield"!==o.getComputedStyle(m,null).WebkitAppearance&&0!==m.offsetHeight,s.removeChild(m)):/^(search|tel)$/.test(a)||(r=/^(url|email)$/.test(a)?m.checkValidity&&m.checkValidity()===!1:m.value!=v)),h[e[c]]=!!r;return h}(g),y={},b="autocomplete autofocus list placeholder max min multiple pattern required step".split(" "),Modernizr.input=function(t){for(var n=0,r=t.length;r>n;n++)y[t[n]]=!!(t[n]in m);return y.list&&(y.list=!(!u("datalist")||!e.HTMLDataListElement)),y}(b),T={}.toString,Modernizr.addTest("svgclippaths",function(){return!!t.createElementNS&&/SVGClipPath/.test(T.call(t.createElementNS("http://www.w3.org/2000/svg","clipPath")))}),Modernizr.addTest("smil",function(){return!!t.createElementNS&&/SVGAnimate/.test(T.call(t.createElementNS("http://www.w3.org/2000/svg","animate")))}),x=o._config.usePrefixes?l.split(" "):[],o._cssomPrefixes=x,w=o.testStyles=j,C=function(){var e,t,n,r,a;return e=navigator.userAgent,t=e.match(/applewebkit\/([0-9]+)/gi)&&parseFloat(RegExp.$1),n=e.match(/w(eb)?osbrowser/gi),r=e.match(/windows phone/gi)&&e.match(/iemobile\/([0-9])+/gi)&&parseFloat(RegExp.$1)>=9,a=533>t&&e.match(/android/gi),n||a||r}(),C?Modernizr.addTest("fontface",!1):w('@font-face {font-family:"font";src:url("https://")}',function(e,n){var r,a,o,i;r=t.getElementById("smodernizr"),a=r.sheet||r.styleSheet,o=a?a.cssRules&&a.cssRules[0]?a.cssRules[0].cssText:a.cssText||"":"",i=/src/i.test(o)&&0===o.indexOf(n.split(" ")[0]),Modernizr.addTest("fontface",i)}),w('#modernizr{font:0/0 a}#modernizr:after{content:":)";visibility:hidden;font:7px/1 a}',function(e){Modernizr.addTest("generatedcontent",e.offsetHeight>=7)}),S={elem:u("modernizr")},Modernizr._q.push(function(){delete S.elem}),k={style:S.elem.style},Modernizr._q.unshift(function(){delete k.style}),E=o.testProp=function(e,t,r){return H([e],n,t,r)},Modernizr.addTest("textshadow",E("textShadow","1px 1px")),o.testAllProps=q,P=o.prefixed=function(e,t,n){return-1!=e.indexOf("-")&&(e=B(e)),t?q(e,t,n):q(e,"pfx")},_=P("indexedDB",e),Modernizr.addTest("indexeddb",!!_),_&&Modernizr.addTest("indexeddb.deletedatabase","deleteDatabase"in _),o.testAllProps=W,Modernizr.addTest("backgroundsize",W("backgroundSize","100%",!0)),Modernizr.addTest("borderimage",W("borderImage","url() 1",!0)),Modernizr.addTest("borderradius",W("borderRadius","0px",!0)),Modernizr.addTest("boxshadow",W("boxShadow","1px 1px",!0)),Modernizr.addTest("cssanimations",W("animationName","a",!0)),function(){var e,t,n,r;for(Modernizr.addTest("csscolumns",function(){var e,t;e=!1,t=W("columnCount");try{(e=!!t)&&(e=new Boolean(e))}catch(n){}return e}),e=["Width","Span","Fill","Gap","Rule","RuleColor","RuleStyle","RuleWidth","BreakBefore","BreakAfter","BreakInside"],r=0;e.length>r;r++)t=e[r].toLowerCase(),n=W("column"+e[r]),("breakbefore"===t||"breakafter"===t||"breakinside"==t)&&(n=n||W(e[r])),Modernizr.addTest("csscolumns."+t,n)}(),Modernizr.addTest("cssreflections",W("boxReflect","above",!0)),Modernizr.addTest("csstransforms",W("transform","scale(1)",!0)),Modernizr.addTest("csstransforms3d",function(){var e,t,n;return e=!!W("perspective","1px",!0),t=Modernizr._config.usePrefixes,e&&(!t||"webkitPerspective"in s.style)&&(n="@media (transform-3d)",t&&(n+=",(-webkit-transform-3d)"),n+="{#modernizr{left:9px;position:absolute;height:5px;margin:0;padding:0;border:0}}",w(n,function(t){e=9===t.offsetLeft&&5===t.offsetHeight})),e}),Modernizr.addTest("csstransitions",W("transition","all",!0)),Modernizr.addTest("flexbox",W("flexBasis","1px",!0)),Modernizr.addTest("flexboxlegacy",W("boxDirection","reverse",!0)),z(),N(r),delete o.addTest,delete o.addAsyncTest;for($=0;Modernizr._q.length>$;$++)Modernizr._q[$]();e.Modernizr=Modernizr})(this,document);
+
+},{}],"/home/felipe/Projects/fabrica/app/static/js/vendor/nprogress.js":[function(require,module,exports){
+/* NProgress, (c) 2013, 2014 Rico Sta. Cruz - http://ricostacruz.com/nprogress
+ * @license MIT */
+
+;(function(root, factory) {
+
+  if (typeof define === 'function' && define.amd) {
+    define(factory);
+  } else if (typeof exports === 'object') {
+    module.exports = factory();
+  } else {
+    root.NProgress = factory();
+  }
+
+})(this, function() {
+  var NProgress = {};
+
+  NProgress.version = '0.1.6';
+
+  var Settings = NProgress.settings = {
+    minimum: 0.08,
+    easing: 'ease',
+    positionUsing: '',
+    speed: 200,
+    trickle: true,
+    trickleRate: 0.02,
+    trickleSpeed: 800,
+    showSpinner: true,
+    barSelector: '[role="bar"]',
+    spinnerSelector: '[role="spinner"]',
+    parent: 'body',
+    template: '<div class="bar" role="bar"><div class="peg"></div></div><div class="spinner" role="spinner"><div class="spinner-icon"></div></div>'
+  };
+
+  /**
+   * Updates configuration.
+   *
+   *     NProgress.configure({
+   *       minimum: 0.1
+   *     });
+   */
+  NProgress.configure = function(options) {
+    var key, value;
+    for (key in options) {
+      value = options[key];
+      if (value !== undefined && options.hasOwnProperty(key)) Settings[key] = value;
+    }
+
+    return this;
+  };
+
+  /**
+   * Last number.
+   */
+
+  NProgress.status = null;
+
+  /**
+   * Sets the progress bar status, where `n` is a number from `0.0` to `1.0`.
+   *
+   *     NProgress.set(0.4);
+   *     NProgress.set(1.0);
+   */
+
+  NProgress.set = function(n) {
+    var started = NProgress.isStarted();
+
+    n = clamp(n, Settings.minimum, 1);
+    NProgress.status = (n === 1 ? null : n);
+
+    var progress = NProgress.render(!started),
+        bar      = progress.querySelector(Settings.barSelector),
+        speed    = Settings.speed,
+        ease     = Settings.easing;
+
+    progress.offsetWidth; /* Repaint */
+
+    queue(function(next) {
+      // Set positionUsing if it hasn't already been set
+      if (Settings.positionUsing === '') Settings.positionUsing = NProgress.getPositioningCSS();
+
+      // Add transition
+      css(bar, barPositionCSS(n, speed, ease));
+
+      if (n === 1) {
+        // Fade out
+        css(progress, {
+          transition: 'none',
+          opacity: 1
+        });
+        progress.offsetWidth; /* Repaint */
+
+        setTimeout(function() {
+          css(progress, {
+            transition: 'all ' + speed + 'ms linear',
+            opacity: 0
+          });
+          setTimeout(function() {
+            NProgress.remove();
+            next();
+          }, speed);
+        }, speed);
+      } else {
+        setTimeout(next, speed);
+      }
+    });
+
+    return this;
+  };
+
+  NProgress.isStarted = function() {
+    return typeof NProgress.status === 'number';
+  };
+
+  /**
+   * Shows the progress bar.
+   * This is the same as setting the status to 0%, except that it doesn't go backwards.
+   *
+   *     NProgress.start();
+   *
+   */
+  NProgress.start = function() {
+    if (!NProgress.status) NProgress.set(0);
+
+    var work = function() {
+      setTimeout(function() {
+        if (!NProgress.status) return;
+        NProgress.trickle();
+        work();
+      }, Settings.trickleSpeed);
+    };
+
+    if (Settings.trickle) work();
+
+    return this;
+  };
+
+  /**
+   * Hides the progress bar.
+   * This is the *sort of* the same as setting the status to 100%, with the
+   * difference being `done()` makes some placebo effect of some realistic motion.
+   *
+   *     NProgress.done();
+   *
+   * If `true` is passed, it will show the progress bar even if its hidden.
+   *
+   *     NProgress.done(true);
+   */
+
+  NProgress.done = function(force) {
+    if (!force && !NProgress.status) return this;
+
+    return NProgress.inc(0.3 + 0.5 * Math.random()).set(1);
+  };
+
+  /**
+   * Increments by a random amount.
+   */
+
+  NProgress.inc = function(amount) {
+    var n = NProgress.status;
+
+    if (!n) {
+      return NProgress.start();
+    } else {
+      if (typeof amount !== 'number') {
+        amount = (1 - n) * clamp(Math.random() * n, 0.1, 0.95);
+      }
+
+      n = clamp(n + amount, 0, 0.994);
+      return NProgress.set(n);
+    }
+  };
+
+  NProgress.trickle = function() {
+    return NProgress.inc(Math.random() * Settings.trickleRate);
+  };
+
+  /**
+   * Waits for all supplied jQuery promises and
+   * increases the progress as the promises resolve.
+   *
+   * @param $promise jQUery Promise
+   */
+  (function() {
+    var initial = 0, current = 0;
+
+    NProgress.promise = function($promise) {
+      if (!$promise || $promise.state() === "resolved") {
+        return this;
+      }
+
+      if (current === 0) {
+        NProgress.start();
+      }
+
+      initial++;
+      current++;
+
+      $promise.always(function() {
+        current--;
+        if (current === 0) {
+            initial = 0;
+            NProgress.done();
+        } else {
+            NProgress.set((initial - current) / initial);
+        }
+      });
+
+      return this;
+    };
+
+  })();
+
+  /**
+   * (Internal) renders the progress bar markup based on the `template`
+   * setting.
+   */
+
+  NProgress.render = function(fromStart) {
+    if (NProgress.isRendered()) return document.getElementById('nprogress');
+
+    addClass(document.documentElement, 'nprogress-busy');
+
+    var progress = document.createElement('div');
+    progress.id = 'nprogress';
+    progress.innerHTML = Settings.template;
+
+    var bar      = progress.querySelector(Settings.barSelector),
+        perc     = fromStart ? '-100' : toBarPerc(NProgress.status || 0),
+        parent   = document.querySelector(Settings.parent),
+        spinner;
+
+    css(bar, {
+      transition: 'all 0 linear',
+      transform: 'translate3d(' + perc + '%,0,0)'
+    });
+
+    if (!Settings.showSpinner) {
+      spinner = progress.querySelector(Settings.spinnerSelector);
+      spinner && removeElement(spinner);
+    }
+
+    if (parent != document.body) {
+      addClass(parent, 'nprogress-custom-parent');
+    }
+
+    parent.appendChild(progress);
+    return progress;
+  };
+
+  /**
+   * Removes the element. Opposite of render().
+   */
+
+  NProgress.remove = function() {
+    removeClass(document.documentElement, 'nprogress-busy');
+    removeClass(document.querySelector(Settings.parent), 'nprogress-custom-parent')
+    var progress = document.getElementById('nprogress');
+    progress && removeElement(progress);
+  };
+
+  /**
+   * Checks if the progress bar is rendered.
+   */
+
+  NProgress.isRendered = function() {
+    return !!document.getElementById('nprogress');
+  };
+
+  /**
+   * Determine which positioning CSS rule to use.
+   */
+
+  NProgress.getPositioningCSS = function() {
+    // Sniff on document.body.style
+    var bodyStyle = document.body.style;
+
+    // Sniff prefixes
+    var vendorPrefix = ('WebkitTransform' in bodyStyle) ? 'Webkit' :
+                       ('MozTransform' in bodyStyle) ? 'Moz' :
+                       ('msTransform' in bodyStyle) ? 'ms' :
+                       ('OTransform' in bodyStyle) ? 'O' : '';
+
+    if (vendorPrefix + 'Perspective' in bodyStyle) {
+      // Modern browsers with 3D support, e.g. Webkit, IE10
+      return 'translate3d';
+    } else if (vendorPrefix + 'Transform' in bodyStyle) {
+      // Browsers without 3D support, e.g. IE9
+      return 'translate';
+    } else {
+      // Browsers without translate() support, e.g. IE7-8
+      return 'margin';
+    }
+  };
+
+  /**
+   * Helpers
+   */
+
+  function clamp(n, min, max) {
+    if (n < min) return min;
+    if (n > max) return max;
+    return n;
+  }
+
+  /**
+   * (Internal) converts a percentage (`0..1`) to a bar translateX
+   * percentage (`-100%..0%`).
+   */
+
+  function toBarPerc(n) {
+    return (-1 + n) * 100;
+  }
+
+
+  /**
+   * (Internal) returns the correct CSS for changing the bar's
+   * position given an n percentage, and speed and ease from Settings
+   */
+
+  function barPositionCSS(n, speed, ease) {
+    var barCSS;
+
+    if (Settings.positionUsing === 'translate3d') {
+      barCSS = { transform: 'translate3d('+toBarPerc(n)+'%,0,0)' };
+    } else if (Settings.positionUsing === 'translate') {
+      barCSS = { transform: 'translate('+toBarPerc(n)+'%,0)' };
+    } else {
+      barCSS = { 'margin-left': toBarPerc(n)+'%' };
+    }
+
+    barCSS.transition = 'all '+speed+'ms '+ease;
+
+    return barCSS;
+  }
+
+  /**
+   * (Internal) Queues a function to be executed.
+   */
+
+  var queue = (function() {
+    var pending = [];
+
+    function next() {
+      var fn = pending.shift();
+      if (fn) {
+        fn(next);
+      }
+    }
+
+    return function(fn) {
+      pending.push(fn);
+      if (pending.length === 1) next();
+    };
+  })();
+
+  /**
+   * (Internal) Applies css properties to an element, similar to the jQuery
+   * css method.
+   *
+   * While this helper does assist with vendor prefixed property names, it
+   * does not perform any manipulation of values prior to setting styles.
+   */
+
+  var css = (function() {
+    var cssPrefixes = [ 'Webkit', 'O', 'Moz', 'ms' ],
+        cssProps    = {};
+
+    function camelCase(string) {
+      return string.replace(/^-ms-/, 'ms-').replace(/-([\da-z])/gi, function(match, letter) {
+        return letter.toUpperCase();
+      });
+    }
+
+    function getVendorProp(name) {
+      var style = document.body.style;
+      if (name in style) return name;
+
+      var i = cssPrefixes.length,
+          capName = name.charAt(0).toUpperCase() + name.slice(1),
+          vendorName;
+      while (i--) {
+        vendorName = cssPrefixes[i] + capName;
+        if (vendorName in style) return vendorName;
+      }
+
+      return name;
+    }
+
+    function getStyleProp(name) {
+      name = camelCase(name);
+      return cssProps[name] || (cssProps[name] = getVendorProp(name));
+    }
+
+    function applyCss(element, prop, value) {
+      prop = getStyleProp(prop);
+      element.style[prop] = value;
+    }
+
+    return function(element, properties) {
+      var args = arguments,
+          prop,
+          value;
+
+      if (args.length === 2) {
+        for (prop in properties) {
+          value = properties[prop];
+          if (value !== undefined && properties.hasOwnProperty(prop)) applyCss(element, prop, value);
+        }
+      } else {
+        applyCss(element, args[1], args[2]);
+      }
+    }
+  })();
+
+  /**
+   * (Internal) Determines if an element or space separated list of class names contains a class name.
+   */
+
+  function hasClass(element, name) {
+    var list = typeof element === 'string' ? element : classList(element);
+    return list.indexOf(' ' + name + ' ') >= 0;
+  }
+
+  /**
+   * (Internal) Adds a class to an element.
+   */
+
+  function addClass(element, name) {
+    var oldList = classList(element),
+        newList = oldList + name;
+
+    if (hasClass(oldList, name)) return;
+
+    // Trim the opening space.
+    element.className = newList.substring(1);
+  }
+
+  /**
+   * (Internal) Removes a class from an element.
+   */
+
+  function removeClass(element, name) {
+    var oldList = classList(element),
+        newList;
+
+    if (!hasClass(element, name)) return;
+
+    // Replace the class name.
+    newList = oldList.replace(' ' + name + ' ', ' ');
+
+    // Trim the opening and closing spaces.
+    element.className = newList.substring(1, newList.length - 1);
+  }
+
+  /**
+   * (Internal) Gets a space separated list of the class names on the element.
+   * The list is wrapped with a single space on each end to facilitate finding
+   * matches within the list.
+   */
+
+  function classList(element) {
+    return (' ' + (element.className || '') + ' ').replace(/\s+/gi, ' ');
+  }
+
+  /**
+   * (Internal) Removes an element from the DOM.
+   */
+
+  function removeElement(element) {
+    element && element.parentNode && element.parentNode.removeChild(element);
+  }
+
+  return NProgress;
+});
+
 
 },{}],"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js":[function(require,module,exports){
 (function (global){

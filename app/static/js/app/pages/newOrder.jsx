@@ -456,7 +456,7 @@ var FormParts = [
 var OrderForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
-			formPosition: 1,
+			formPosition: 2,
 		}
 	},
 
@@ -557,7 +557,7 @@ module.exports = function(app) {
 			id: '5519997fec4783e8608bf9df',
 		},
 		color: 'red',
-		file: 'https://deltathinkers.s3.amazonaws.com/jobs/f057cd47-1ca0-42be-80d1-7c5c1cee668c',
+		file: 'https://deltathinkers.s3.amazonaws.com/jobs/15256c45-34f8-4ff6-b3af-13d32ad27151',
 	});
 
 
