@@ -35,30 +35,122 @@ var OrderItem = React.createBackboneClass({
 			this.props.toggle();
 		}
 
+		var GenStatusIcon = () => {
+			if (doc.status === "shipping") {
+	      return (
+	      	<div className="statusIcon shipping" title="shipping">
+	      		<i className="icon-send" />
+	      	</div>
+	      );
+			} else if (doc.status === "requested") {
+	      return (
+	      	<div className="statusIcon requested" title="requested">
+	      		<i className="icon-timer" />
+	      	</div>
+	      );
+			} else if (doc.status === "processing") {
+	      return (
+	      	<div className="statusIcon processing" title="processing">
+	      		<i className="icon-details" />
+	      	</div>
+	      );
+			} else if (doc.status === "cancelled") {
+	      return (
+	      	<div className="statusIcon cancelled" title="cancelled">
+	      		<i className="icon-close" />
+	      	</div>
+	      );
+			} else if (doc.status === "late") {
+	      return (
+	      	<div className="statusIcon late" title="late">
+	      		<i className="icon-timer" />
+	      	</div>
+	      );
+			} else {
+	      return (
+	      	<div className="statusIcon done" title="done">
+	      		<i className="icon-done-all" />
+	      	</div>
+	      );
+			}
+		};
+
 		return (
-			<tr className="item" onClick={goto}>
-				<td className="selection">
-					<PrettyCheck />
-				</td>
-				<td className="name">
-					{doc.name}
-				</td>
-				<td className="type">
-					{doc._cor[0].toUpperCase()+doc._cor.slice(1)}/{doc._tipo}
-				</td>
-				<td className="ctdent">
-					Mauro Iezzi
-				</td>
-				<td className="stats">
-					Avatdado<br />Aguardando Impressão
-				</td>
-				<td className="elastic"></td>
-				<td className="date">
-					<span data-time-count={doc.created_at} data-title={formatOrderDate(doc.created_at)}>
-						{calcTimeFrom(doc.created_at)}
-					</span>
-				</td>
-			</tr>
+			<li className="order" onClick={goto}>
+				<div className="left">
+					<div className="selection">
+						<PrettyCheck ref="check" model={this.getModel()} />
+					</div>
+					{GenStatusIcon()}
+				</div>
+				<div className="main">
+					<div className="name">
+						{doc.name}
+						<div className="code" title="Código da peça.">
+							({doc.code})
+						</div>
+					</div>
+					<div className="type">
+						Impressão 3D · {doc._cor[0].toUpperCase()+doc._cor.slice(1)}/{doc._tipo}
+					</div>
+					<div className="client">
+						<strong>Cliente:</strong> <a href="#">Mauro Iezzi</a>, pela <a href="#">Gráfica do Catete</a>
+					</div>
+				</div>
+				<div className="right">
+					<div className="date">
+						<span data-time-count={1*new Date(doc.created_at)} data-long="true" data-title={formatOrderDate(doc.created_at)}>
+							{calcTimeFrom(doc.created_at)}
+						</span>
+					</div>
+					<div className="buttons">
+						<button>
+							Editar
+						</button>
+					</div>
+				</div>
+			</li>
+		);
+	},
+});
+
+var Toolbar = React.createBackboneClass({
+
+  componentDidMount: function() {
+    this.getCollection().on('selectChange', () => {
+      this.forceUpdate(function () {});
+    });
+  },
+
+	render: function() {
+
+		console.log('not', this.getCollection())
+		if (this.getCollection().selected) {
+			var numSelected = this.getCollection().getNumSelected();
+			var buttons = [];
+			buttons.push((
+				<li>
+					<button>Excluir {numSelected} pedido{numSelected>1?"s":''}</button>
+				</li>
+			));
+		}
+
+		return (
+			<div className="listToolbar">
+				<ul>
+					<li className="selection">
+						<PrettyCheck model={this.getCollection()} />
+					</li>
+					{buttons}
+				</ul>
+				<ul className="right">
+					<li>
+						<button className="btn btn-danger">
+							Excluir tudo
+						</button>
+					</li>
+				</ul>
+			</div>
 		);
 	},
 });
@@ -79,8 +171,9 @@ var ListOrders = React.createBackboneClass({
 			var i = 0;
 			window.c = collection;
 			while (i < collection.length) {
-				!((i) => {
+				!((i) => { // create context for 'i'
 					var toggle = () => {
+						return;
 						if (this.state.expanded === i) {
 							this.setState({ expanded: null });
 						} else {
@@ -89,10 +182,12 @@ var ListOrders = React.createBackboneClass({
 					};
 
 					// Hack: add expanded item as table row with a single colum
-					rows.push(<OrderItem model={collection.at(i)} toggle={toggle} />)
+					rows.push((
+						<OrderItem model={collection.at(i)} toggle={toggle} />
+					));
 					if (this.state.expanded === i) {
 						rows.push((
-							<li className="order">
+							<li className="order expanded">
 								<td colSpan="100">
 									<OrderView model={collection.at(i)} />
 								</td>
@@ -105,63 +200,21 @@ var ListOrders = React.createBackboneClass({
 			return rows;
 		};
 
-		var GenerateHeader = () => {
-			return (
-				<thead className="header">
-					<tr>
-						<th className="selection">
-						</th>
-						<th className="name">
-							Indetificação
-						</th>
-						<th className="type">
-							Tipo
-						</th>
-						<th className="cthent">
-							Cliente
-						</th>
-						<th className="stats">
-							Status
-						</th>
-						<th className="elastic"></th>
-						<th className="date">
-							Data
-						</th>
-					</tr>
-				</thead>
-			);
-		};
-
-		var GenerateToolbar = () => {
-			return (
-				<div className="listToolbar">
-					<ul>
-					</ul>
-					<ul className="right">
-						<li>
-							<button className="btn btn-danger">
-								Excluir tudo
-							</button>
-						</li>
-					</ul>
-				</div>
-			);
-		};
-
-
 		return (
 			<div className="ListOrders">
-				<div className="left">
-					<h1>
-						Pedidos
-					</h1>
+				<div className="pageHeader">
+					<div className="left">
+						<h1>
+							Pedidos
+						</h1>
+					</div>
+					<div className="right">
+						<a className="button newOrder" href="/pedidos/novo">
+							Novo Pedido
+						</a>
+					</div>
 				</div>
-				<div className="right">
-					<a className="button newOrder" href="/novo/pedido">
-						Novo Pedido
-					</a>
-				</div>
-				{GenerateToolbar()}
+				<Toolbar parent={this} collection={this.getCollection()}/>
 				<div className="orderList">
 					{GenerateOrderList()}
 				</div>

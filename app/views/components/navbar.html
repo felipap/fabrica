@@ -45,14 +45,21 @@
 			</li>
 			{% endif %}
 			<li data-activate-root="new-order" class="activeOrHidden">
-				<a class="button" href="/novo/pedido">
+				<a class="button" href="/pedidos/novo">
 					Novo Pedido
 				</a>
 			</li>
 			{% if user.flags.seller %}
 			<li data-activate-root="new-client" class="activeOrHidden">
-				<a class="button" href="/novo/cliente">
+				<a class="button" href="/clientes/novo">
 					Novo Cliente
+				</a>
+			</li>
+			{% endif %}
+			{% if user.flags.dthinker %}
+			<li data-activate-root="new-partner" class="activeOrHidden">
+				<a class="button" href="/parceiros/novo">
+					Novo Parceiro
 				</a>
 			</li>
 			{% endif %}

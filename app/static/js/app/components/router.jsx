@@ -18,6 +18,7 @@ var Pages = {
 	Login_Newpass: require('../pages/login_newpass.jsx'),
 	ListClients: require('../pages/listClients.jsx'),
 	ListOrders: require('../pages/listOrders.jsx'),
+	NewPartner: require('../pages/newPartner.jsx'),
 	NewClient: require('../pages/newClient.jsx'),
 	NewOrder: require('../pages/newOrder.jsx'),
 	Login: require('../pages/login.jsx'),
@@ -540,13 +541,17 @@ var App = Router.extend({
 			function() {
 				Pages.Login_Newpass(this);
 			},
-		'novo/pedido':
+		'pedidos/novo':
 			function () {
 				Pages.NewOrder(this);
 			},
-		'novo/cliente':
+		'clientes/novo':
 			function () {
 				Pages.NewClient(this);
+			},
+		'parceiros/novo':
+			function () {
+				Pages.NewPartner(this);
 			},
 		'clientes':
 			function () {

@@ -78,14 +78,22 @@ module.exports = function(app) {
 
   api.use('/me', require('./me')(app));
 
-  api.post('/orders', unspam.limit(2*1000), function(req, res) {
+  api.post('/orders', unspam.limit(2*1000), function(req, res, next) {
     req.parse(Order.ParseRules, req.handleErr((body) => {
-      orderActions.register(req.user, body, (err, result) => {
-        User.find({ _id: body['client-id'] }, req.handleErr404((client) => {
-          console.log('client', client)
-          console.log("registerd?", result);
-        }))
-      })
+      console.log(body)
+
+      User.findOne({ _id: body.client.id }, req.handleErr((client) => {
+        if (!client) {
+          req.logger.error('Cliente não encontrado! Esse erro não deveria '+
+            'estar acontecendo.');
+          next({ message: 'Cliente não encontrado.', status: 404, process: false });
+          return;
+        }
+
+        orderActions.place(req.user, client, body, (err, result) => {
+          res.endJSON({ message: "Pedido enviado com sucesso." });
+        })
+      }))
     }))
   });
 

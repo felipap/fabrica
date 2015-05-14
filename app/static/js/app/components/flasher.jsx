@@ -10,9 +10,11 @@ var FlashDiv = React.createClass({
 		var wp = this.refs.message.getDOMNode();
 		$(wp).fadeOut(function () {
 			function removeAfterWait() {
-				setTimeout(function () {
-					$(this).fadeOut();
-				}.bind(this), wait || 5000);
+				if (wait) {
+					setTimeout(function () {
+						$(this).fadeOut();
+					}.bind(this), wait);
+				}
 			}
 			$(this.refs.messageContent.getDOMNode()).html(text);
 			$(wp).prop('class', 'message '+className).slideDown('fast', removeAfterWait);
@@ -33,12 +35,12 @@ var FlashDiv = React.createClass({
 module.exports = (function FlashNotifier (message, className, wait) {
 	this.fd = React.render(<FlashDiv />, $('<div class=\'flasher\'>').appendTo('body')[0]);
 	this.warn = function (message, wait) {
-		this.fd.message(message, 'warn', wait || 5000);
+		this.fd.message(message, 'warn', wait || 8000);
 	}
 	this.info = function (message, wait) {
-		this.fd.message(message, 'info', wait || 5000);
+		this.fd.message(message, 'info', wait || 8000);
 	}
 	this.alert = function (message, wait) {
-		this.fd.message(message, 'error', wait || 5000);
+		this.fd.message(message, 'error', wait || 8000);
 	}
 });

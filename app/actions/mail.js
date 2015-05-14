@@ -3,9 +3,9 @@
 
 var nconf = require("nconf")
 var _sendgrid = require("sendgrid")
-var please = require("app/lib/please")
 var mongoose = require("mongoose")
 var lodash = require("lodash")
+var please = require("app/lib/please")
 
 var sendgrid = _sendgrid(
   nconf.get("SENDGRID_USERNAME"),
@@ -13,6 +13,7 @@ var sendgrid = _sendgrid(
 )
 
 var User = mongoose.model("User")
+var Order = mongoose.model("Order")
 
 module.exports.Templates = {
   AccountRecovery: function (user, link) {
@@ -59,7 +60,31 @@ module.exports.Templates = {
       subject: 'Bem-vindo à Fábrica DeltaThinkers',
       html: template({ user: user })
     }
-  }
+  },
+  NewOrderFromVendor: function (client, order, seller) {
+    please({$model:User}, {$model:Order}, {$model:User}, arguments)
+
+    var template = lodash.template(
+      `<p>Olá, <%= client.name.split(' ')[0] %></p>
+      <p>
+        Registramos o pedido de impressão do seu modelo <%= order.name %> com na loja NOME DA LOJA
+      </p>
+      <p>
+        Você pode acompanhar o andamento da impresão no link:
+        <a href="http://app.deltathinkers.com/<%= order.link %>">
+        http://app.deltathinkers.com/<%= order.link %></a>.
+      </p>
+      <p>
+        Qualquer dúvida bla bla bla.<br />
+      </p>`
+    );
+
+    return {
+      to: client.email,
+      subject: 'Pedido registrado na Fábrica DeltaThinkers',
+      html: template({ client: client, order: order, seller: seller })
+    }
+  },
 
 }
 

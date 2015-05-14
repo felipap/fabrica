@@ -108,7 +108,7 @@ var FormPart_Visualizer = React.createBackboneClass({
 							Continuar
 						</button>
 					</div>
-					<div className="col-md-8" style={{padding:0}}>
+					<div className="col-md-8">
 						<STLRenderer ref="renderer" stats={true} file={this.getModel().get('file')} />
 					</div>
 				</div>
@@ -374,7 +374,7 @@ var FormPart_ChooseClient = React.createBackboneClass({
 		return (
 			<div className="formPart chooseClient">
 				<h1>Selecione um cliente <div className="position">passo {this.props.step} de {this.props.totalSteps-1}</div></h1>
-				<p>Registre um pedido de um cliente cadastrado entrando com o seu email. <a href="/novo/cliente">Clique aqui para fazer o seu cadastro.</a></p>
+				<p>Registre um pedido de um cliente cadastrado entrando com o seu email. <a href="/clientes/novo">Clique aqui para fazer o seu cadastro.</a></p>
 				<form onSubmit={this._send} className="form-horizontal">
 					<div className="form-group">
 						<div className="col-md-4">
@@ -456,16 +456,28 @@ var FormParts = [
 var OrderForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
-			formPosition: 2,
+			formPosition: 1,
 		}
 	},
 
 	save: function() {
 		this.getModel().save(null, {
 			success: (model, response) => {
+				Utils.flash.info(response.message || "Pedido salvo.");
+				window.location.href = '/';
 			},
 			error: (model, xhr, options) => {
-			},
+				var data = xhr.responseJSON;
+				if (data && data.message) {
+					Utils.flash.alert(data.message);
+				} else {
+					Utils.flash.alert('Milton Friedman.');
+				}
+				if (data.error === 'ExistingUser') {
+					this._buildWarnings({ email: 'Esse email já está em uso.' });
+					return;
+				}
+			}
 		});
 	},
 
@@ -535,10 +547,9 @@ module.exports = function(app) {
 			name: 'Felipe',
 			picture: 'http://localhost:3000/static/images/lavatars/F.png',
 			email: 'pires.a.felipe@gmail.com',
-			id: 'asdf',
+			id: '5519997fec4783e8608bf9df',
 		},
 		color: 'red',
-		// file: 'https://s3-sa-east-1.amazonaws.com/deltathinkers/jobs/dfd691c6-3622-4dc1-9e8c-59d08d87e69c',
 		file: 'https://deltathinkers.s3.amazonaws.com/jobs/f057cd47-1ca0-42be-80d1-7c5c1cee668c',
 	});
 

@@ -5,14 +5,15 @@ _ = require 'lodash'
 Status = {
 	Requested: 'requested'
 	Processing: 'processing'
+	Shipping: 'shipping'
 	Done: 'done'
 }
 
 OrderSchema = new mongoose.Schema {
 	status:			{ type: String, enum: _.values(Status), default: Status.Requested }
 	comments: 	{ type: String, required: false }
-	title: 			{ type: String }
-	code: 			{ type: String }
+	name: 			{ type: String }
+	code: 			{ type: String, required: true }
 
 	created_at: { type: Date, default: Date.now }
 	updated_at: { type: Date, default: Date.now }
@@ -45,14 +46,26 @@ OrderSchema.virtual('_tipo').get ->
 	'PLA'
 
 OrderSchema.virtual('path').get ->
+	'/pedidos/'+@id
+
+OrderSchema.virtual('link').get ->
 	'/pedidos/'+@code
 
 OrderSchema.statics.ParseRules = {
 	color:
 		$valid: (str) -> true
+	client:
+		id:
+			$valid: (str) ->
+				try
+					id = mongoose.Types.ObjectId.createFromHexString(str)
+					return true
+				catch e
+					return false
 	file:
 		$valid: (str) ->
-			str.match(/^https:\/\/s3-sa-east-1\.amazonaws\.com\/deltathinkers\/jobs\/[a-z0-9-]+$/)
+			# str.match(/^https:\/\/s3-sa-east-1\.amazonaws\.com\/deltathinkers\/jobs\/[a-z0-9-]+$/)
+			str.match(/^https:\/\/deltathinkers\.s3\.amazonaws\.com\/jobs\/[a-z0-9-]+$/)
 	comments:
 		$valid: (str) -> true
 	name:

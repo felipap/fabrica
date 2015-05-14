@@ -5,18 +5,19 @@ var $ = require('jquery');
 var PrettyCheck = React.createClass({
   getInitialState: function () {
     return {
-      checked: false,
       focused: false,
     };
   },
 
   componentDidMount: function() {
+    this.props.model.on('selectChange', () => {
+      this.forceUpdate(function () {});
+    });
+
     $(this.refs.input.getDOMNode()).focus(() => {
-      console.log('focusin')
       this.setState({ focused: true });
     });
     $(this.refs.input.getDOMNode()).focusout(() => {
-      console.log('focusout')
       this.setState({ focused: false });
     });
   },
@@ -24,21 +25,28 @@ var PrettyCheck = React.createClass({
   render: function () {
 
     var toggle = (event) => {
-      console.log("checked", this.state.checked)
+      // Call model's (or collection's) method, and listen to events
+      // (coded above) in order to update.
       if (this.refs.input.getDOMNode().checked) {
-        this.setState({ checked: true });
-        console.log(this.state.checked)
+        this.props.model.select();
       } else {
-        console.log(this.state.checked)
-        this.setState({ checked: false });
+        this.props.model.unselect();
       }
     }
 
-    var cclass = ' '+(this.state.checked?"is-checked":'')+' '+(this.state.focused?"is-focused":'');
+    var checked = this.props.model.selected;
+    if (!checked) {
+      var cclass = "";
+    } else if (checked == 2) {
+      var cclass = "is-some ";
+    } else {
+      var cclass = "is-checked ";
+    }
+    cclass += ' '+(this.state.focused?"is-focused":'');
     return (
       <div className={"PrettyCheck "+cclass}>
         <input type="checkbox" ref="input" role="checkbox" onChange={toggle}
-          aria-checked={this.state.checked} />
+          aria-checked={checked} />
       </div>
     );
   }

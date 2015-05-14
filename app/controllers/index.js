@@ -48,11 +48,13 @@ module.exports = function (app) {
 
 	var homeRoutes = [
 		'/',
+		'/parceiros',
+		'/parceiros/novo',
 		'/clientes',
-		'/novo/cliente',
+		'/clientes/novo',
 		'/pedidos',
+		'/pedidos/novo',
 		'/pedidos/:code',
-		'/novo/pedido',
 	]
 	_.map(homeRoutes, function (route) {
 		router.get(route, (req, res) => { res.render('app/home') })

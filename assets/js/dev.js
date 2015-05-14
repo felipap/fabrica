@@ -181,7 +181,179 @@ var OrderView = React.createBackboneClass({
 
 module.exports = OrderView;
 
-},{"../components/STLRenderer.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/PrettyCheck.jsx":[function(require,module,exports){
+},{"../components/STLRenderer.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/PartnerForm.jsx":[function(require,module,exports){
+
+"use strict";
+
+var $ = require('jquery')
+var React = require('react')
+var selectize = require('selectize')
+
+var Modal = require('../components/modal.jsx')
+var Models = require('../components/models.js')
+
+require('react.backbone')
+
+var PartnerForm = React.createBackboneClass({
+
+  getInitialState: function() {
+    return {
+      warnings: {
+      },
+    };
+  },
+
+  _checkClientNew: function() {
+  },
+
+  _buildWarnings: function(data) {
+    // DECIDE: loop data or loop array of fields?
+    var state = {};
+    for (var type in data) {
+      if (data.hasOwnProperty(type)) {
+        if (data[type] instanceof Array) {
+          state[type] = data[type].join(' / ');
+        } else {
+          state[type] = data[type];
+        }
+      }
+    }
+    this.setState({ warnings: state });
+  },
+
+  _send: function(e) {
+    e.preventDefault();
+
+    var data = {
+      name: this.refs.name.getDOMNode().value,
+      email: this.refs.email.getDOMNode().value,
+      phone: this.refs.phone.getDOMNode().value,
+    };
+
+    this.getModel().save(data, {
+      success: function(model, response)  {
+        Utils.flash.info("Usuário salvo.");
+        // window.location.href = model.get('path');
+      },
+      error: function(model, xhr, options)  {
+        var data = xhr.responseJSON;
+        if (data && data.message) {
+          Utils.flash.alert(data.message);
+        } else {
+          Utils.flash.alert('Milton Friedman.');
+        }
+        if (data.error === 'ExistingUser') {
+          this._buildWarnings({ email: 'Esse email já está em uso.' });
+          return;
+        }
+        // build warnings
+        // this._buildWarnings(data);
+      }.bind(this)
+    })
+  },
+
+  render: function() {
+    return (
+      React.createElement("form", {className: "PartnerForm", onSubmit: this._send}, 
+        React.createElement("h1", null, "Cadastre um parceiro"), 
+        React.createElement("p", null, 
+          "Falaê, cara."
+        ), 
+        React.createElement("div", {className: "form-group"}, 
+          React.createElement("div", {className: "row"}, 
+            React.createElement("div", {className: "col-md-4"}, 
+              React.createElement("label", {htmlFor: ""}, 
+                "Nome da Empresa"
+              )
+            )
+          ), 
+          React.createElement("div", {className: "row"}, 
+            React.createElement("div", {className: "col-md-4"}, 
+              React.createElement("input", {type: "text", ref: "name", 
+                className: "form-control"+(this.state.warnings.name?" invalid":''), 
+                placeholder: "Walmart", required: true})
+            ), 
+            React.createElement("div", {className: "col-md-6"}, 
+             this.state.warnings.name?(
+              React.createElement("div", {className: "warning"}, this.state.warnings.name)
+            ):null
+            )
+          )
+        ), 
+        React.createElement("div", {className: "form-group"}, 
+          React.createElement("div", {className: "row"}, 
+            React.createElement("div", {className: "col-md-4"}, 
+              React.createElement("label", {htmlFor: ""}, 
+                "Email de vendas"
+              )
+            )
+          ), 
+          React.createElement("div", {className: "row"}, 
+            React.createElement("div", {className: "col-md-4"}, 
+              React.createElement("input", {type: "email", ref: "email", 
+                className: "form-control"+(this.state.warnings.email?" invalid":''), 
+                placeholder: "andre@mail.com", required: true})
+            ), 
+            React.createElement("div", {className: "col-md-6"}, 
+             this.state.warnings.email?(
+              React.createElement("div", {className: "warning"}, this.state.warnings.email)
+            ):null
+            )
+          )
+        ), 
+        React.createElement("div", {className: "form-group"}, 
+          React.createElement("div", {className: "row"}, 
+            React.createElement("div", {className: "col-md-4"}, 
+              React.createElement("label", {htmlFor: ""}, 
+                "Endereço"
+              )
+            )
+          ), 
+          React.createElement("div", {className: "row"}, 
+            React.createElement("div", {className: "col-md-4"}, 
+              React.createElement("input", {type: "text", ref: "email", 
+                className: "form-control"+(this.state.warnings.address?" invalid":''), 
+                placeholder: "Rua da Passagem, N. 31. Centro, RJ.", required: true})
+            ), 
+            React.createElement("div", {className: "col-md-6"}, 
+             this.state.warnings.address?(
+              React.createElement("div", {className: "warning"}, this.state.warnings.address)
+            ):null
+            )
+          )
+        ), 
+        React.createElement("div", {className: "form-group"}, 
+          React.createElement("div", {className: "row"}, 
+            React.createElement("div", {className: "col-md-4"}, 
+              React.createElement("label", {htmlFor: ""}, 
+                "Telefone"
+              )
+            )
+          ), 
+          React.createElement("div", {className: "row"}, 
+            React.createElement("div", {className: "col-md-4"}, 
+              React.createElement("input", {type: "tel", ref: "phone", 
+                className: "form-control"+(this.state.warnings.phone?" invalid":''), 
+                placeholder: "(21) 99999 1234", required: true})
+            ), 
+            React.createElement("div", {className: "col-md-6"}, 
+             this.state.warnings.phone?(
+              React.createElement("div", {className: "warning"}, this.state.warnings.phone)
+            ):null
+            )
+          )
+        ), 
+        React.createElement("button", {className: "form-btn"}, 
+          "Salvar"
+        )
+      )
+    );
+  }
+});
+
+module.exports = PartnerForm;
+
+},{"../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/components/PrettyCheck.jsx":[function(require,module,exports){
 
 var React = require('react');
 var $ = require('jquery');
@@ -189,18 +361,19 @@ var $ = require('jquery');
 var PrettyCheck = React.createClass({displayName: "PrettyCheck",
   getInitialState: function () {
     return {
-      checked: false,
       focused: false,
     };
   },
 
   componentDidMount: function() {
+    this.props.model.on('selectChange', function()  {
+      this.forceUpdate(function () {});
+    }.bind(this));
+
     $(this.refs.input.getDOMNode()).focus(function()  {
-      console.log('focusin')
       this.setState({ focused: true });
     }.bind(this));
     $(this.refs.input.getDOMNode()).focusout(function()  {
-      console.log('focusout')
       this.setState({ focused: false });
     }.bind(this));
   },
@@ -208,21 +381,28 @@ var PrettyCheck = React.createClass({displayName: "PrettyCheck",
   render: function () {
 
     var toggle = function(event)  {
-      console.log("checked", this.state.checked)
+      // Call model's (or collection's) method, and listen to events
+      // (coded above) in order to update.
       if (this.refs.input.getDOMNode().checked) {
-        this.setState({ checked: true });
-        console.log(this.state.checked)
+        this.props.model.select();
       } else {
-        console.log(this.state.checked)
-        this.setState({ checked: false });
+        this.props.model.unselect();
       }
     }.bind(this)
 
-    var cclass = ' '+(this.state.checked?"is-checked":'')+' '+(this.state.focused?"is-focused":'');
+    var checked = this.props.model.selected;
+    if (!checked) {
+      var cclass = "";
+    } else if (checked == 2) {
+      var cclass = "is-some ";
+    } else {
+      var cclass = "is-checked ";
+    }
+    cclass += ' '+(this.state.focused?"is-focused":'');
     return (
       React.createElement("div", {className: "PrettyCheck "+cclass}, 
         React.createElement("input", {type: "checkbox", ref: "input", role: "checkbox", onChange: toggle, 
-          "aria-checked": this.state.checked})
+          "aria-checked": checked})
       )
     );
   }
@@ -554,9 +734,11 @@ var FlashDiv = React.createClass({displayName: "FlashDiv",
 		var wp = this.refs.message.getDOMNode();
 		$(wp).fadeOut(function () {
 			function removeAfterWait() {
-				setTimeout(function () {
-					$(this).fadeOut();
-				}.bind(this), wait || 5000);
+				if (wait) {
+					setTimeout(function () {
+						$(this).fadeOut();
+					}.bind(this), wait);
+				}
 			}
 			$(this.refs.messageContent.getDOMNode()).html(text);
 			$(wp).prop('class', 'message '+className).slideDown('fast', removeAfterWait);
@@ -577,13 +759,13 @@ var FlashDiv = React.createClass({displayName: "FlashDiv",
 module.exports = (function FlashNotifier (message, className, wait) {
 	this.fd = React.render(React.createElement(FlashDiv, null), $('<div class=\'flasher\'>').appendTo('body')[0]);
 	this.warn = function (message, wait) {
-		this.fd.message(message, 'warn', wait || 5000);
+		this.fd.message(message, 'warn', wait || 8000);
 	}
 	this.info = function (message, wait) {
-		this.fd.message(message, 'info', wait || 5000);
+		this.fd.message(message, 'info', wait || 8000);
 	}
 	this.alert = function (message, wait) {
-		this.fd.message(message, 'error', wait || 5000);
+		this.fd.message(message, 'error', wait || 8000);
 	}
 });
 
@@ -673,6 +855,20 @@ var Backbone = require('backbone');
 
 var Order = Backbone.Model.extend({
   urlRoot: '/api/orders',
+
+  initialize: function() {
+    // Collection display stuff.
+    // Perhaps this shouldn't be here.
+    this.selected = 0;
+  },
+  select: function() {
+    this.selected = 1;
+    this.trigger('selectChange');
+  },
+  unselect: function() {
+    this.selected = 0;
+    this.trigger('selectChange');
+  }
 });
 
 var Client = Backbone.Model.extend({
@@ -686,11 +882,57 @@ var Queue = Backbone.Collection.extend({
 var ClientList = Backbone.Collection.extend({
   model: Client,
   url: '/api/myclients',
-})
+});
 
 var OrderList = Backbone.Collection.extend({
   model: Order,
   url: '/api/orders',
+  constructor: function() {
+    Backbone.Collection.apply(this, arguments);
+    this.selected = 0;
+    this.on('selectChange', function()  {
+      var allNull = allTrue = true;
+      this.map(function(model) {
+        if (model.selected) {
+          allNull = false;
+        } else {
+          allTrue = false;
+        }
+      });
+
+      if (allNull) {
+        this.selected = 0;
+      } else if (allTrue) {
+        this.selected = 1;
+      } else {
+        this.selected = 2; // = SOME are selected
+      }
+    }.bind(this))
+  },
+
+  getNumSelected: function() {
+    var c = 0;
+    this.map(function(i) {
+      if (i.selected) c++;
+    });
+    return c;
+  },
+
+  comparator: function(i) {
+    console.log(1*new Date(i.get('created_at')))
+    return -1*new Date(i.get('created_at'));
+  },
+
+  select: function() {
+    this.map(function(model) {
+      model.select();
+    });
+  },
+  unselect: function() {
+    this.map(function(model) {
+      model.unselect();
+    });
+  },
 })
 
 module.exports = {
@@ -722,6 +964,7 @@ var Pages = {
 	Login_Newpass: require('../pages/login_newpass.jsx'),
 	ListClients: require('../pages/listClients.jsx'),
 	ListOrders: require('../pages/listOrders.jsx'),
+	NewPartner: require('../pages/newPartner.jsx'),
 	NewClient: require('../pages/newClient.jsx'),
 	NewOrder: require('../pages/newOrder.jsx'),
 	Login: require('../pages/login.jsx'),
@@ -1244,13 +1487,17 @@ var App = Router.extend({
 			function() {
 				Pages.Login_Newpass(this);
 			},
-		'novo/pedido':
+		'pedidos/novo':
 			function () {
 				Pages.NewOrder(this);
 			},
-		'novo/cliente':
+		'clientes/novo':
 			function () {
 				Pages.NewClient(this);
+			},
+		'parceiros/novo':
+			function () {
+				Pages.NewPartner(this);
 			},
 		'clientes':
 			function () {
@@ -1308,7 +1555,7 @@ module.exports = {
 	},
 };
 
-},{"../components/flasher.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","../pages/home.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx","../pages/listClients.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listClients.jsx","../pages/listOrders.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listOrders.jsx","../pages/login.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx","../pages/login_newpass.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_newpass.jsx","../pages/login_recover.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx","../pages/login_register.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_register.jsx","../pages/newClient.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newClient.jsx","../pages/newOrder.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newOrder.jsx","backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/backbone-1.1.2.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","marked":"/home/felipe/Projects/fabrica/app/static/js/vendor/marked.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx":[function(require,module,exports){
+},{"../components/flasher.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","../pages/home.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx","../pages/listClients.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listClients.jsx","../pages/listOrders.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listOrders.jsx","../pages/login.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx","../pages/login_newpass.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_newpass.jsx","../pages/login_recover.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx","../pages/login_register.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_register.jsx","../pages/newClient.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newClient.jsx","../pages/newOrder.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newOrder.jsx","../pages/newPartner.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newPartner.jsx","backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/backbone-1.1.2.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","marked":"/home/felipe/Projects/fabrica/app/static/js/vendor/marked.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx":[function(require,module,exports){
 
 var $ = require('jquery')
 var React = require('react')
@@ -1495,27 +1742,119 @@ var OrderItem = React.createBackboneClass({
 			this.props.toggle();
 		}.bind(this)
 
+		var GenStatusIcon = function()  {
+			if (doc.status === "shipping") {
+	      return (
+	      	React.createElement("div", {className: "statusIcon shipping", title: "shipping"}, 
+	      		React.createElement("i", {className: "icon-send"})
+	      	)
+	      );
+			} else if (doc.status === "requested") {
+	      return (
+	      	React.createElement("div", {className: "statusIcon requested", title: "requested"}, 
+	      		React.createElement("i", {className: "icon-timer"})
+	      	)
+	      );
+			} else if (doc.status === "processing") {
+	      return (
+	      	React.createElement("div", {className: "statusIcon processing", title: "processing"}, 
+	      		React.createElement("i", {className: "icon-details"})
+	      	)
+	      );
+			} else if (doc.status === "cancelled") {
+	      return (
+	      	React.createElement("div", {className: "statusIcon cancelled", title: "cancelled"}, 
+	      		React.createElement("i", {className: "icon-close"})
+	      	)
+	      );
+			} else if (doc.status === "late") {
+	      return (
+	      	React.createElement("div", {className: "statusIcon late", title: "late"}, 
+	      		React.createElement("i", {className: "icon-timer"})
+	      	)
+	      );
+			} else {
+	      return (
+	      	React.createElement("div", {className: "statusIcon done", title: "done"}, 
+	      		React.createElement("i", {className: "icon-done-all"})
+	      	)
+	      );
+			}
+		};
+
 		return (
-			React.createElement("tr", {className: "item", onClick: goto}, 
-				React.createElement("td", {className: "selection"}, 
-					React.createElement(PrettyCheck, null)
+			React.createElement("li", {className: "order", onClick: goto}, 
+				React.createElement("div", {className: "left"}, 
+					React.createElement("div", {className: "selection"}, 
+						React.createElement(PrettyCheck, {ref: "check", model: this.getModel()})
+					), 
+					GenStatusIcon()
 				), 
-				React.createElement("td", {className: "name"}, 
-					doc.name
+				React.createElement("div", {className: "main"}, 
+					React.createElement("div", {className: "name"}, 
+						doc.name, 
+						React.createElement("div", {className: "code", title: "Código da peça."}, 
+							"(", doc.code, ")"
+						)
+					), 
+					React.createElement("div", {className: "type"}, 
+						"Impressão 3D · ", doc._cor[0].toUpperCase()+doc._cor.slice(1), "/", doc._tipo
+					), 
+					React.createElement("div", {className: "client"}, 
+						React.createElement("strong", null, "Cliente:"), " ", React.createElement("a", {href: "#"}, "Mauro Iezzi"), ", pela ", React.createElement("a", {href: "#"}, "Gráfica do Catete")
+					)
 				), 
-				React.createElement("td", {className: "type"}, 
-					doc._cor[0].toUpperCase()+doc._cor.slice(1), "/", doc._tipo
+				React.createElement("div", {className: "right"}, 
+					React.createElement("div", {className: "date"}, 
+						React.createElement("span", {"data-time-count": 1*new Date(doc.created_at), "data-long": "true", "data-title": formatOrderDate(doc.created_at)}, 
+							calcTimeFrom(doc.created_at)
+						)
+					), 
+					React.createElement("div", {className: "buttons"}, 
+						React.createElement("button", null, 
+							"Editar"
+						)
+					)
+				)
+			)
+		);
+	},
+});
+
+var Toolbar = React.createBackboneClass({
+
+  componentDidMount: function() {
+    this.getCollection().on('selectChange', function()  {
+      this.forceUpdate(function () {});
+    }.bind(this));
+  },
+
+	render: function() {
+
+		console.log('not', this.getCollection())
+		if (this.getCollection().selected) {
+			var numSelected = this.getCollection().getNumSelected();
+			var buttons = [];
+			buttons.push((
+				React.createElement("li", null, 
+					React.createElement("button", null, "Excluir ", numSelected, " pedido", numSelected>1?"s":'')
+				)
+			));
+		}
+
+		return (
+			React.createElement("div", {className: "listToolbar"}, 
+				React.createElement("ul", null, 
+					React.createElement("li", {className: "selection"}, 
+						React.createElement(PrettyCheck, {model: this.getCollection()})
+					), 
+					buttons
 				), 
-				React.createElement("td", {className: "ctdent"}, 
-					"Mauro Iezzi"
-				), 
-				React.createElement("td", {className: "stats"}, 
-					"Avatdado", React.createElement("br", null), "Aguardando Impressão"
-				), 
-				React.createElement("td", {className: "elastic"}), 
-				React.createElement("td", {className: "date"}, 
-					React.createElement("span", {"data-time-count": doc.created_at, "data-title": formatOrderDate(doc.created_at)}, 
-						calcTimeFrom(doc.created_at)
+				React.createElement("ul", {className: "right"}, 
+					React.createElement("li", null, 
+						React.createElement("button", {className: "btn btn-danger"}, 
+							"Excluir tudo"
+						)
 					)
 				)
 			)
@@ -1539,8 +1878,9 @@ var ListOrders = React.createBackboneClass({
 			var i = 0;
 			window.c = collection;
 			while (i < collection.length) {
-				!(function(i)  {
+				!(function(i)  { // create context for 'i'
 					var toggle = function()  {
+						return;
 						if (this.state.expanded === i) {
 							this.setState({ expanded: null });
 						} else {
@@ -1549,10 +1889,12 @@ var ListOrders = React.createBackboneClass({
 					}.bind(this);
 
 					// Hack: add expanded item as table row with a single colum
-					rows.push(React.createElement(OrderItem, {model: collection.at(i), toggle: toggle}))
+					rows.push((
+						React.createElement(OrderItem, {model: collection.at(i), toggle: toggle})
+					));
 					if (this.state.expanded === i) {
 						rows.push((
-							React.createElement("li", {className: "order"}, 
+							React.createElement("li", {className: "order expanded"}, 
 								React.createElement("td", {colSpan: "100"}, 
 									React.createElement(OrderView, {model: collection.at(i)})
 								)
@@ -1565,63 +1907,21 @@ var ListOrders = React.createBackboneClass({
 			return rows;
 		}.bind(this);
 
-		var GenerateHeader = function()  {
-			return (
-				React.createElement("thead", {className: "header"}, 
-					React.createElement("tr", null, 
-						React.createElement("th", {className: "selection"}
-						), 
-						React.createElement("th", {className: "name"}, 
-							"Indetificação"
-						), 
-						React.createElement("th", {className: "type"}, 
-							"Tipo"
-						), 
-						React.createElement("th", {className: "cthent"}, 
-							"Cliente"
-						), 
-						React.createElement("th", {className: "stats"}, 
-							"Status"
-						), 
-						React.createElement("th", {className: "elastic"}), 
-						React.createElement("th", {className: "date"}, 
-							"Data"
-						)
-					)
-				)
-			);
-		};
-
-		var GenerateToolbar = function()  {
-			return (
-				React.createElement("div", {className: "listToolbar"}, 
-					React.createElement("ul", null
-					), 
-					React.createElement("ul", {className: "right"}, 
-						React.createElement("li", null, 
-							React.createElement("button", {className: "btn btn-danger"}, 
-								"Excluir tudo"
-							)
-						)
-					)
-				)
-			);
-		};
-
-
 		return (
 			React.createElement("div", {className: "ListOrders"}, 
-				React.createElement("div", {className: "left"}, 
-					React.createElement("h1", null, 
-						"Pedidos"
+				React.createElement("div", {className: "pageHeader"}, 
+					React.createElement("div", {className: "left"}, 
+						React.createElement("h1", null, 
+							"Pedidos"
+						)
+					), 
+					React.createElement("div", {className: "right"}, 
+						React.createElement("a", {className: "button newOrder", href: "/pedidos/novo"}, 
+							"Novo Pedido"
+						)
 					)
 				), 
-				React.createElement("div", {className: "right"}, 
-					React.createElement("a", {className: "button newOrder", href: "/novo/pedido"}, 
-						"Novo Pedido"
-					)
-				), 
-				GenerateToolbar(), 
+				React.createElement(Toolbar, {parent: this, collection: this.getCollection()}), 
 				React.createElement("div", {className: "orderList"}, 
 					GenerateOrderList()
 				)
@@ -2073,7 +2373,7 @@ var FormPart_Visualizer = React.createBackboneClass({
 							"Continuar"
 						)
 					), 
-					React.createElement("div", {className: "col-md-8", style: {padding:0}}, 
+					React.createElement("div", {className: "col-md-8"}, 
 						React.createElement(STLRenderer, {ref: "renderer", stats: true, file: this.getModel().get('file')})
 					)
 				)
@@ -2339,7 +2639,7 @@ var FormPart_ChooseClient = React.createBackboneClass({
 		return (
 			React.createElement("div", {className: "formPart chooseClient"}, 
 				React.createElement("h1", null, "Selecione um cliente ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps-1)), 
-				React.createElement("p", null, "Registre um pedido de um cliente cadastrado entrando com o seu email. ", React.createElement("a", {href: "/novo/cliente"}, "Clique aqui para fazer o seu cadastro.")), 
+				React.createElement("p", null, "Registre um pedido de um cliente cadastrado entrando com o seu email. ", React.createElement("a", {href: "/clientes/novo"}, "Clique aqui para fazer o seu cadastro.")), 
 				React.createElement("form", {onSubmit: this._send, className: "form-horizontal"}, 
 					React.createElement("div", {className: "form-group"}, 
 						React.createElement("div", {className: "col-md-4"}, 
@@ -2421,16 +2721,28 @@ var FormParts = [
 var OrderForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
-			formPosition: 2,
+			formPosition: 1,
 		}
 	},
 
 	save: function() {
 		this.getModel().save(null, {
 			success: function(model, response)  {
+				Utils.flash.info(response.message || "Pedido salvo.");
+				window.location.href = '/';
 			},
 			error: function(model, xhr, options)  {
-			},
+				var data = xhr.responseJSON;
+				if (data && data.message) {
+					Utils.flash.alert(data.message);
+				} else {
+					Utils.flash.alert('Milton Friedman.');
+				}
+				if (data.error === 'ExistingUser') {
+					this._buildWarnings({ email: 'Esse email já está em uso.' });
+					return;
+				}
+			}.bind(this)
 		});
 	},
 
@@ -2500,10 +2812,9 @@ module.exports = function(app) {
 			name: 'Felipe',
 			picture: 'http://localhost:3000/static/images/lavatars/F.png',
 			email: 'pires.a.felipe@gmail.com',
-			id: 'asdf',
+			id: '5519997fec4783e8608bf9df',
 		},
 		color: 'red',
-		// file: 'https://s3-sa-east-1.amazonaws.com/deltathinkers/jobs/dfd691c6-3622-4dc1-9e8c-59d08d87e69c',
 		file: 'https://deltathinkers.s3.amazonaws.com/jobs/f057cd47-1ca0-42be-80d1-7c5c1cee668c',
 	});
 
@@ -2518,7 +2829,34 @@ module.exports = function(app) {
 	});
 };
 
-},{"../components/STLRenderer.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js":[function(require,module,exports){
+},{"../components/STLRenderer.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/STLRenderer.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/newPartner.jsx":[function(require,module,exports){
+
+"use strict";
+
+var $ = require('jquery')
+var React = require('react')
+var selectize = require('selectize')
+
+var Modal = require('../components/modal.jsx')
+var Models = require('../components/models.js')
+var PartnerForm = require('../components/PartnerForm.jsx')
+
+require('react.backbone')
+
+module.exports = function(app) {
+
+	var client = new Models.Client;
+
+	app.pushPage(React.createElement(PartnerForm, {model: client}), 'new-partner', {
+		onClose: function() {
+		},
+		container: document.querySelector('#page-container'),
+		pageRoot: 'new-partner',
+	});
+};
+
+
+},{"../components/PartnerForm.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/PartnerForm.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js":[function(require,module,exports){
 /*!
 Autosize v1.18.7 - 2014-04-13
 Automatically adjust textarea height based on user input.

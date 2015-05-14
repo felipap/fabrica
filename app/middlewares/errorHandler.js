@@ -36,7 +36,7 @@ module.exports = function(err, req, res, next) {
 	}
 
 	if (err.err === 'APIError') {
-		res.renderError(403, {
+		res.renderError(400, {
 			name: err.name,
 			error: err.err,
 			msg: err.msg || 'Não foi possível completar a sua ligação.',
@@ -45,11 +45,21 @@ module.exports = function(err, req, res, next) {
 	}
 
 	if (err.error === 'ReqParse') {
-		res.renderError(403, {
+		res.renderError(400, {
 			name: err.type,
-			error: err.name,
-			msg: err.message,
+			key: err.key,
+			value: err.value,
+			error: err.error,
+			message: err.message,
 		});
+		return;
+	}
+
+	// I have the slight feeling that this file is getting out of hand.
+	// { process: false } means: "don't process the error. it's not critical.
+	// just send it to the user"
+	if (err.process === false) {
+		res.renderError(err.status || 500, err);
 		return;
 	}
 

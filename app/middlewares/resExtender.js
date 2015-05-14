@@ -32,7 +32,7 @@ module.exports = function (req, res, next) {
 		if (req.accepts('html') && !req.isAPICall) { // respond with html page;
 			var data = _.clone(options[404]);
 			if (obj && obj.msg)
-				data.msg = obj.msg;
+				data.message = obj.msg;
 			res.render('app/error', data);
 		} else {
 			res.send({
@@ -48,8 +48,8 @@ module.exports = function (req, res, next) {
 			var data = _.extend({}, options[500], obj);
 			res.render('app/error', data);
 		} else {
-			// Looks dangerous? → DON'T SEND SENSITIVE DATA TO renderError!!!
-			res.send(data);
+			// Looks dangerous? → DON'T SEND SENSITIVE DATA TO renderError, idiot!!!
+			res.send(obj);
 		}
 	};
 

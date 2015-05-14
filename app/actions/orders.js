@@ -1,5 +1,7 @@
 
 var mongoose = require('mongoose')
+var crypto = require('crypto')
+
 var please = require('app/lib/please')
 var TMERA = require('app/lib/tmera')
 var mail = require('app/actions/mail')
@@ -18,7 +20,7 @@ function randomValueBase64 (len) {
 		.replace(/\//g, '0'); // replace '/' with '0'
 }
 
-module.exports.register = function (self, client, data, cb) {
+module.exports.place = function (seller, client, data, cb) {
 	please({$model:User}, {$model:User}, '$skip', '$isFn')
 
 	var order = new Order({
@@ -26,13 +28,13 @@ module.exports.register = function (self, client, data, cb) {
 		name: data.name,
 		client: data.clientId,
 		color: data.color,
-		seller: self._id,
+		seller: seller._id,
 		code: randomValueBase64(10),
 		s3_path: data.file,
 	})
 
 	order.save(TMERA((doc) => {
-		mail.send(mail.Templates.NewOrderFromVendor(user, link),
+		mail.send(mail.Templates.NewOrderFromVendor(client, order, seller),
 			(err, result) => {
 				cb(err);
 		})

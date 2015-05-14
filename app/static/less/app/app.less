@@ -425,30 +425,45 @@ body:not(.public) {
 
 .ListOrders {
 
-  & > .left {
+  .pageHeader {
     display: table;
-    float: left;
-    h1 {
-      font-weight: 600;
+    width: 100%;
+    margin-bottom: 50px;
+
+    .left {
+      float: left;
+      h1 {
+        font-weight: 600;
+      }
     }
-  }
 
-  & > .right {
-    float: right;
+    .right {
+      float: right;
 
-    .newOrder {
-      .xbtn(white, @CBLUE);
-      margin-top: 30px;
+      .newOrder {
+        .xbtn(white, @CBLUE);
+        margin-top: 30px;
+      }
     }
   }
 
   .listToolbar {
     width: 100%;
     display: table;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 
     ul {
       float: left;
+
+      & > li {
+        display: inline-block;
+        margin-right: 10px;
+        vertical-align: middle;
+
+        & > button {
+
+        }
+      }
     }
     ul.right {
       float: right;
@@ -456,6 +471,136 @@ body:not(.public) {
   }
 
   padding-bottom: 30px;
+
+  .orderList {
+    width: 100%;
+
+    .order:last-child {
+      border-bottom: 1px solid #EEE;
+    }
+
+    .order {
+      position: relative;
+      font-size: 15px;
+      border-top: 1px solid #EEE;
+
+      @left-width: 110px;
+      @right-width: 200px;
+
+      .left {
+        left: 0;
+        top: 0;
+        width: @left-width;
+        position: absolute;
+        padding: 20px 0;
+
+        .selection {
+          float: left;
+          margin-top: 5px;
+        }
+
+        .statusIcon {
+          float: left;
+          margin-left: 25px;
+
+          border-radius: 30px;
+          width: 40px;
+          height: 40px;
+          line-height: (40px - 3);
+          overflow: hidden;
+          text-align: center;
+
+          background: #AAA;
+          background: white;
+
+          i {
+            vertical-align: middle;
+            color: white;
+            font-size: 20px;
+          }
+
+          &.requested {
+            .box-shadow(0, 0, 0, 2px, @CGREEN);
+            i {
+              color: @CGREEN;
+            }
+          }
+          &.cancelled {
+            background: @CRED;
+          }
+          &.late {
+            .box-shadow(0, 0, 0, 2px, @CYELLOW);
+            i {
+              color: @CYELLOW;
+            }
+          }
+          &.processing {
+            .box-shadow(0, 0, 0, 2px, @CBLUE);
+            i {
+              color: @CBLUE;
+            }
+          }
+          &.shipping {
+            .box-shadow(0, 0, 0, 2px, mix(@CGREEN, @CBLUE));
+            i {
+              color: mix(@CGREEN, @CBLUE);
+            }
+          }
+          &.done {
+            background: @CGREEN;
+          }
+        }
+      }
+
+      .right {
+        right: 0;
+        text-align: right;
+        top: 0;
+        width: @right-width;
+        position: absolute;
+        padding: 20px 0;
+      }
+
+      .main {
+        padding: 20px 0;
+        padding-left: @left-width;
+        padding-right: @right-width;
+        line-height: 1.6em;
+
+        a {
+          font-weight: 500;
+          color: #444;
+          border-bottom: 1px dotted #EEE;
+
+          &:hover {
+            border-color: @CBLUE;
+          }
+        }
+
+        .name {
+          font-weight: 500;
+          font-size: 1.2em;
+          color: #444;
+
+          .code {
+            margin-left: 5px;
+            display: inline;
+            font-size: .9em;
+            font-weight: 500;
+            color: #888;
+          }
+        }
+
+        .type {
+
+        }
+
+        .client {
+
+        }
+      }
+    }
+  }
 
   .orderList table {
     width: 100%;
@@ -495,6 +640,14 @@ body:not(.public) {
   overflow: hidden;
   background-image: url(/static/images/mailchimp-checkmarks-sprite-2x.png);
   background-size: 24px 384px;
+
+  &.is-some {
+    background-position: 0 -168px;
+  }
+
+  &.is-some:hover {
+    background-position: 0 -192px;
+  }
 
   &:hover {
     background-position: 0 -24px;
