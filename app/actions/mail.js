@@ -81,7 +81,7 @@ module.exports.Templates = {
 
     return {
       to: client.email,
-      subject: 'Pedido registrado na Fábrica DeltaThinkers',
+      subject: 'Pedido de impressão 3D registrado',
       html: template({ client: client, order: order, seller: seller })
     }
   },

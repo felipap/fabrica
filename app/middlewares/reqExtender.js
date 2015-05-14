@@ -63,28 +63,36 @@ module.exports = function (req, res, next) {
 		}
 
 		async.map(req.body, function (item, next) {
-			parseBody(item, function (parsedBody) {
-				next(null, parsedBody);
+			parseBody(item, rules, function (err, parsedBody) {
+				if (err) {
+					next(err);
+				} else {
+					next(null, parsedBody);
+				}
 			});
 		}, function (error, results) {
-			cb(results);
+			if (error) {
+				next(error);
+			} else {
+				cb(results);
+			}
 		});
 	};
 
-	req.parseArray = parseArray;
+	req.parseArray = parseArrayBody;
 
 	/**
-	 * fetch/validate/clean req.body according to de rules
+	 * fetch/validate/clean requestBody according to da rules
 	 */
-	function parseBody(rules, cb) {
+	function parseBody(requestBody, rules, callback) {
 		var verbose = false;
-		var requestBody = req.body;
 
 		function log (msg) {
 			if (verbose) {
 				req.logger.trace(msg);
 			}
 		}
+
 		function warn (msg) {
 			req.logger.warn(msg);
 		}
@@ -129,16 +137,16 @@ module.exports = function (req, res, next) {
 				log('Rule not found for key '+key)
 				cb();
 				return;
-			} else if (rule.$required !== false
-				&& typeof requestValue === 'undefined'
-				&& requestValue) { // Default is required
-				warn("Attribute '"+key+"' is required.");
-				onError("Attribute '"+key+"' is required.");
+			} else if (typeof requestValue === 'undefined') {
+				if (rule.$required === false) {
+					// If the object is not required, don't even try to validate it.
+					cb();
+				} else { // Default is required
+					warn("Attribute '"+key+"' is required.");
+					onError("Attribute '"+key+"' is required.");
+				}
 				return;
-			} else if (!requestValue && rule.$required === false) {
-				// If the object is not required, don't even try to validate it.
-				cb();
-			} else if (rule.$valid && !rule.$valid(requestValue, req.body, req.user)) {
+			} else if (rule.$valid && !rule.$valid(requestValue, requestBody, req.user)) {
 				if ('$msg' in rule) {
 					if (typeof rule.$msg === 'function')
 						onError(rule.$msg(requestValue));
@@ -168,8 +176,8 @@ module.exports = function (req, res, next) {
 				}
 			}
 
-			// Call on nested objects (if available)
-			if (_.isObject(requestValue) && !_.isArray(requestValue)) {
+			// Call on nested objects (if available).
+			if (_.isPlainObject(requestValue)) {
 				var content = {};
 				for (var attr in requestValue) if (requestValue.hasOwnProperty(attr)) {
 					content[attr] = requestValue[attr];
@@ -194,7 +202,7 @@ module.exports = function (req, res, next) {
 			var cleanFn = rule.$clean || function(i){return i;}
 			var result;
 			try {
-				result = cleanFn(requestValue, req.body, req.user);
+				result = cleanFn(requestValue, requestBody, req.user);
 			} catch (e) {
 				console.log("Error cleaning up object.");
 				if ('$msg' in rule) {
@@ -217,19 +225,39 @@ module.exports = function (req, res, next) {
 			cb(null, dict);
 		}
 
+		if (!_.isPlainObject(requestBody)) {
+			console.log('what?', requestBody)
+			callback({
+				error: 'ReqParse',
+				status: 400,
+				message: 'Wrong payload type.',
+			});
+			return;
+		}
+
 		async.map(_.keys(rules), function (key, done) {
 			parseObj(key, requestBody[key], rules[key], done);
 		}, function (err, results) {
 			results = flattenObjList(results.filter(function (e) { return !!e; }));
 			if (err) {
-				next(_.extend({ error: 'ReqParse' }, err));
+				callback(_.extend({ error: 'ReqParse' }, err));
 			} else {
-				cb(results);
+				callback(null, results);
 			}
 		});
 	};
 
-	req.parse = parseBody;
+	req.parse = function (rules, callback) {
+		parseBody(req.body, rules, function (err, result) {
+			if (err) {
+				console.log("mext")
+				next(err);
+			} else {
+				console.log("caççbacl")
+				callback(result);
+			}
+		})
+	};
 
 	next();
 }

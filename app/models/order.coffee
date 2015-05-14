@@ -2,17 +2,13 @@
 mongoose = require 'mongoose'
 _ = require 'lodash'
 
-Status = {
-	Requested: 'requested'
-	Processing: 'processing'
-	Shipping: 'shipping'
-	Done: 'done'
-}
+
+Status = ["shipping", "requested", "processing", "cancelled", "late", "done"]
 
 OrderSchema = new mongoose.Schema {
-	status:			{ type: String, enum: _.values(Status), default: Status.Requested }
+	status:			{ type: String, enum: Status, default: Status.Requested }
 	comments: 	{ type: String, required: false }
-	name: 			{ type: String }
+	name: 			{ type: String, required: true }
 	code: 			{ type: String, required: true }
 
 	created_at: { type: Date, default: Date.now }
@@ -20,12 +16,10 @@ OrderSchema = new mongoose.Schema {
 
 	s3_path: 		{ type: String, required: false }
 
-	client: 		{ type: mongoose.Schema.ObjectId, ref: 'User' }
-	clerk:	 		{ type: mongoose.Schema.ObjectId, ref: 'User' }
-	vendor: 		{ type: mongoose.Schema.ObjectId, ref: 'Company' }
+	client: 		{ type: mongoose.Schema.ObjectId, ref: 'User', required: true }
+	vendor: 		{ type: mongoose.Schema.ObjectId, ref: 'User', required: true }
 
-	color: 			{ type: String }
-	name: 			{ type: String }
+	color: 			{ type: String, required: true }
 
 }, {
 	toObject:	{ virtuals: true }
@@ -34,6 +28,9 @@ OrderSchema = new mongoose.Schema {
 
 OrderSchema.statics.APISelect = '-password'
 
+OrderSchema.statics.Status = {}
+Status.forEach (s) ->
+	OrderSchema.statics.Status[s[0].toUpperCase()+s.slice(1)] = s;
 
 OrderSchema.virtual('_cor').get ->
 	{
@@ -68,6 +65,22 @@ OrderSchema.statics.ParseRules = {
 			str.match(/^https:\/\/deltathinkers\.s3\.amazonaws\.com\/jobs\/[a-z0-9-]+$/)
 	comments:
 		$valid: (str) -> true
+	name:
+		$valid: (str) -> true
+}
+
+OrderSchema.statics.UpdateParseRules = {
+	_id:
+		$valid: (str) ->
+			try
+				mongoose.Types.ObjectId.createFromHexString(str)
+				return true
+			catch e
+				return false
+	color:
+		$valid: (str) -> true
+	status:
+		$valid: (str) -> Status.indexOf(str) isnt -1
 	name:
 		$valid: (str) -> true
 }

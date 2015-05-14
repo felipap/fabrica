@@ -1871,11 +1871,8 @@ var Toolbar = React.createBackboneClass({
 							"Mudar estado ", React.createElement("span", {className: "caret"})
 						), 
 						React.createElement("ul", {className: "dropdown-menu", role: "menu"}, 
-							React.createElement("li", {className: "shipping"}, 
-								React.createElement("a", {href: "#", onClick: makeStatusSetter("shipping")}, "Pronto")
-							), 
 							React.createElement("li", {className: "requested"}, 
-								React.createElement("a", {href: "#", onClick: makeStatusSetter("requested")}, "Esperando")
+								React.createElement("a", {href: "#", onClick: makeStatusSetter("waiting")}, "Esperando")
 							), 
 							React.createElement("li", {className: "processing"}, 
 								React.createElement("a", {href: "#", onClick: makeStatusSetter("processing")}, "Processando")
@@ -1885,6 +1882,9 @@ var Toolbar = React.createBackboneClass({
 							), 
 							React.createElement("li", {className: "late"}, 
 								React.createElement("a", {href: "#", onClick: makeStatusSetter("late")}, "Atrasado")
+							), 
+							React.createElement("li", {className: "shipping"}, 
+								React.createElement("a", {href: "#", onClick: makeStatusSetter("shipping")}, "Pronto")
 							), 
 							React.createElement("li", {className: "done"}, 
 								React.createElement("a", {href: "#", onClick: makeStatusSetter("done")}, "Enviado")
@@ -1897,7 +1897,24 @@ var Toolbar = React.createBackboneClass({
 
 		if (this.state.pendingSave) {
 			var save = function()  {
-				this.getCollection().save()
+				var collection = this.getCollection();
+				// FIXME:
+				// This is far from ideal. We shouldn't have to sync the whole
+				// collection when only a known part of is updated.
+				collection.sync("update", collection, {
+					url: '/api/orders',
+					success: function()  {
+						this.setState({ pendingSave: false });
+					}.bind(this),
+					error: function(xhr, options)  {
+						var data = xhr.responseJSON;
+						if (data && data.message) {
+							Utils.flash.alert(data.message);
+						} else {
+							Utils.flash.alert('Um erro inesperado aconteceu.');
+						}
+					}
+				})
 			}.bind(this);
 			buttons.push((
 				React.createElement("li", null, 
@@ -2790,6 +2807,7 @@ var OrderForm = React.createBackboneClass({
 		this.getModel().save(null, {
 			success: function(model, response)  {
 				Utils.flash.info(response.message || "Pedido salvo.");
+				undoLeaveWarning();
 				window.location.href = '/';
 			},
 			error: function(model, xhr, options)  {
@@ -2799,7 +2817,7 @@ var OrderForm = React.createBackboneClass({
 				} else {
 					Utils.flash.alert('Milton Friedman.');
 				}
-				if (data.error === 'ExistingUser') {
+				if (data && data.error === 'ExistingUser') {
 					this._buildWarnings({ email: 'Esse email já está em uso.' });
 					return;
 				}
@@ -2864,6 +2882,11 @@ function setupLeaveWarning() {
 	  window.onbeforeunload = function() {
 	  	return "Se você sair dessa página, terá que entrar com os dados novamente.";
 	  }
+	}
+}
+function undoLeaveWarning() {
+	if (window.onbeforeunload) {
+		window.onbeforeunload = null;
 	}
 }
 

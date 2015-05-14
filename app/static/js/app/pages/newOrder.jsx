@@ -464,6 +464,7 @@ var OrderForm = React.createBackboneClass({
 		this.getModel().save(null, {
 			success: (model, response) => {
 				Utils.flash.info(response.message || "Pedido salvo.");
+				undoLeaveWarning();
 				window.location.href = '/';
 			},
 			error: (model, xhr, options) => {
@@ -473,7 +474,7 @@ var OrderForm = React.createBackboneClass({
 				} else {
 					Utils.flash.alert('Milton Friedman.');
 				}
-				if (data.error === 'ExistingUser') {
+				if (data && data.error === 'ExistingUser') {
 					this._buildWarnings({ email: 'Esse email já está em uso.' });
 					return;
 				}
@@ -538,6 +539,11 @@ function setupLeaveWarning() {
 	  window.onbeforeunload = function() {
 	  	return "Se você sair dessa página, terá que entrar com os dados novamente.";
 	  }
+	}
+}
+function undoLeaveWarning() {
+	if (window.onbeforeunload) {
+		window.onbeforeunload = null;
 	}
 }
 

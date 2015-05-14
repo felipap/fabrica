@@ -9,6 +9,7 @@ var mail = require('app/actions/mail')
 var User = mongoose.model('User')
 var Company = mongoose.model('Company')
 var Order = mongoose.model('Order')
+
 var logger = global.logger.mchild()
 
 // http://blog.tompawlak.org/how-to-generate-random-values-nodejs-javascript
@@ -26,9 +27,9 @@ module.exports.place = function (seller, client, data, cb) {
 	var order = new Order({
 		comments: data.comments,
 		name: data.name,
-		client: data.clientId,
+		client: data.client.id,
 		color: data.color,
-		seller: seller._id,
+		vendor: seller._id,
 		code: randomValueBase64(10),
 		s3_path: data.file,
 	})
@@ -36,9 +37,45 @@ module.exports.place = function (seller, client, data, cb) {
 	order.save(TMERA((doc) => {
 		mail.send(mail.Templates.NewOrderFromVendor(client, order, seller),
 			(err, result) => {
-				cb(err);
+				if (err) {
+					throw err
+				}
 		})
 
 		cb(null, doc)
 	}))
+}
+
+module.exports.update = function (seller, order, data, cb) {
+	please({$model:User}, {$model:Order}, '$skip', '$isFn')
+
+	console.log('update', data)
+
+	if (data.status) {
+		order.status = data.status
+	}
+
+	order.save(TMERA((doc) => {
+		cb(null, doc)
+	}))
+
+
+	// var order = new Order({
+	// 	comments: data.comments,
+	// 	name: data.name,
+	// 	client: data.clientId,
+	// 	color: data.color,
+	// 	seller: seller._id,
+	// 	code: randomValueBase64(10),
+	// 	s3_path: data.file,
+	// })
+
+	// order.save(TMERA((doc) => {
+	// 	mail.send(mail.Templates.NewOrderFromVendor(client, order, seller),
+	// 		(err, result) => {
+	// 			cb(err);
+	// 	})
+
+	// 	cb(null, doc)
+	// }))
 }

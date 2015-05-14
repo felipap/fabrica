@@ -1,10 +1,11 @@
 
+var validator = require('validator')
+var mongoose = require('mongoose')
 var express = require('express')
+var nconf = require('nconf')
+var async = require('async')
 var aws = require('aws-sdk')
 var uuid = require('uuid')
-var nconf = require('nconf')
-var mongoose = require('mongoose')
-var validator = require('validator')
 
 var required = require('app/controllers/lib/required')
 var unspam = require('app/controllers/lib/unspam')
@@ -82,7 +83,11 @@ module.exports = function(app) {
         if (!client) {
           req.logger.error('Cliente não encontrado! Esse erro não deveria '+
             'estar acontecendo.');
-          next({ message: 'Cliente não encontrado.', status: 404, process: false });
+          next({
+            message: 'Cliente não encontrado.',
+            status: 404,
+            process: false,
+          });
           return;
         }
 
@@ -93,12 +98,50 @@ module.exports = function(app) {
     });
   });
 
+  api.put('/orders', unspam.limit(2*1000), function(req, res, next) {
+    function doItem(body, next) {
+      console.log('body', body)
+      Order.findOne({ _id: body._id }, req.handleErr((order) => {
+        if (!order) {
+          // We can't use req.endJSON here.
+          console.log(body);
+          next({ message: 'Pedido não encontrado.' });
+          return;
+        }
+        orderActions.update(req.user, order, body, (err, result) => {
+          if (err) {
+            throw err;
+          }
+          next(null, result);
+        });
+      }));
+    }
+
+    if (req.body instanceof Array) {
+      // User passed an array of objects to update.
+      // Parsing errors in ANY of the items is intolerable, so, first,
+      // parse every item, then update them individually.
+      req.parseArray(Order.UpdateParseRules, (bodies) => {
+        async.map(bodies, doItem, function(err, results) {
+          if (err) {
+            res.endJSON(err);
+            return;
+          }
+
+          res.endJSON({});
+        });
+      });
+    } else {
+      req.parse(Order.UpdateParseRules, (body) => {
+        doItem(body, function(err, result) {
+          res.endJSON({});
+        });
+      });
+    }
+  });
+
   api.post('/clients', unspam.limit(2*1000), function(req, res, next) {
-    req.parse(User.ClientRegisterParseRules, function(err, reqbody) {
-      if (err) {
-        next(err);
-        return;
-      }
+    req.parse(User.ClientRegisterParseRules, function(reqbody) {
       console.log(reqbody);
       userActions.registerClient(req.user, reqbody, function(err, client) {
         if (err) {
@@ -108,6 +151,10 @@ module.exports = function(app) {
         res.endJSON(reqbody);
       });
     });
+  });
+
+  api.put('/clients', unspam.limit(2*1000), function(req, res) {
+
   });
 
   api.get('/get_client', unspam.limit(1*1000), function(req, res, next) {

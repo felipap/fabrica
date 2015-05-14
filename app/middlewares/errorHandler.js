@@ -55,10 +55,11 @@ module.exports = function(err, req, res, next) {
 		return;
 	}
 
-	// I have the slight feeling that this file is getting out of hand.
+	// I have the slight feeling that this stuff is getting out of hand.
 	// { process: false } means: "don't process the error. it's not critical.
 	// just send it to the user"
 	if (err.process === false) {
+		delete err.process;
 		res.renderError(err.status || 500, err);
 		return;
 	}
@@ -119,10 +120,11 @@ module.exports = function(err, req, res, next) {
 	}
 
 	// Set status.
-	if (err.status)
+	if (err.status) {
 		res.status(err.status);
-	else if (res.statusCode < 400)
+	} else if (res.statusCode < 400) {
 		res.status(500);
+	}
 
 	if (req.app.get('env') === 'production') {
 		try {

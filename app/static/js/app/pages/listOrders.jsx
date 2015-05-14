@@ -157,11 +157,8 @@ var Toolbar = React.createBackboneClass({
 							Mudar estado <span className="caret"></span>
 						</button>
 						<ul className="dropdown-menu" role="menu">
-							<li className="shipping">
-								<a href="#" onClick={makeStatusSetter("shipping")}>Pronto</a>
-							</li>
 							<li className="requested">
-								<a href="#" onClick={makeStatusSetter("requested")}>Esperando</a>
+								<a href="#" onClick={makeStatusSetter("waiting")}>Esperando</a>
 							</li>
 							<li className="processing">
 								<a href="#" onClick={makeStatusSetter("processing")}>Processando</a>
@@ -171,6 +168,9 @@ var Toolbar = React.createBackboneClass({
 							</li>
 							<li className="late">
 								<a href="#" onClick={makeStatusSetter("late")}>Atrasado</a>
+							</li>
+							<li className="shipping">
+								<a href="#" onClick={makeStatusSetter("shipping")}>Pronto</a>
 							</li>
 							<li className="done">
 								<a href="#" onClick={makeStatusSetter("done")}>Enviado</a>
@@ -183,7 +183,24 @@ var Toolbar = React.createBackboneClass({
 
 		if (this.state.pendingSave) {
 			var save = () => {
-				this.getCollection().save()
+				var collection = this.getCollection();
+				// FIXME:
+				// This is far from ideal. We shouldn't have to sync the whole
+				// collection when only a known part of is updated.
+				collection.sync("update", collection, {
+					url: '/api/orders',
+					success: () => {
+						this.setState({ pendingSave: false });
+					},
+					error: (xhr, options) => {
+						var data = xhr.responseJSON;
+						if (data && data.message) {
+							Utils.flash.alert(data.message);
+						} else {
+							Utils.flash.alert('Um erro inesperado aconteceu.');
+						}
+					}
+				})
 			};
 			buttons.push((
 				<li>
