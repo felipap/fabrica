@@ -27,11 +27,18 @@ module.exports = required = {
 		}
 	},
 	self: {
-		isEditor: function (req, res, next) {
-			if (req.user && req.user.flags.editor) {
+		dthinker: function (req, res, next) {
+			if (req.user && req.user.flags.dthinker) {
 				next();
 			} else {
-				next({permission:'isEditor', args:[req.user && req.user.flags.editor]});
+				next({permission:'self.dthinker', args:[]});
+			}
+		},
+		seller: function (req, res, next) {
+			if (req.user && req.user.flags.seller || req.user && req.user.dthinker) {
+				next();
+			} else {
+				next({permission:'self.seller', args:[]});
 			}
 		},
 		canEdit: function (param) {

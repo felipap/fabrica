@@ -3,20 +3,25 @@ var Backbone = require('backbone');
 
 var Order = Backbone.Model.extend({
   urlRoot: '/api/orders',
-
   initialize: function() {
     // Collection display stuff.
     // Perhaps this shouldn't be here.
     this.selected = 0;
   },
+
   select: function() {
     this.selected = 1;
     this.trigger('selectChange');
   },
+
   unselect: function() {
     this.selected = 0;
     this.trigger('selectChange');
-  }
+  },
+
+  getTitle: function() {
+    return this.get('name');
+  },
 });
 
 var Client = Backbone.Model.extend({

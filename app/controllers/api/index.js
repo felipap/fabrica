@@ -39,6 +39,13 @@ module.exports = function(app) {
 
   api.use(unspam);
 
+  api.param('orderId', function(req, res, next, orderId) {
+    Order.findOne({ _id: orderId }, req.handleErr404((order) => {
+      req.order = order;
+      next();
+    }));
+  });
+
   // A little backdoor for debugging purposes.
   api.get('/logmein/:id', function(req, res) {
     if (nconf.get('env') === 'production') {
@@ -77,7 +84,8 @@ module.exports = function(app) {
 
   api.use('/session', require('./session')(app));
 
-  api.post('/orders', unspam.limit(2*1000), function(req, res, next) {
+  api.post('/orders', required.self.seller, unspam.limit(2*1000),
+  function(req, res, next) {
     req.parse(Order.ParseRules, (body) => {
       User.findOne({ _id: body.client.id }, req.handleErr((client) => {
         if (!client) {
@@ -98,7 +106,13 @@ module.exports = function(app) {
     });
   });
 
-  api.put('/orders', unspam.limit(2*1000), function(req, res, next) {
+  api.get('/orders/:orderId', unspam.limit(1000),
+    function(req, res, next) {
+      res.endJSON(req.order.toJSON());
+  });
+
+  api.put('/orders', required.self.dthinker,
+  unspam.limit(2*1000), function(req, res, next) {
     function doItem(body, next) {
       console.log('body', body)
       Order.findOne({ _id: body._id }, req.handleErr((order) => {

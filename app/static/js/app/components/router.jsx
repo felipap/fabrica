@@ -25,6 +25,10 @@ var Pages = {
 	Home: require('../pages/home.jsx'),
 };
 
+var Views = {
+	Order: require('../components/OrderView.jsx'),
+}
+
 $(function () {
 
   if (window.__flash_messages && window.__flash_messages.length) {
@@ -96,8 +100,7 @@ var ComponentStack = function () {
 			}
 
 			// Adornate element and page.
-			if (!opts.navbar)
-				$(e).addClass('pcontainer');
+			$(e).addClass('component-container');
 			if (opts.class)
 				$(e).addClass(opts.class);
 			$(e).addClass('invisble');
@@ -181,9 +184,6 @@ var PageStack = function () {
 		constructor(component, opts) {
 			var makeContainer = (opts) => {
 				var el = document.createElement('div');
-				// if (!opts.navbar) {
-				// 	el.classList.add('pcontainer');
-				// }
 				if (opts.class) {
 					el.classList.add(opts.class);
 				}
@@ -359,7 +359,7 @@ var Router = Backbone.Router.extend({
 		this._bindComponentTriggers();
 		this._bindComponentCalls();
 		this._pages = new PageStack();
-		this._compnents = new ComponentStack();
+		this._components = new ComponentStack();
 	},
 
 	_bindComponentTriggers: function () {
@@ -481,7 +481,7 @@ var BoxWrapper = React.createClass({
 	},
 
 	componentWillMount: function () {
-		if (this.props.model.getTitle()) {
+		if (this.props.model.getTitle) {
 			this.props.page.setTitle(this.props.model.getTitle());
 		}
 	},
@@ -504,7 +504,7 @@ var BoxWrapper = React.createClass({
 	render: function () {
 		var Factory = React.createFactory(this.props.rclass);
 		return (
-			<div className='qi-box' data-doc-id={this.props.model.get('id')}>
+			<div className='component-box' data-doc-id={this.props.model.get('id')}>
 				<i className='close-btn icon-clear' data-action='close-page' onClick={this.close}></i>
 				<Factory parent={this} {...this.props} />
 			</div>
@@ -561,9 +561,10 @@ var App = Router.extend({
 			function () {
 				Pages.ListOrders(this);
 			},
-		'pedidos/:code':
-			function () {
-			},
+		// 'pedidos/:code':
+		// 	function () {
+		// 		Views.Order(this);
+		// 	},
 		'':
 			function () {
 				Pages.Home(this);
@@ -571,33 +572,31 @@ var App = Router.extend({
 	},
 
 	components: {
-		view: function (data) {
-			var postCode = data.code;
-			var resource = window.conf.resource;
+		viewOrder: function (data) {
 
-			if (!postCode) {
-				console.warn("No code supplied to viewPost.", data, resource);
+			if (!data.id) {
+				console.warn("No id supplied to viewOrder.", data);
 				throw "WTF";
 			}
 
-			$.getJSON('/api/posts/'+postCode)
-				.done(function (response) {
-					console.log('response, data', response);
-					var postItem = new Models.Post(response.data);
-					this.pushComponent(<BoxWrapper rclass={Views.Post} model={postItem} />, 'post', {
+			var model = new Models.Order({id: data.id});
+			model.fetch({
+				success: (model, response) => {
+					this.pushComponent(<BoxWrapper rclass={Views.Order} model={model} />, 'order', {
 						onClose: function () {
-							app.navigate(app.pageRoot, { trigger: false });
+							// app.navigate(app.pageRoot, { trigger: false });
 						}
 					});
-				}.bind(this))
-				.fail(function (xhr) {
-					if (xhr.responseJSON && xhr.responseJSON.error) {
-						Utils.flash.alert(xhr.responseJSON.message || 'Erro! <i class="icon-sad"></i>');
+				},
+				error: (xhr) => {
+					var json = xhr.responseJSON;
+					if (json && json.error) {
+						Utils.flash.alert(json.message || 'Erro! <i class="icon-sad"></i>');
 					} else {
-						Utils.flash.alert('Contato com o servidor perdido. Tente novamente.');
+						Utils.flash.alert('Erro ao contactar servidor.');
 					}
-					app.navigate(app.pageRoot, { trigger: false });
-				}.bind(this))
+				},
+			});
 		},
 	},
 });

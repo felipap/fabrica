@@ -21,19 +21,8 @@ window.formatOrderDate = function (date) {
 };
 
 var OrderItem = React.createBackboneClass({
-	getInitialState: function() {
-		return {
-			expanded: false,
-		}
-	},
-
 	render: function() {
 		var doc = this.getModel().attributes;
-
-		var goto = () => {
-			// app.navigate(i.path, { trigger: true });
-			this.props.toggle();
-		}
 
 		var GenStatusIcon = () => {
 			if (doc.status === "shipping") {
@@ -42,9 +31,9 @@ var OrderItem = React.createBackboneClass({
 	      		<i className="icon-send" />
 	      	</div>
 	      );
-			} else if (doc.status === "requested") {
+			} else if (doc.status === "waiting") {
 	      return (
-	      	<div className="statusIcon requested" title="Esperando">
+	      	<div className="statusIcon waiting" title="Esperando">
 	      		<i className="icon-timer" />
 	      	</div>
 	      );
@@ -66,7 +55,7 @@ var OrderItem = React.createBackboneClass({
 	      		<i className="icon-timer" />
 	      	</div>
 	      );
-			} else {
+			} else if (doc.status === "done") {
 	      return (
 	      	<div className="statusIcon done" title="Enviado">
 	      		<i className="icon-done-all" />
@@ -76,7 +65,9 @@ var OrderItem = React.createBackboneClass({
 		};
 
 		return (
-			<li className="order" onClick={goto}>
+			<li className="order"
+				data-trigger="component" data-component="viewOrder"
+				data-args={'{"id":"'+doc.id+'"}'}>
 				<div className="left">
 					<div className="selection">
 						<PrettyCheck ref="check" model={this.getModel()} />
@@ -157,7 +148,7 @@ var Toolbar = React.createBackboneClass({
 							Mudar estado <span className="caret"></span>
 						</button>
 						<ul className="dropdown-menu" role="menu">
-							<li className="requested">
+							<li className="waiting">
 								<a href="#" onClick={makeStatusSetter("waiting")}>Esperando</a>
 							</li>
 							<li className="processing">
@@ -189,8 +180,9 @@ var Toolbar = React.createBackboneClass({
 				// collection when only a known part of is updated.
 				collection.sync("update", collection, {
 					url: '/api/orders',
-					success: () => {
+					success: (collection, response) => {
 						this.setState({ pendingSave: false });
+						Utils.flash.info(response.message || "Sucesso.");
 					},
 					error: (xhr, options) => {
 						var data = xhr.responseJSON;
@@ -228,47 +220,13 @@ var Toolbar = React.createBackboneClass({
 
 var ListOrders = React.createBackboneClass({
 
-	getInitialState: function () {
-		return {
-			expanded: null,
-		}
-	},
-
-
 	render: function() {
 		var GenerateOrderList = () => {
-			var collection = this.getCollection();
-			var rows = [];
-			var i = 0;
-			window.c = collection;
-			while (i < collection.length) {
-				!((i) => { // create context for 'i'
-					var toggle = () => {
-						return;
-						if (this.state.expanded === i) {
-							this.setState({ expanded: null });
-						} else {
-							this.setState({ expanded: i });
-						}
-					};
-
-					// Hack: add expanded item as table row with a single colum
-					rows.push((
-						<OrderItem model={collection.at(i)} toggle={toggle} />
-					));
-					if (this.state.expanded === i) {
-						rows.push((
-							<li className="order expanded">
-								<td colSpan="100">
-									<OrderView model={collection.at(i)} />
-								</td>
-							</li>
-						))
-					}
-				})(i);
-				++i;
-			}
-			return rows;
+			return this.getCollection().map(function(model) {
+				return (
+					<OrderItem model={model} />
+				);
+			});
 		};
 
 		return (

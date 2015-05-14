@@ -541,9 +541,10 @@ function setupLeaveWarning() {
 	  }
 	}
 }
+
 function undoLeaveWarning() {
 	if (window.onbeforeunload) {
-		window.onbeforeunload = null;
+		$(window).unbind();
 	}
 }
 

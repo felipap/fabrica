@@ -11,6 +11,10 @@ var STLRenderer = require('../components/STLRenderer.jsx')
 require('react.backbone')
 
 var OrderView = React.createBackboneClass({
+  getTitle: function() {
+    return this.getModel().get('name');
+  },
+
   render: function() {
     var doc = this.getModel().attributes;
 
@@ -26,7 +30,7 @@ var OrderView = React.createBackboneClass({
             </div>
           </div>
           <div className="col-md-4 renderer">
-            <STLRenderer ref="renderer" file={this.getModel().get('s3_path')} />
+            <STLRenderer ref="renderer" file={this.getModel().get('file')} />
           </div>
         </div>
       </div>

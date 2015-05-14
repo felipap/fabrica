@@ -16,7 +16,7 @@
 @import "components/newOrderForm.less";
 
 html {
-	&.app {
+	&.fabrica {
 		// overflow: hidden;
 		body {
 			overflow-y: scroll; //visible;
@@ -43,7 +43,7 @@ html {
 		#global-container {
 			position: fixed;
 		}
-		.pcontainer {
+		.component-container {
 			position: initial;
 		}
 	}
@@ -58,34 +58,6 @@ body {
 	}
 }
 
-.FlashWrapper {
-	& > li {
-		// border-radius: 2px;
-		padding: 15px 30px 15px 15px;
-		position: relative;
-		font-size: 16px;
-		margin-bottom: 10px;
-
-		background: fadeout(#444, 70%);
-
-		&.info {
-			color: #333;
-			background: fadeout(@CBLUE, 60%);
-		}
-
-		&.error {
-			color: #333;
-			background: fadeout(@YELLOW, 60%);
-		}
-
-		.close-btn {
-			position: absolute;
-			top: 10px;
-			right: 10px;
-			color: #777;
-		}
-	}
-}
 
 .container {
   .container-fixed();
@@ -102,7 +74,7 @@ body {
   }
 }
 
-.fabrica-box {
+.component-box {
 	width: @postColWidth;
 	position: relative;
 	margin: 40px auto;
@@ -121,27 +93,13 @@ body {
 	}
 }
 
-.invisible {
-	opacity: 0 !important;
-}
 
-body:not(.public) {
-	.container, .gcontainer {
-		// top: @navbar-height;
-	}
-	#navbar {
-		// position: fixed;
-		// left: 0;
-		// right: 0;
-	}
-}
-
-.pcontainer {
+.component-container {
 	position: fixed;
 	top: 0; bottom: 0;
 	width: 100%;
 	overflow-x: hidden;
-	overflow-y: auto;
+	overflow-y: scroll;
 	z-index: 20;
 
 	& > .close-btn {
@@ -151,171 +109,8 @@ body:not(.public) {
 	}
 }
 
-.gcontainer {
-	width: @PAGE-width !important;
-	margin: auto;
 
-	position: relative;
-	width: 100%;
-	z-index: 15;
-
-	// uncollapse margin (http://stackoverflow.com/questions/1828804)
-	&:before,
-	&:after {
-		content: "\00a0"; /* No-break space character */
-		display: block;
-		overflow: hidden;
-		height: 0;
-	}
-
-	& > .close-btn {
-		position: absolute;
-		top: 5px;
-		right: 20px;
-		font-size: 26px;
-		color: #777;
-	}
-}
-
-.close-btn {
-	color: #EEE;
-	font-style: normal;
-	font-size: 22px;
-	cursor: pointer;
-	color: white;
-	.transition;
-
-	opacity: .9;
-	&:hover {
-		opacity: 1;
-	}
-	&::before {
-		content: "×";
-	}
-}
-
-.loaderAnimation () {
-	0% { transform: rotate(0deg); }
-	25% { transform: rotate(180deg); }
-	50% { transform: rotate(180deg); }
-	75% { transform: rotate(360deg); }
-	100% { transform: rotate(360deg); }
-}
-
-.loaderInnerAnimation () {
-	0% { height: 0%; }
-	25% { height: 0%; }
-	50% { height: 100%; }
-	75% { height: 100%; }
-	100% { height: 0%; }
-}
-
-@-webkit-keyframes loader { .loaderAnimation; }
-   @-moz-keyframes loader { .loaderAnimation; }
-     @-o-keyframes loader { .loaderAnimation; }
-        @keyframes loader { .loaderAnimation; }
-
-@-webkit-keyframes loader-inner { .loaderInnerAnimation; }
-   @-moz-keyframes loader-inner { .loaderInnerAnimation; }
-     @-o-keyframes loader-inner { .loaderInnerAnimation; }
-        @keyframes loader-inner { .loaderInnerAnimation; }
-
-.streamLoader {
-	display: inline-block;
-	width: 15px;
-	height: 15px;
-	position: relative;
-	border: 3px solid @CBLUE;
-	top: 50%;
--webkit-animation: loader 4s infinite ease;
-   -moz-animation: loader 4s infinite ease;
-     -o-animation: loader 4s infinite ease;
-	animation: loader 4s infinite ease;
-
-	.loader-inner {
-		vertical-align: top;
-		display: inline-block;
-		width: 100%;
-		background-color: @CBLUE;
-	-webkit-animation: loader-inner 4s infinite ease-in;
-	   -moz-animation: loader-inner 4s infinite ease-in;
-	     -o-animation: loader-inner 4s infinite ease-in;
-		animation: loader-inner 4s infinite ease-in;
-	}
-}
-
-.form-group {
-
-	label {
-		color: #444;
-		font-weight: 400;
-		font-size: 1em;
-		margin-bottom: .4em;
-	}
-
-  input.form-control {
-    display: block;
-    width: 100%;
-    // font-size: 18px;
-    border: 1px solid transparent;
-    background: #EEE;
-    font-weight: bold;
-    border-radius: 0;
-    height: auto;
-    line-height: 3;
-    padding: 0 1em;
-    font-size: 1.1em;
-    font-family: museo-sans;
-
-    color: #222;
-
-    &:focus {
-      .no-box-shadow;
-      .transition;
-      outline: 0;
-      border: 1px solid #DDD;
-    }
-
-    &.invalid {
-      border-color: fadeout(@CRED, 30%);
-    }
-  }
-
-  textarea.form-control {
-    display: block;
-    width: 100%;
-    // font-size: 18px;
-    border: 1px solid transparent;
-    background: #EEE;
-    font-weight: bold;
-    border-radius: 0;
-    height: auto;
-    padding: 1em;
-    font-size: 1.1em;
-    font-family: museo-sans;
-
-    color: #222;
-
-    &:focus {
-      .no-box-shadow;
-      .transition;
-      outline: 0;
-      border: 1px solid #DDD;
-    }
-
-    &.invalid {
-      border-color: fadeout(@CRED, 30%);
-    }
-  }
-
-  input[type=password].is-wrong {
-    background: mix(@CRED, #DDD);
-    &:focus {
-      border-color: @CRED;
-    }
-  }
-}
-
+//////////////////////////////
 
 .page-container {
 	// max-width: 400px;
@@ -392,6 +187,7 @@ body:not(.public) {
   }
 }
 
+//
 
 .ListClients {
 
@@ -456,7 +252,7 @@ body:not(.public) {
     & > ul {
       float: left;
 
-      .requested { background: #AAA; color: white; }
+      .waiting { background: #666; color: white; }
       .cancelled { background: @CRED; color: white; }
       .late { background: @CYELLOW; color: white; }
       .processing { background: @CBLUE; color: white; }
@@ -518,6 +314,12 @@ body:not(.public) {
       position: relative;
       font-size: 15px;
       border-top: 1px solid #EEE;
+      cursor: pointer;
+      .transition;
+
+      &:hover {
+        background: #FAFAFA;
+      }
 
       @left-width: 110px;
       @right-width: 200px;
@@ -554,10 +356,10 @@ body:not(.public) {
             font-size: 20px;
           }
 
-          &.requested {
-            .box-shadow(0, 0, 0, 2px, #AAA);
+          &.waiting {
+            .box-shadow(0, 0, 0, 2px, #666);
             i {
-              color: #AAA;
+              color: #666;
             }
           }
           &.cancelled {
@@ -716,6 +518,22 @@ body:not(.public) {
   }
 }
 
+[data-page=order] {
+  background: fadeout(black, 45%);
+  z-index: 60 !important;
+
+  .qi-box {
+    .transition-transform(.4s, linear);
+
+    & > .close-btn {
+      position: fixed;
+      top: 10px;
+      right: 34px;
+      font-weight: bold;
+    }
+  }
+
+}
 
 .OrderView {
   background: #EEE;

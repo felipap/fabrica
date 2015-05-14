@@ -31,7 +31,7 @@ module.exports.place = function (seller, client, data, cb) {
 		color: data.color,
 		vendor: seller._id,
 		code: randomValueBase64(10),
-		s3_path: data.file,
+		file: data.file,
 	})
 
 	order.save(TMERA((doc) => {
@@ -67,7 +67,7 @@ module.exports.update = function (seller, order, data, cb) {
 	// 	color: data.color,
 	// 	seller: seller._id,
 	// 	code: randomValueBase64(10),
-	// 	s3_path: data.file,
+	// 	file: data.file,
 	// })
 
 	// order.save(TMERA((doc) => {

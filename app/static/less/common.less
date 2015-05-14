@@ -77,6 +77,100 @@ h4, h5, h6 {
   font-size: 1em;
 }
 
+.invisible {
+	opacity: 0 !important;
+}
+
+
+.close-btn {
+  color: #EEE;
+  font-style: normal;
+  font-size: 22px;
+  cursor: pointer;
+  color: white;
+  .transition;
+
+  opacity: .9;
+  &:hover {
+    opacity: 1;
+  }
+  &::before {
+    content: "×";
+  }
+}
+
+.form-group {
+
+  label {
+    color: #444;
+    font-weight: 400;
+    font-size: 1em;
+    margin-bottom: .4em;
+  }
+
+  input.form-control {
+    display: block;
+    width: 100%;
+    // font-size: 18px;
+    border: 1px solid transparent;
+    background: #EEE;
+    font-weight: bold;
+    border-radius: 0;
+    height: auto;
+    line-height: 3;
+    padding: 0 1em;
+    font-size: 1.1em;
+    font-family: museo-sans;
+
+    color: #222;
+
+    &:focus {
+      .no-box-shadow;
+      .transition;
+      outline: 0;
+      border: 1px solid #DDD;
+    }
+
+    &.invalid {
+      border-color: fadeout(@CRED, 30%);
+    }
+  }
+
+  textarea.form-control {
+    display: block;
+    width: 100%;
+    // font-size: 18px;
+    border: 1px solid transparent;
+    background: #EEE;
+    font-weight: bold;
+    border-radius: 0;
+    height: auto;
+    padding: 1em;
+    font-size: 1.1em;
+    font-family: museo-sans;
+
+    color: #222;
+
+    &:focus {
+      .no-box-shadow;
+      .transition;
+      outline: 0;
+      border: 1px solid #DDD;
+    }
+
+    &.invalid {
+      border-color: fadeout(@CRED, 30%);
+    }
+  }
+
+  input[type=password].is-wrong {
+    background: mix(@CRED, #DDD);
+    &:focus {
+      border-color: @CRED;
+    }
+  }
+}
+
 
 
 /*---------------------------*\

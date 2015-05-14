@@ -1,4 +1,35 @@
 
+
+.FlashWrapper {
+  & > li {
+    // border-radius: 2px;
+    padding: 15px 30px 15px 15px;
+    position: relative;
+    font-size: 16px;
+    margin-bottom: 10px;
+
+    background: fadeout(#444, 70%);
+
+    &.info {
+      color: #333;
+      background: fadeout(@CBLUE, 60%);
+    }
+
+    &.error {
+      color: #333;
+      background: fadeout(@YELLOW, 60%);
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: #777;
+    }
+  }
+}
+
+
 .flasher {
 	width: 100%;
 	// left: 50%;

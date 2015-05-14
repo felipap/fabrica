@@ -2,7 +2,7 @@
 
 {% block head %}
 {% parent %}
-	<script>document.documentElement.className += " app"</script>
+	<script>document.documentElement.className += " fabrica"</script>
 	<script>
 		{% if user %}
 			window.user = {{ user.toSelfJSON()|json|safe }};

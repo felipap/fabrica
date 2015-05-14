@@ -156,6 +156,10 @@ var STLRenderer = require('../components/STLRenderer.jsx')
 require('react.backbone')
 
 var OrderView = React.createBackboneClass({
+  getTitle: function() {
+    return this.getModel().get('name');
+  },
+
   render: function() {
     var doc = this.getModel().attributes;
 
@@ -171,7 +175,7 @@ var OrderView = React.createBackboneClass({
             )
           ), 
           React.createElement("div", {className: "col-md-4 renderer"}, 
-            React.createElement(STLRenderer, {ref: "renderer", file: this.getModel().get('s3_path')})
+            React.createElement(STLRenderer, {ref: "renderer", file: this.getModel().get('file')})
           )
         )
       )
@@ -855,20 +859,25 @@ var Backbone = require('backbone');
 
 var Order = Backbone.Model.extend({
   urlRoot: '/api/orders',
-
   initialize: function() {
     // Collection display stuff.
     // Perhaps this shouldn't be here.
     this.selected = 0;
   },
+
   select: function() {
     this.selected = 1;
     this.trigger('selectChange');
   },
+
   unselect: function() {
     this.selected = 0;
     this.trigger('selectChange');
-  }
+  },
+
+  getTitle: function() {
+    return this.get('name');
+  },
 });
 
 var Client = Backbone.Model.extend({
@@ -978,6 +987,10 @@ var Pages = {
 	Home: require('../pages/home.jsx'),
 };
 
+var Views = {
+	Order: require('../components/OrderView.jsx'),
+}
+
 $(function () {
 
   if (window.__flash_messages && window.__flash_messages.length) {
@@ -1049,8 +1062,7 @@ var ComponentStack = function () {
 			}
 
 			// Adornate element and page.
-			if (!opts.navbar)
-				$(e).addClass('pcontainer');
+			$(e).addClass('component-container');
 			if (opts.class)
 				$(e).addClass(opts.class);
 			$(e).addClass('invisble');
@@ -1134,9 +1146,6 @@ var PageStack = function () {
 		function Page(component, opts) {"use strict";
 			var makeContainer = function(opts)  {
 				var el = document.createElement('div');
-				// if (!opts.navbar) {
-				// 	el.classList.add('pcontainer');
-				// }
 				if (opts.class) {
 					el.classList.add(opts.class);
 				}
@@ -1312,7 +1321,7 @@ var Router = Backbone.Router.extend({
 		this._bindComponentTriggers();
 		this._bindComponentCalls();
 		this._pages = new PageStack();
-		this._compnents = new ComponentStack();
+		this._components = new ComponentStack();
 	},
 
 	_bindComponentTriggers: function () {
@@ -1434,7 +1443,7 @@ var BoxWrapper = React.createClass({displayName: "BoxWrapper",
 	},
 
 	componentWillMount: function () {
-		if (this.props.model.getTitle()) {
+		if (this.props.model.getTitle) {
 			this.props.page.setTitle(this.props.model.getTitle());
 		}
 	},
@@ -1457,7 +1466,7 @@ var BoxWrapper = React.createClass({displayName: "BoxWrapper",
 	render: function () {
 		var Factory = React.createFactory(this.props.rclass);
 		return (
-			React.createElement("div", {className: "qi-box", "data-doc-id": this.props.model.get('id')}, 
+			React.createElement("div", {className: "component-box", "data-doc-id": this.props.model.get('id')}, 
 				React.createElement("i", {className: "close-btn icon-clear", "data-action": "close-page", onClick: this.close}), 
 				React.createElement(Factory, React.__spread({parent: this},  this.props))
 			)
@@ -1514,9 +1523,10 @@ var App = Router.extend({
 			function () {
 				Pages.ListOrders(this);
 			},
-		'pedidos/:code':
-			function () {
-			},
+		// 'pedidos/:code':
+		// 	function () {
+		// 		Views.Order(this);
+		// 	},
 		'':
 			function () {
 				Pages.Home(this);
@@ -1524,33 +1534,31 @@ var App = Router.extend({
 	},
 
 	components: {
-		view: function (data) {
-			var postCode = data.code;
-			var resource = window.conf.resource;
+		viewOrder: function (data) {
 
-			if (!postCode) {
-				console.warn("No code supplied to viewPost.", data, resource);
+			if (!data.id) {
+				console.warn("No id supplied to viewOrder.", data);
 				throw "WTF";
 			}
 
-			$.getJSON('/api/posts/'+postCode)
-				.done(function (response) {
-					console.log('response, data', response);
-					var postItem = new Models.Post(response.data);
-					this.pushComponent(React.createElement(BoxWrapper, {rclass: Views.Post, model: postItem}), 'post', {
+			var model = new Models.Order({id: data.id});
+			model.fetch({
+				success: function(model, response)  {
+					this.pushComponent(React.createElement(BoxWrapper, {rclass: Views.Order, model: model}), 'order', {
 						onClose: function () {
-							app.navigate(app.pageRoot, { trigger: false });
+							// app.navigate(app.pageRoot, { trigger: false });
 						}
 					});
-				}.bind(this))
-				.fail(function (xhr) {
-					if (xhr.responseJSON && xhr.responseJSON.error) {
-						Utils.flash.alert(xhr.responseJSON.message || 'Erro! <i class="icon-sad"></i>');
+				}.bind(this),
+				error: function(xhr)  {
+					var json = xhr.responseJSON;
+					if (json && json.error) {
+						Utils.flash.alert(json.message || 'Erro! <i class="icon-sad"></i>');
 					} else {
-						Utils.flash.alert('Contato com o servidor perdido. Tente novamente.');
+						Utils.flash.alert('Erro ao contactar servidor.');
 					}
-					app.navigate(app.pageRoot, { trigger: false });
-				}.bind(this))
+				},
+			});
 		},
 	},
 });
@@ -1562,7 +1570,7 @@ module.exports = {
 	},
 };
 
-},{"../components/flasher.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","../pages/home.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx","../pages/listClients.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listClients.jsx","../pages/listOrders.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listOrders.jsx","../pages/login.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx","../pages/login_newpass.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_newpass.jsx","../pages/login_recover.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx","../pages/login_register.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_register.jsx","../pages/newClient.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newClient.jsx","../pages/newOrder.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newOrder.jsx","../pages/newPartner.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newPartner.jsx","backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/backbone-1.1.2.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","marked":"/home/felipe/Projects/fabrica/app/static/js/vendor/marked.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx":[function(require,module,exports){
+},{"../components/OrderView.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/OrderView.jsx","../components/flasher.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","../pages/home.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx","../pages/listClients.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listClients.jsx","../pages/listOrders.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listOrders.jsx","../pages/login.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx","../pages/login_newpass.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_newpass.jsx","../pages/login_recover.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx","../pages/login_register.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_register.jsx","../pages/newClient.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newClient.jsx","../pages/newOrder.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newOrder.jsx","../pages/newPartner.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newPartner.jsx","backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/backbone-1.1.2.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","marked":"/home/felipe/Projects/fabrica/app/static/js/vendor/marked.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx":[function(require,module,exports){
 
 var $ = require('jquery')
 var React = require('react')
@@ -1735,19 +1743,8 @@ window.formatOrderDate = function (date) {
 };
 
 var OrderItem = React.createBackboneClass({
-	getInitialState: function() {
-		return {
-			expanded: false,
-		}
-	},
-
 	render: function() {
 		var doc = this.getModel().attributes;
-
-		var goto = function()  {
-			// app.navigate(i.path, { trigger: true });
-			this.props.toggle();
-		}.bind(this)
 
 		var GenStatusIcon = function()  {
 			if (doc.status === "shipping") {
@@ -1756,9 +1753,9 @@ var OrderItem = React.createBackboneClass({
 	      		React.createElement("i", {className: "icon-send"})
 	      	)
 	      );
-			} else if (doc.status === "requested") {
+			} else if (doc.status === "waiting") {
 	      return (
-	      	React.createElement("div", {className: "statusIcon requested", title: "Esperando"}, 
+	      	React.createElement("div", {className: "statusIcon waiting", title: "Esperando"}, 
 	      		React.createElement("i", {className: "icon-timer"})
 	      	)
 	      );
@@ -1780,7 +1777,7 @@ var OrderItem = React.createBackboneClass({
 	      		React.createElement("i", {className: "icon-timer"})
 	      	)
 	      );
-			} else {
+			} else if (doc.status === "done") {
 	      return (
 	      	React.createElement("div", {className: "statusIcon done", title: "Enviado"}, 
 	      		React.createElement("i", {className: "icon-done-all"})
@@ -1790,7 +1787,9 @@ var OrderItem = React.createBackboneClass({
 		};
 
 		return (
-			React.createElement("li", {className: "order", onClick: goto}, 
+			React.createElement("li", {className: "order", 
+				"data-trigger": "component", "data-component": "viewOrder", 
+				"data-args": '{"id":"'+doc.id+'"}'}, 
 				React.createElement("div", {className: "left"}, 
 					React.createElement("div", {className: "selection"}, 
 						React.createElement(PrettyCheck, {ref: "check", model: this.getModel()})
@@ -1871,7 +1870,7 @@ var Toolbar = React.createBackboneClass({
 							"Mudar estado ", React.createElement("span", {className: "caret"})
 						), 
 						React.createElement("ul", {className: "dropdown-menu", role: "menu"}, 
-							React.createElement("li", {className: "requested"}, 
+							React.createElement("li", {className: "waiting"}, 
 								React.createElement("a", {href: "#", onClick: makeStatusSetter("waiting")}, "Esperando")
 							), 
 							React.createElement("li", {className: "processing"}, 
@@ -1903,8 +1902,9 @@ var Toolbar = React.createBackboneClass({
 				// collection when only a known part of is updated.
 				collection.sync("update", collection, {
 					url: '/api/orders',
-					success: function()  {
+					success: function(collection, response)  {
 						this.setState({ pendingSave: false });
+						Utils.flash.info(response.message || "Sucesso.");
 					}.bind(this),
 					error: function(xhr, options)  {
 						var data = xhr.responseJSON;
@@ -1942,47 +1942,13 @@ var Toolbar = React.createBackboneClass({
 
 var ListOrders = React.createBackboneClass({
 
-	getInitialState: function () {
-		return {
-			expanded: null,
-		}
-	},
-
-
 	render: function() {
 		var GenerateOrderList = function()  {
-			var collection = this.getCollection();
-			var rows = [];
-			var i = 0;
-			window.c = collection;
-			while (i < collection.length) {
-				!(function(i)  { // create context for 'i'
-					var toggle = function()  {
-						return;
-						if (this.state.expanded === i) {
-							this.setState({ expanded: null });
-						} else {
-							this.setState({ expanded: i });
-						}
-					}.bind(this);
-
-					// Hack: add expanded item as table row with a single colum
-					rows.push((
-						React.createElement(OrderItem, {model: collection.at(i), toggle: toggle})
-					));
-					if (this.state.expanded === i) {
-						rows.push((
-							React.createElement("li", {className: "order expanded"}, 
-								React.createElement("td", {colSpan: "100"}, 
-									React.createElement(OrderView, {model: collection.at(i)})
-								)
-							)
-						))
-					}
-				}.bind(this))(i);
-				++i;
-			}
-			return rows;
+			return this.getCollection().map(function(model) {
+				return (
+					React.createElement(OrderItem, {model: model})
+				);
+			});
 		}.bind(this);
 
 		return (
@@ -2884,9 +2850,10 @@ function setupLeaveWarning() {
 	  }
 	}
 }
+
 function undoLeaveWarning() {
 	if (window.onbeforeunload) {
-		window.onbeforeunload = null;
+		$(window).unbind();
 	}
 }
 

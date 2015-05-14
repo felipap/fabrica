@@ -3,7 +3,7 @@ mongoose = require 'mongoose'
 _ = require 'lodash'
 
 
-Status = ["shipping", "requested", "processing", "cancelled", "late", "done"]
+Status = ["shipping", "waiting", "processing", "cancelled", "late", "done"]
 
 OrderSchema = new mongoose.Schema {
 	status:			{ type: String, enum: Status, default: Status.Requested }
@@ -14,7 +14,7 @@ OrderSchema = new mongoose.Schema {
 	created_at: { type: Date, default: Date.now }
 	updated_at: { type: Date, default: Date.now }
 
-	s3_path: 		{ type: String, required: false }
+	file: 		{ type: String, required: false }
 
 	client: 		{ type: mongoose.Schema.ObjectId, ref: 'User', required: true }
 	vendor: 		{ type: mongoose.Schema.ObjectId, ref: 'User', required: true }
