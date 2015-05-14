@@ -38,37 +38,37 @@ var OrderItem = React.createBackboneClass({
 		var GenStatusIcon = () => {
 			if (doc.status === "shipping") {
 	      return (
-	      	<div className="statusIcon shipping" title="shipping">
+	      	<div className="statusIcon shipping" title="Pronto">
 	      		<i className="icon-send" />
 	      	</div>
 	      );
 			} else if (doc.status === "requested") {
 	      return (
-	      	<div className="statusIcon requested" title="requested">
+	      	<div className="statusIcon requested" title="Esperando">
 	      		<i className="icon-timer" />
 	      	</div>
 	      );
 			} else if (doc.status === "processing") {
 	      return (
-	      	<div className="statusIcon processing" title="processing">
+	      	<div className="statusIcon processing" title="Processando">
 	      		<i className="icon-details" />
 	      	</div>
 	      );
 			} else if (doc.status === "cancelled") {
 	      return (
-	      	<div className="statusIcon cancelled" title="cancelled">
+	      	<div className="statusIcon cancelled" title="Cancelado">
 	      		<i className="icon-close" />
 	      	</div>
 	      );
 			} else if (doc.status === "late") {
 	      return (
-	      	<div className="statusIcon late" title="late">
+	      	<div className="statusIcon late" title="Atrasado">
 	      		<i className="icon-timer" />
 	      	</div>
 	      );
 			} else {
 	      return (
-	      	<div className="statusIcon done" title="done">
+	      	<div className="statusIcon done" title="Enviado">
 	      		<i className="icon-done-all" />
 	      	</div>
 	      );
@@ -116,6 +116,12 @@ var OrderItem = React.createBackboneClass({
 
 var Toolbar = React.createBackboneClass({
 
+	getInitialState: function() {
+		return {
+			pendingSave: false,
+		}
+	},
+
   componentDidMount: function() {
     this.getCollection().on('selectChange', () => {
       this.forceUpdate(function () {});
@@ -123,14 +129,65 @@ var Toolbar = React.createBackboneClass({
   },
 
 	render: function() {
-
-		console.log('not', this.getCollection())
-		if (this.getCollection().selected) {
-			var numSelected = this.getCollection().getNumSelected();
-			var buttons = [];
+		var numSelected = this.getCollection().getNumSelected();
+		var buttons = [];
+		if (numSelected) {
 			buttons.push((
 				<li>
 					<button>Excluir {numSelected} pedido{numSelected>1?"s":''}</button>
+				</li>
+			));
+
+			var makeStatusSetter = (status) => {
+				return (e) => {
+					e.preventDefault();
+					var selected = this.getCollection().getSelected();
+					for (var i=0; i<selected.length; ++i) {
+						var model = selected[i];
+						model.set('status', status);
+					}
+					this.setState({ pendingSave: true });
+				};
+			};
+
+			buttons.push((
+				<li>
+					<div className="btn-group">
+						<button type="button" className="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+							Mudar estado <span className="caret"></span>
+						</button>
+						<ul className="dropdown-menu" role="menu">
+							<li className="shipping">
+								<a href="#" onClick={makeStatusSetter("shipping")}>Pronto</a>
+							</li>
+							<li className="requested">
+								<a href="#" onClick={makeStatusSetter("requested")}>Esperando</a>
+							</li>
+							<li className="processing">
+								<a href="#" onClick={makeStatusSetter("processing")}>Processando</a>
+							</li>
+							<li className="cancelled">
+								<a href="#" onClick={makeStatusSetter("cancelled")}>Cancelado</a>
+							</li>
+							<li className="late">
+								<a href="#" onClick={makeStatusSetter("late")}>Atrasado</a>
+							</li>
+							<li className="done">
+								<a href="#" onClick={makeStatusSetter("done")}>Enviado</a>
+							</li>
+						</ul>
+					</div>
+				</li>
+			));
+		}
+
+		if (this.state.pendingSave) {
+			var save = () => {
+				this.getCollection().save()
+			};
+			buttons.push((
+				<li>
+					<button className="save" onClick={save}>Save</button>
 				</li>
 			));
 		}
@@ -145,9 +202,6 @@ var Toolbar = React.createBackboneClass({
 				</ul>
 				<ul className="right">
 					<li>
-						<button className="btn btn-danger">
-							Excluir tudo
-						</button>
 					</li>
 				</ul>
 			</div>

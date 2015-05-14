@@ -133,7 +133,7 @@ module.exports = function(app) {
 
 	// router.post('/signup', unspam.limit(2*1000), function(req, res, next) {
 
-	// 	req.parse(User.SingupParseRules, (err, body) => {
+	// 	req.parse(User.SingupParseRules, (body) => {
 	// 		User.find({ email: body.email }, req.handleErr((doc) => {
 	// 			if (doc) {
 	// 				req.flash('error', 'Este email já está em uso. Você já tem uma conta?')

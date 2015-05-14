@@ -76,12 +76,8 @@ module.exports = function(app) {
 
   api.use('/session', require('./session')(app));
 
-  api.use('/me', require('./me')(app));
-
   api.post('/orders', unspam.limit(2*1000), function(req, res, next) {
-    req.parse(Order.ParseRules, req.handleErr((body) => {
-      console.log(body)
-
+    req.parse(Order.ParseRules, (body) => {
       User.findOne({ _id: body.client.id }, req.handleErr((client) => {
         if (!client) {
           req.logger.error('Cliente não encontrado! Esse erro não deveria '+
@@ -92,9 +88,9 @@ module.exports = function(app) {
 
         orderActions.place(req.user, client, body, (err, result) => {
           res.endJSON({ message: "Pedido enviado com sucesso." });
-        })
-      }))
-    }))
+        });
+      }));
+    });
   });
 
   api.post('/clients', unspam.limit(2*1000), function(req, res, next) {

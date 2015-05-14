@@ -451,17 +451,52 @@ body:not(.public) {
     width: 100%;
     display: table;
     margin-bottom: 5px;
+    height: 35px;
 
-    ul {
+    & > ul {
       float: left;
+
+      .requested { background: #AAA; color: white; }
+      .cancelled { background: @CRED; color: white; }
+      .late { background: @CYELLOW; color: white; }
+      .processing { background: @CBLUE; color: white; }
+      .shipping { background: mix(@CGREEN, @CBLUE); color: white; }
+      .done { background: @CGREEN; color: white; }
 
       & > li {
         display: inline-block;
         margin-right: 10px;
         vertical-align: middle;
 
-        & > button {
+        & > button,
+        & > .button {
 
+          &.save {
+            .xbtn(white, @CGREEN);
+          }
+        }
+
+        & > .btn-group {
+          .dropdown-menu {
+            border-radius: 0;
+            border: 0;
+
+            li {
+              margin: 2px;
+
+              a {
+                color: white;
+                font-weight: 500;
+                padding: 6px 0 6px 13px;
+                &:hover {
+                  background: inherit;
+                }
+              }
+              &:hover {
+                opacity: .9;
+              }
+            }
+          }
         }
       }
     }
@@ -520,9 +555,9 @@ body:not(.public) {
           }
 
           &.requested {
-            .box-shadow(0, 0, 0, 2px, @CGREEN);
+            .box-shadow(0, 0, 0, 2px, #AAA);
             i {
-              color: @CGREEN;
+              color: #AAA;
             }
           }
           &.cancelled {

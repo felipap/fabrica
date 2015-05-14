@@ -66,6 +66,12 @@ var OrderList = Backbone.Collection.extend({
     return c;
   },
 
+  getSelected: function() {
+    return this.filter(function(i) {
+      return i.selected;
+    });
+  },
+
   comparator: function(i) {
     console.log(1*new Date(i.get('created_at')))
     return -1*new Date(i.get('created_at'));
@@ -76,6 +82,7 @@ var OrderList = Backbone.Collection.extend({
       model.select();
     });
   },
+
   unselect: function() {
     this.map(function(model) {
       model.unselect();

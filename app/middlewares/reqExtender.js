@@ -57,10 +57,26 @@ module.exports = function (req, res, next) {
 		console.log.apply(console, ["<"+req.user.username+">:"].concat([].slice.call(arguments)));
 	};
 
+	function parseArrayBody(rules, cb) {
+		if (!(req.body instanceof Array)) {
+			throw new Error("Tried to req.parseArray a non-array.");
+		}
+
+		async.map(req.body, function (item, next) {
+			parseBody(item, function (parsedBody) {
+				next(null, parsedBody);
+			});
+		}, function (error, results) {
+			cb(results);
+		});
+	};
+
+	req.parseArray = parseArray;
+
 	/**
 	 * fetch/validate/clean req.body according to de rules
 	 */
-	req.parse = function (rules, cb) {
+	function parseBody(rules, cb) {
 		var verbose = false;
 		var requestBody = req.body;
 
@@ -208,11 +224,12 @@ module.exports = function (req, res, next) {
 			if (err) {
 				next(_.extend({ error: 'ReqParse' }, err));
 			} else {
-				// FIXME: the err attribute in the callback is completely unused.
-				cb(null, results);
+				cb(results);
 			}
 		});
 	};
+
+	req.parse = parseBody;
 
 	next();
 }

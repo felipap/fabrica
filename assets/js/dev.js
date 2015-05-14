@@ -918,6 +918,12 @@ var OrderList = Backbone.Collection.extend({
     return c;
   },
 
+  getSelected: function() {
+    return this.filter(function(i) {
+      return i.selected;
+    });
+  },
+
   comparator: function(i) {
     console.log(1*new Date(i.get('created_at')))
     return -1*new Date(i.get('created_at'));
@@ -928,6 +934,7 @@ var OrderList = Backbone.Collection.extend({
       model.select();
     });
   },
+
   unselect: function() {
     this.map(function(model) {
       model.unselect();
@@ -1745,37 +1752,37 @@ var OrderItem = React.createBackboneClass({
 		var GenStatusIcon = function()  {
 			if (doc.status === "shipping") {
 	      return (
-	      	React.createElement("div", {className: "statusIcon shipping", title: "shipping"}, 
+	      	React.createElement("div", {className: "statusIcon shipping", title: "Pronto"}, 
 	      		React.createElement("i", {className: "icon-send"})
 	      	)
 	      );
 			} else if (doc.status === "requested") {
 	      return (
-	      	React.createElement("div", {className: "statusIcon requested", title: "requested"}, 
+	      	React.createElement("div", {className: "statusIcon requested", title: "Esperando"}, 
 	      		React.createElement("i", {className: "icon-timer"})
 	      	)
 	      );
 			} else if (doc.status === "processing") {
 	      return (
-	      	React.createElement("div", {className: "statusIcon processing", title: "processing"}, 
+	      	React.createElement("div", {className: "statusIcon processing", title: "Processando"}, 
 	      		React.createElement("i", {className: "icon-details"})
 	      	)
 	      );
 			} else if (doc.status === "cancelled") {
 	      return (
-	      	React.createElement("div", {className: "statusIcon cancelled", title: "cancelled"}, 
+	      	React.createElement("div", {className: "statusIcon cancelled", title: "Cancelado"}, 
 	      		React.createElement("i", {className: "icon-close"})
 	      	)
 	      );
 			} else if (doc.status === "late") {
 	      return (
-	      	React.createElement("div", {className: "statusIcon late", title: "late"}, 
+	      	React.createElement("div", {className: "statusIcon late", title: "Atrasado"}, 
 	      		React.createElement("i", {className: "icon-timer"})
 	      	)
 	      );
 			} else {
 	      return (
-	      	React.createElement("div", {className: "statusIcon done", title: "done"}, 
+	      	React.createElement("div", {className: "statusIcon done", title: "Enviado"}, 
 	      		React.createElement("i", {className: "icon-done-all"})
 	      	)
 	      );
@@ -1823,6 +1830,12 @@ var OrderItem = React.createBackboneClass({
 
 var Toolbar = React.createBackboneClass({
 
+	getInitialState: function() {
+		return {
+			pendingSave: false,
+		}
+	},
+
   componentDidMount: function() {
     this.getCollection().on('selectChange', function()  {
       this.forceUpdate(function () {});
@@ -1830,14 +1843,65 @@ var Toolbar = React.createBackboneClass({
   },
 
 	render: function() {
-
-		console.log('not', this.getCollection())
-		if (this.getCollection().selected) {
-			var numSelected = this.getCollection().getNumSelected();
-			var buttons = [];
+		var numSelected = this.getCollection().getNumSelected();
+		var buttons = [];
+		if (numSelected) {
 			buttons.push((
 				React.createElement("li", null, 
 					React.createElement("button", null, "Excluir ", numSelected, " pedido", numSelected>1?"s":'')
+				)
+			));
+
+			var makeStatusSetter = function(status)  {
+				return function(e)  {
+					e.preventDefault();
+					var selected = this.getCollection().getSelected();
+					for (var i=0; i<selected.length; ++i) {
+						var model = selected[i];
+						model.set('status', status);
+					}
+					this.setState({ pendingSave: true });
+				}.bind(this);
+			}.bind(this);
+
+			buttons.push((
+				React.createElement("li", null, 
+					React.createElement("div", {className: "btn-group"}, 
+						React.createElement("button", {type: "button", className: "dropdown-toggle", "data-toggle": "dropdown", "aria-expanded": "false"}, 
+							"Mudar estado ", React.createElement("span", {className: "caret"})
+						), 
+						React.createElement("ul", {className: "dropdown-menu", role: "menu"}, 
+							React.createElement("li", {className: "shipping"}, 
+								React.createElement("a", {href: "#", onClick: makeStatusSetter("shipping")}, "Pronto")
+							), 
+							React.createElement("li", {className: "requested"}, 
+								React.createElement("a", {href: "#", onClick: makeStatusSetter("requested")}, "Esperando")
+							), 
+							React.createElement("li", {className: "processing"}, 
+								React.createElement("a", {href: "#", onClick: makeStatusSetter("processing")}, "Processando")
+							), 
+							React.createElement("li", {className: "cancelled"}, 
+								React.createElement("a", {href: "#", onClick: makeStatusSetter("cancelled")}, "Cancelado")
+							), 
+							React.createElement("li", {className: "late"}, 
+								React.createElement("a", {href: "#", onClick: makeStatusSetter("late")}, "Atrasado")
+							), 
+							React.createElement("li", {className: "done"}, 
+								React.createElement("a", {href: "#", onClick: makeStatusSetter("done")}, "Enviado")
+							)
+						)
+					)
+				)
+			));
+		}
+
+		if (this.state.pendingSave) {
+			var save = function()  {
+				this.getCollection().save()
+			}.bind(this);
+			buttons.push((
+				React.createElement("li", null, 
+					React.createElement("button", {className: "save", onClick: save}, "Save")
 				)
 			));
 		}
@@ -1851,10 +1915,7 @@ var Toolbar = React.createBackboneClass({
 					buttons
 				), 
 				React.createElement("ul", {className: "right"}, 
-					React.createElement("li", null, 
-						React.createElement("button", {className: "btn btn-danger"}, 
-							"Excluir tudo"
-						)
+					React.createElement("li", null
 					)
 				)
 			)
