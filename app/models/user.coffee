@@ -15,7 +15,7 @@ SALT_WORK_FACTOR = 10
 UserSchema = new mongoose.Schema {
 	name:			{ type: String, required: true }
 	email:		{ type: String, required: true, unique: true, index: true }
-	password:	{ type: String, required: false, select: false }
+	password:	{ type: String, required: false }
 	phone:		{ type: String, required: false }
 
 	company: {
@@ -74,7 +74,6 @@ UserSchema.virtual('path').get ->
 	'/users/'+@id
 
 UserSchema.methods.usesPassword = (candidate, cb) ->
-	console.log(@)
 	bcrypt.compare candidate, @password, (err, isMatch) ->
 		if err
 			return cb(err)

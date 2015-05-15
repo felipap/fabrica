@@ -80,6 +80,8 @@ module.exports = function(app) {
 
   api.use(required.login);
 
+  api.use('/me', require('./me')(app));
+
   api.use('/users', require('./users')(app));
 
   api.use('/session', require('./session')(app));

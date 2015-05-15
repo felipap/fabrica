@@ -24,6 +24,26 @@ module.exports = function(app) {
 		res.render('app/login')
 	})
 
+	router.post('/login', function(req, res, next) {
+		var authFn = (err, user, info) => {
+			if (err) {
+				return next(err)
+			}
+			if (!user) {
+				req.flash('error', info.message)
+				return res.redirect('/login')
+			}
+			req.logIn(user, (err) => {
+				if (err) {
+					return next(err)
+				}
+				res.redirect('/')
+			})
+		}
+		(passport.authenticate('local', authFn))(req, res, next)
+	})
+
+
 	router.post('/login/recover', unspam.limit(5*1000), ccaptcha,
 		function(req, res, next) {
 		if (!validator.isEmail(req.body.email)) {
@@ -132,14 +152,12 @@ module.exports = function(app) {
 	// })
 
 	// router.post('/signup', unspam.limit(2*1000), function(req, res, next) {
-
 	// 	req.parse(User.SingupParseRules, (body) => {
 	// 		User.find({ email: body.email }, req.handleErr((doc) => {
 	// 			if (doc) {
 	// 				req.flash('error', 'Este email já está em uso. Você já tem uma conta?')
 	// 				return res.redirect('/signup')
 	// 			}
-
 	// 			if (body.password1 !== req.body.password2) {
 	// 				req.flash('error', 'As duas senhas não correspondem.')
 	// 				return res.redirect('/signup')
@@ -169,25 +187,6 @@ module.exports = function(app) {
 	// 		}))
 	// 	})
 	// })
-
-	router.post('/login', function(req, res, next) {
-		var authFn = (err, user, info) => {
-			if (err) {
-				return next(err)
-			}
-			if (!user) {
-				req.flash('error', info.message)
-				return res.redirect('/login')
-			}
-			req.logIn(user, (err) => {
-				if (err) {
-					return next(err)
-				}
-				res.redirect('/')
-			})
-		}
-		(passport.authenticate('local', authFn))(req, res, next)
-	})
 
 	return router
 }

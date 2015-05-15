@@ -15,12 +15,12 @@ function setUpPassport(app) {
 	    usernameField: 'email',
 	  },
 		function(email, password, done) {
-			User.findOne({ email: email }, function (err, user) {
+			User.findOne({ email: email }, function(err, user) {
 				if (err) { return done(err); }
 				if (!user) {
 					return done(null, false, { message: 'Email ou senha incorretos.' })
 				}
-				user.usesPassword(password, function (err, does) {
+				user.usesPassword(password, function(err, does) {
 					if (err)
 						return done(err);
 					if (does)
@@ -32,13 +32,13 @@ function setUpPassport(app) {
 		})
 	);
 
-	passport.serializeUser(function (user, done) {
+	passport.serializeUser(function(user, done) {
 		return done(null, user._id);
 	});
 
-	passport.deserializeUser(function (id, done) {
+	passport.deserializeUser(function(id, done) {
 		var User = require('mongoose').model('User');
-		User.findOne({_id: id}, function (err, user) {
+		User.findOne({_id: id}, function(err, user) {
 			return done(err, user);
 		});
 	})

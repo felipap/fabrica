@@ -2,7 +2,6 @@
 "use strict"
 
 var mongoose = require('mongoose')
-var passport = require('passport')
 var _ = require('lodash')
 
 var required = require('./lib/required')
@@ -15,7 +14,7 @@ module.exports = function (app) {
 	var logger = app.get('logger').child({ childs: 'APP' })
 
 	router.use(function (req, res, next) {
-		req.logger = logger;
+		req.logger = logger
 		logger.info("<"+(req.user && req.user.name || 'anonymous@'+
 			req.connection.remoteAddress)+">: HTTP "+req.method+" "+req.url+"")
 		if (req.user) {
@@ -43,7 +42,7 @@ module.exports = function (app) {
 	})
 
 	router.get('/', function (req, res) {
-		res.redirect('/pedidos');
+		res.redirect('/pedidos')
 	})
 
 	var homeRoutes = [
@@ -72,8 +71,6 @@ module.exports = function (app) {
 	_.map(routeTmpls, function (route, tmpl) {
 		router.get(route, (req, res) => res.render(tmpl))
 	})
-
-	router.use('/auth', require('./passport')(app))
 
 	// Handle 404.
 	// Don't 'leak' to other controllers: all / should be "satisfied" here.
