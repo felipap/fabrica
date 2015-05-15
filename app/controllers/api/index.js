@@ -115,10 +115,22 @@ module.exports = function(app) {
       }));
   });
 
+  api.put('/orders/:orderId', unspam.limit(1000), function(req, res, next) {
+    req.parse(Order.UpdateParseRules, (body) => {
+      orderActions.update(req.user, req.order, body, (err, result) => {
+        if (err) {
+          throw err;
+        }
+        orderActions.stuff(req.user, result, req.handleErr((json) => {
+          res.endJSON(json);
+        }));
+      });
+    });
+  });
+
   api.put('/orders', required.self.dthinker,
   unspam.limit(2*1000), function(req, res, next) {
     function doItem(body, next) {
-      console.log('body', body)
       Order.findOne({ _id: body._id }, req.handleErr((order) => {
         if (!order) {
           // We can't use req.endJSON here.
@@ -135,27 +147,23 @@ module.exports = function(app) {
       }));
     }
 
-    if (req.body instanceof Array) {
-      // User passed an array of objects to update.
-      // Parsing errors in ANY of the items is intolerable, so, first,
-      // parse every item, then update them individually.
-      req.parseArray(Order.UpdateParseRules, (bodies) => {
-        async.map(bodies, doItem, function(err, results) {
-          if (err) {
-            res.endJSON(err);
-            return;
-          }
-
-          res.endJSON({});
-        });
-      });
-    } else {
-      req.parse(Order.UpdateParseRules, (body) => {
-        doItem(body, function(err, result) {
-          res.endJSON({});
-        });
-      });
+    if (!(req.body instanceof Array)) {
+      res.renderError(400, { message: 'Argumento deveria ser lista.' });
+      return;
     }
+    // User passed an array of objects to update.
+    // Parsing errors in ANY of the items is intolerable, so, first,
+    // parse every item, then update them individually.
+    req.parseArray(Order.UpdateParseRules, (bodies) => {
+      async.map(bodies, doItem, function(err, results) {
+        if (err) {
+          res.endJSON(err);
+          return;
+        }
+
+        res.endJSON({});
+      });
+    });
   });
 
   api.post('/clients', unspam.limit(2*1000), function(req, res, next) {

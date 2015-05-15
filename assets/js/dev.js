@@ -239,6 +239,31 @@ var OrderView = React.createBackboneClass({
         }
       };
 
+      var makeStatusSetter = function(status)  {
+        return function()  {
+          this.getModel().set('status', status);
+          this.getModel().save(null, {
+            success: function(model, response)  {
+              Utils.flash.info("Salvo.");
+            },
+            error: function(model, xhr, options)  {
+              if (data.error === 'ExistingUser') {
+                this._buildWarnings({ email: 'Esse email já está em uso.' });
+                return;
+              }
+              var data = xhr.responseJSON;
+              if (data && data.message) {
+                Utils.flash.alert(data.message);
+              } else {
+                Utils.flash.alert('Milton Friedman.');
+              }
+              // build warnings
+              // this._buildWarnings(data);
+            }.bind(this)
+          });
+        }.bind(this)
+      }.bind(this);
+
       return (
         React.createElement("div", {className: "field statusField"}, 
           React.createElement("label", null, 
@@ -252,16 +277,29 @@ var OrderView = React.createBackboneClass({
               " ", React.createElement("span", {className: "caret"})
             ), 
             React.createElement("ul", {className: "dropdown-menu", role: "menu"}, 
-              React.createElement("li", null, React.createElement("a", {href: "#"}, "Action")), 
-              React.createElement("li", null, React.createElement("a", {href: "#"}, "Another action")), 
-              React.createElement("li", null, React.createElement("a", {href: "#"}, "Something else here")), 
-              React.createElement("li", {className: "divider"}), 
-              React.createElement("li", null, React.createElement("a", {href: "#"}, "Separated link"))
+              React.createElement("li", {className: "waiting"}, 
+                React.createElement("a", {href: "#", onClick: makeStatusSetter("waiting")}, "Esperando")
+              ), 
+              React.createElement("li", {className: "processing"}, 
+                React.createElement("a", {href: "#", onClick: makeStatusSetter("processing")}, "Processando")
+              ), 
+              React.createElement("li", {className: "cancelled"}, 
+                React.createElement("a", {href: "#", onClick: makeStatusSetter("cancelled")}, "Cancelado")
+              ), 
+              React.createElement("li", {className: "late"}, 
+                React.createElement("a", {href: "#", onClick: makeStatusSetter("late")}, "Atrasado")
+              ), 
+              React.createElement("li", {className: "shipping"}, 
+                React.createElement("a", {href: "#", onClick: makeStatusSetter("shipping")}, "Pronto")
+              ), 
+              React.createElement("li", {className: "done"}, 
+                React.createElement("a", {href: "#", onClick: makeStatusSetter("done")}, "Enviado")
+              )
             )
           )
         )
       );
-    };
+    }.bind(this);
 
     var GenTypeField = function()  {
       return (
@@ -417,13 +455,9 @@ var PartnerForm = React.createBackboneClass({
         } else {
           Utils.flash.alert('Milton Friedman.');
         }
-        if (data.error === 'ExistingUser') {
-          this._buildWarnings({ email: 'Esse email já está em uso.' });
-          return;
-        }
         // build warnings
         // this._buildWarnings(data);
-      }.bind(this)
+      }
     })
   },
 
@@ -1166,8 +1200,8 @@ var Pages = {
 	Login_Register: require('../pages/login_register.jsx'),
 	Login_Recover: require('../pages/login_recover.jsx'),
 	Login_Newpass: require('../pages/login_newpass.jsx'),
-	ListClients: require('../pages/listClients.jsx'),
-	ListOrders: require('../pages/listOrders.jsx'),
+	ClientsList: require('../pages/clientList.jsx'),
+	OrdersList: require('../pages/orderList.jsx'),
 	NewPartner: require('../pages/newPartner.jsx'),
 	NewClient: require('../pages/newClient.jsx'),
 	NewOrder: require('../pages/newOrder.jsx'),
@@ -1579,11 +1613,11 @@ var App = Router.extend({
 			},
 		'clientes':
 			function () {
-				Pages.ListClients(this);
+				Pages.ClientsList(this);
 			},
 		'pedidos':
 			function () {
-				Pages.ListOrders(this);
+				Pages.OrdersList(this);
 			},
 		'':
 			function () {
@@ -1627,74 +1661,7 @@ module.exports = {
 	},
 };
 
-},{"../components/OrderView.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/OrderView.jsx","../components/flasher.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","../pages/home.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx","../pages/listClients.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listClients.jsx","../pages/listOrders.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/listOrders.jsx","../pages/login.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx","../pages/login_newpass.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_newpass.jsx","../pages/login_recover.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx","../pages/login_register.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_register.jsx","../pages/newClient.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newClient.jsx","../pages/newOrder.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newOrder.jsx","../pages/newPartner.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newPartner.jsx","backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/backbone-1.1.2.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","marked":"/home/felipe/Projects/fabrica/app/static/js/vendor/marked.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx":[function(require,module,exports){
-
-var $ = require('jquery')
-var React = require('react')
-var selectize = require('selectize')
-var Modal = require('../components/modal.jsx')
-var Models = require('../components/models.js')
-
-var QueueCol = Models.Queue;
-
-var ReactBackbone = require('react.backbone')
-
-var PrintItem = React.createBackboneClass({
-
-	render: function() {
-		return (
-			React.createElement("div", null, 
-				"oi, eu sou um modelo!"
-			)
-		);
-	}
-
-});
-
-var PrintQueue = React.createBackboneClass({
-	render: function() {
-		var self = this;
-
-		function renderCollection() {
-			if (self.getCollection().isEmpty()) {
-				return (
-					React.createElement("div", {className: "list is-empty"}, 
-						React.createElement("h1", null, "Seus pedidos vão aparecer aqui")
-					)
-				);
-			} else {
-				var pitems = self.getCollection().map(function (m) {
-					return React.createElement(PrintItem, {model: m})
-				});
-				return (
-					React.createElement("div", {className: "list"}, 
-						 pitems 
-					)
-				);
-			}
-		}
-
-		return (
-			React.createElement("div", {className: "PrintQueue"}, 
-				renderCollection()
-			)
-		);
-	}
-});
-
-module.exports = function (app) {
-	var queue = new QueueCol();
-
-	app.pushPage(React.createElement(PrintQueue, {collection: queue}), 'home', {
-		onClose: function() {
-		},
-		container: document.querySelector('#page-container'),
-		pageRoot: 'home',
-	})
-};
-
-
-},{"../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/listClients.jsx":[function(require,module,exports){
+},{"../components/OrderView.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/OrderView.jsx","../components/flasher.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/flasher.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","../pages/clientList.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/clientList.jsx","../pages/home.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx","../pages/login.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx","../pages/login_newpass.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_newpass.jsx","../pages/login_recover.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_recover.jsx","../pages/login_register.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/login_register.jsx","../pages/newClient.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newClient.jsx","../pages/newOrder.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newOrder.jsx","../pages/newPartner.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/newPartner.jsx","../pages/orderList.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/pages/orderList.jsx","backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/backbone-1.1.2.min.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","lodash":"/home/felipe/Projects/fabrica/app/static/js/vendor/lodash.min.js","marked":"/home/felipe/Projects/fabrica/app/static/js/vendor/marked.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/clientList.jsx":[function(require,module,exports){
 
 "use strict";
 
@@ -1776,272 +1743,74 @@ module.exports = function(app) {
 };
 
 
-},{"../components/PrettyCheck.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/PrettyCheck.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/listOrders.jsx":[function(require,module,exports){
+},{"../components/PrettyCheck.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/PrettyCheck.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/home.jsx":[function(require,module,exports){
 
-"use strict"
-
+var $ = require('jquery')
 var React = require('react')
 var selectize = require('selectize')
-
 var Modal = require('../components/modal.jsx')
 var Models = require('../components/models.js')
-var PrettyCheck = require('../components/PrettyCheck.jsx')
-var OrderView = require('../components/OrderView.jsx')
 
-require('react.backbone')
+var QueueCol = Models.Queue;
 
-window.formatOrderDate = function (date) {
-	date = new Date(date);
-	return ''+date.getDate()+' de '+['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio',
-	'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro',
-	'Dezembro'][date.getMonth()]+', '+date.getFullYear()+' '+(date.getHours()>12?
-		''+(date.getHours()-12)+':'+date.getMinutes()+'pm':
-		''+(date.getHours())+':'+date.getMinutes()+'am');
-};
+var ReactBackbone = require('react.backbone')
 
-var OrderItem = React.createBackboneClass({
+var PrintItem = React.createBackboneClass({
+
 	render: function() {
-		var doc = this.getModel().attributes;
-
-		var GenStatusIcon = function()  {
-			if (doc.status === "shipping") {
-	      return (
-	      	React.createElement("div", {className: "StatusIcon shipping", title: "Pronto"}, 
-	      		React.createElement("i", {className: "icon-send"})
-	      	)
-	      );
-			} else if (doc.status === "waiting") {
-	      return (
-	      	React.createElement("div", {className: "StatusIcon waiting", title: "Esperando"}, 
-	      		React.createElement("i", {className: "icon-timer"})
-	      	)
-	      );
-			} else if (doc.status === "processing") {
-	      return (
-	      	React.createElement("div", {className: "StatusIcon processing", title: "Imprimindo"}, 
-	      		React.createElement("i", {className: "icon-details"})
-	      	)
-	      );
-			} else if (doc.status === "cancelled") {
-	      return (
-	      	React.createElement("div", {className: "StatusIcon cancelled", title: "Cancelado"}, 
-	      		React.createElement("i", {className: "icon-close"})
-	      	)
-	      );
-			} else if (doc.status === "late") {
-	      return (
-	      	React.createElement("div", {className: "StatusIcon late", title: "Atrasado"}, 
-	      		React.createElement("i", {className: "icon-timer"})
-	      	)
-	      );
-			} else if (doc.status === "done") {
-	      return (
-	      	React.createElement("div", {className: "StatusIcon done", title: "Enviado"}, 
-	      		React.createElement("i", {className: "icon-done-all"})
-	      	)
-	      );
-			}
-		};
-
 		return (
-			React.createElement("li", {className: "order", 
-				"data-trigger": "component", "data-component": "viewOrder", 
-				"data-args": '{"id":"'+doc.id+'"}'}, 
-				React.createElement("div", {className: "left"}, 
-					React.createElement("div", {className: "selection"}, 
-						React.createElement(PrettyCheck, {ref: "check", model: this.getModel()})
-					), 
-					GenStatusIcon()
-				), 
-				React.createElement("div", {className: "main"}, 
-					React.createElement("div", {className: "name"}, 
-						doc.name, 
-						React.createElement("div", {className: "code", title: "Código da peça."}, 
-							"(", doc.code, ")"
-						)
-					), 
-					React.createElement("div", {className: "type"}, 
-						"Impressão 3D · ", doc._cor[0].toUpperCase()+doc._cor.slice(1), "/", doc._tipo
-					), 
-					React.createElement("div", {className: "client"}, 
-						React.createElement("a", {href: "#"}, "Mauro Iezzi"), ", pela ", React.createElement("a", {href: "#"}, "Gráfica do Catete")
-					)
-				), 
-				React.createElement("div", {className: "right"}, 
-					React.createElement("div", {className: "buttons"}, 
-						React.createElement("button", null, 
-							"Editar"
-						)
-					)
-				)
+			React.createElement("div", null, 
+				"oi, eu sou um modelo!"
 			)
 		);
-	},
+	}
+
 });
 
-var Toolbar = React.createBackboneClass({
-
-	getInitialState: function() {
-		return {
-			pendingSave: false,
-		}
-	},
-
-  componentDidMount: function() {
-    this.getCollection().on('selectChange', function()  {
-      this.forceUpdate(function () {});
-    }.bind(this));
-  },
-
+var PrintQueue = React.createBackboneClass({
 	render: function() {
-		var numSelected = this.getCollection().getNumSelected();
-		var buttons = [];
-		if (numSelected) {
-			buttons.push((
-				React.createElement("li", null, 
-					React.createElement("button", null, "Excluir ", numSelected, " pedido", numSelected>1?"s":'')
-				)
-			));
+		var self = this;
 
-			var makeStatusSetter = function(status)  {
-				return function(e)  {
-					e.preventDefault();
-					var selected = this.getCollection().getSelected();
-					for (var i=0; i<selected.length; ++i) {
-						var model = selected[i];
-						model.set('status', status);
-					}
-					this.setState({ pendingSave: true });
-				}.bind(this);
-			}.bind(this);
-
-			buttons.push((
-				React.createElement("li", null, 
-					React.createElement("div", {className: "btn-group"}, 
-						React.createElement("button", {type: "button", className: "dropdown-toggle", "data-toggle": "dropdown", "aria-expanded": "false"}, 
-							"Mudar estado ", React.createElement("span", {className: "caret"})
-						), 
-						React.createElement("ul", {className: "dropdown-menu", role: "menu"}, 
-							React.createElement("li", {className: "waiting"}, 
-								React.createElement("a", {href: "#", onClick: makeStatusSetter("waiting")}, "Esperando")
-							), 
-							React.createElement("li", {className: "processing"}, 
-								React.createElement("a", {href: "#", onClick: makeStatusSetter("processing")}, "Processando")
-							), 
-							React.createElement("li", {className: "cancelled"}, 
-								React.createElement("a", {href: "#", onClick: makeStatusSetter("cancelled")}, "Cancelado")
-							), 
-							React.createElement("li", {className: "late"}, 
-								React.createElement("a", {href: "#", onClick: makeStatusSetter("late")}, "Atrasado")
-							), 
-							React.createElement("li", {className: "shipping"}, 
-								React.createElement("a", {href: "#", onClick: makeStatusSetter("shipping")}, "Pronto")
-							), 
-							React.createElement("li", {className: "done"}, 
-								React.createElement("a", {href: "#", onClick: makeStatusSetter("done")}, "Enviado")
-							)
-						)
-					)
-				)
-			));
-		}
-
-		if (this.state.pendingSave) {
-			var save = function()  {
-				var collection = this.getCollection();
-				// FIXME:
-				// This is far from ideal. We shouldn't have to sync the whole
-				// collection when only a known part of is updated.
-				collection.sync("update", collection, {
-					url: '/api/orders',
-					success: function(collection, response)  {
-						this.setState({ pendingSave: false });
-						Utils.flash.info(response.message || "Sucesso.");
-					}.bind(this),
-					error: function(xhr, options)  {
-						var data = xhr.responseJSON;
-						if (data && data.message) {
-							Utils.flash.alert(data.message);
-						} else {
-							Utils.flash.alert('Um erro inesperado aconteceu.');
-						}
-					}
-				})
-			}.bind(this);
-			buttons.push((
-				React.createElement("li", null, 
-					React.createElement("button", {className: "save", onClick: save}, "Save")
-				)
-			));
-		}
-
-		return (
-			React.createElement("div", {className: "listToolbar"}, 
-				React.createElement("ul", null, 
-					React.createElement("li", {className: "selection"}, 
-						React.createElement(PrettyCheck, {model: this.getCollection()})
-					), 
-					buttons
-				), 
-				React.createElement("ul", {className: "right"}, 
-					React.createElement("li", null
-					)
-				)
-			)
-		);
-	},
-});
-
-var ListOrders = React.createBackboneClass({
-
-	render: function() {
-		var GenerateOrderList = function()  {
-			return this.getCollection().map(function(model) {
+		function renderCollection() {
+			if (self.getCollection().isEmpty()) {
 				return (
-					React.createElement(OrderItem, {model: model})
+					React.createElement("div", {className: "list is-empty"}, 
+						React.createElement("h1", null, "Seus pedidos vão aparecer aqui")
+					)
 				);
-			});
-		}.bind(this);
+			} else {
+				var pitems = self.getCollection().map(function (m) {
+					return React.createElement(PrintItem, {model: m})
+				});
+				return (
+					React.createElement("div", {className: "list"}, 
+						 pitems 
+					)
+				);
+			}
+		}
 
 		return (
-			React.createElement("div", {className: "ListOrders"}, 
-				React.createElement("div", {className: "pageHeader"}, 
-					React.createElement("div", {className: "left"}, 
-						React.createElement("h1", null, 
-							"Pedidos"
-						)
-					), 
-					React.createElement("div", {className: "right"}, 
-						React.createElement("a", {className: "button newOrder", href: "/pedidos/novo"}, 
-							"Novo Pedido"
-						)
-					)
-				), 
-				React.createElement(Toolbar, {parent: this, collection: this.getCollection()}), 
-				React.createElement("div", {className: "orderList"}, 
-					GenerateOrderList()
-				)
+			React.createElement("div", {className: "PrintQueue"}, 
+				renderCollection()
 			)
 		);
 	}
 });
 
-module.exports = function(app) {
-	var collection = new Models.OrderList();
+module.exports = function (app) {
+	var queue = new QueueCol();
 
-	collection.fetch();
-	window.c = collection;
-
-	app.pushPage(React.createElement(ListOrders, {collection: collection}), 'list-orders', {
+	app.pushPage(React.createElement(PrintQueue, {collection: queue}), 'home', {
 		onClose: function() {
 		},
 		container: document.querySelector('#page-container'),
-		pageRoot: 'list-orders',
-	});
+		pageRoot: 'home',
+	})
 };
 
 
-},{"../components/OrderView.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/OrderView.jsx","../components/PrettyCheck.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/PrettyCheck.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx":[function(require,module,exports){
+},{"../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/login.jsx":[function(require,module,exports){
 
 var $ = require('jquery')
 var selectize = require('selectize')
@@ -2954,7 +2723,272 @@ module.exports = function(app) {
 };
 
 
-},{"../components/PartnerForm.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/PartnerForm.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js":[function(require,module,exports){
+},{"../components/PartnerForm.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/PartnerForm.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","jquery":"/home/felipe/Projects/fabrica/app/static/js/vendor/jquery-2.0.3.min.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/app/pages/orderList.jsx":[function(require,module,exports){
+
+"use strict"
+
+var React = require('react')
+var selectize = require('selectize')
+
+var Modal = require('../components/modal.jsx')
+var Models = require('../components/models.js')
+var PrettyCheck = require('../components/PrettyCheck.jsx')
+var OrderView = require('../components/OrderView.jsx')
+
+require('react.backbone')
+
+window.formatOrderDate = function (date) {
+	date = new Date(date);
+	return ''+date.getDate()+' de '+['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio',
+	'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro',
+	'Dezembro'][date.getMonth()]+', '+date.getFullYear()+' '+(date.getHours()>12?
+		''+(date.getHours()-12)+':'+date.getMinutes()+'pm':
+		''+(date.getHours())+':'+date.getMinutes()+'am');
+};
+
+var OrderItem = React.createBackboneClass({
+	render: function() {
+		var doc = this.getModel().attributes;
+
+		var GenStatusIcon = function()  {
+			if (doc.status === "shipping") {
+	      return (
+	      	React.createElement("div", {className: "StatusIcon shipping", title: "Pronto"}, 
+	      		React.createElement("i", {className: "icon-send"})
+	      	)
+	      );
+			} else if (doc.status === "waiting") {
+	      return (
+	      	React.createElement("div", {className: "StatusIcon waiting", title: "Esperando"}, 
+	      		React.createElement("i", {className: "icon-timer"})
+	      	)
+	      );
+			} else if (doc.status === "processing") {
+	      return (
+	      	React.createElement("div", {className: "StatusIcon processing", title: "Imprimindo"}, 
+	      		React.createElement("i", {className: "icon-details"})
+	      	)
+	      );
+			} else if (doc.status === "cancelled") {
+	      return (
+	      	React.createElement("div", {className: "StatusIcon cancelled", title: "Cancelado"}, 
+	      		React.createElement("i", {className: "icon-close"})
+	      	)
+	      );
+			} else if (doc.status === "late") {
+	      return (
+	      	React.createElement("div", {className: "StatusIcon late", title: "Atrasado"}, 
+	      		React.createElement("i", {className: "icon-timer"})
+	      	)
+	      );
+			} else if (doc.status === "done") {
+	      return (
+	      	React.createElement("div", {className: "StatusIcon done", title: "Enviado"}, 
+	      		React.createElement("i", {className: "icon-done-all"})
+	      	)
+	      );
+			}
+		};
+
+		return (
+			React.createElement("li", {className: "order", 
+				"data-trigger": "component", "data-component": "viewOrder", 
+				"data-args": '{"id":"'+doc.id+'"}'}, 
+				React.createElement("div", {className: "left"}, 
+					React.createElement("div", {className: "selection"}, 
+						React.createElement(PrettyCheck, {ref: "check", model: this.getModel()})
+					), 
+					GenStatusIcon()
+				), 
+				React.createElement("div", {className: "main"}, 
+					React.createElement("div", {className: "name"}, 
+						doc.name, 
+						React.createElement("div", {className: "code", title: "Código da peça."}, 
+							"(", doc.code, ")"
+						)
+					), 
+					React.createElement("div", {className: "type"}, 
+						"Impressão 3D · ", doc._cor[0].toUpperCase()+doc._cor.slice(1), "/", doc._tipo
+					), 
+					React.createElement("div", {className: "client"}, 
+						React.createElement("a", {href: "#"}, "Mauro Iezzi"), ", pela ", React.createElement("a", {href: "#"}, "Gráfica do Catete")
+					)
+				), 
+				React.createElement("div", {className: "right"}, 
+					React.createElement("div", {className: "buttons"}, 
+						React.createElement("button", null, 
+							"Editar"
+						)
+					)
+				)
+			)
+		);
+	},
+});
+
+var Toolbar = React.createBackboneClass({
+
+	getInitialState: function() {
+		return {
+			pendingSave: false,
+		}
+	},
+
+  componentDidMount: function() {
+    this.getCollection().on('selectChange', function()  {
+      this.forceUpdate(function () {});
+    }.bind(this));
+  },
+
+	render: function() {
+		var numSelected = this.getCollection().getNumSelected();
+		var buttons = [];
+		if (numSelected) {
+			buttons.push((
+				React.createElement("li", null, 
+					React.createElement("button", null, "Excluir ", numSelected, " pedido", numSelected>1?"s":'')
+				)
+			));
+
+			var makeStatusSetter = function(status)  {
+				return function(e)  {
+					e.preventDefault();
+					var selected = this.getCollection().getSelected();
+					for (var i=0; i<selected.length; ++i) {
+						var model = selected[i];
+						model.set('status', status);
+					}
+					this.setState({ pendingSave: true });
+				}.bind(this);
+			}.bind(this);
+
+			buttons.push((
+				React.createElement("li", null, 
+					React.createElement("div", {className: "btn-group"}, 
+						React.createElement("button", {type: "button", className: "dropdown-toggle", "data-toggle": "dropdown", "aria-expanded": "false"}, 
+							"Mudar estado ", React.createElement("span", {className: "caret"})
+						), 
+						React.createElement("ul", {className: "dropdown-menu", role: "menu"}, 
+							React.createElement("li", {className: "waiting"}, 
+								React.createElement("a", {href: "#", onClick: makeStatusSetter("waiting")}, "Esperando")
+							), 
+							React.createElement("li", {className: "processing"}, 
+								React.createElement("a", {href: "#", onClick: makeStatusSetter("processing")}, "Processando")
+							), 
+							React.createElement("li", {className: "cancelled"}, 
+								React.createElement("a", {href: "#", onClick: makeStatusSetter("cancelled")}, "Cancelado")
+							), 
+							React.createElement("li", {className: "late"}, 
+								React.createElement("a", {href: "#", onClick: makeStatusSetter("late")}, "Atrasado")
+							), 
+							React.createElement("li", {className: "shipping"}, 
+								React.createElement("a", {href: "#", onClick: makeStatusSetter("shipping")}, "Pronto")
+							), 
+							React.createElement("li", {className: "done"}, 
+								React.createElement("a", {href: "#", onClick: makeStatusSetter("done")}, "Enviado")
+							)
+						)
+					)
+				)
+			));
+		}
+
+		if (this.state.pendingSave) {
+			var save = function()  {
+				var collection = this.getCollection();
+				// FIXME:
+				// This is far from ideal. We shouldn't have to sync the whole
+				// collection when only a known part of is updated.
+				collection.sync("update", collection, {
+					url: '/api/orders',
+					success: function(collection, response)  {
+						this.setState({ pendingSave: false });
+						Utils.flash.info(response.message || "Sucesso.");
+					}.bind(this),
+					error: function(xhr, options)  {
+						var data = xhr.responseJSON;
+						if (data && data.message) {
+							Utils.flash.alert(data.message);
+						} else {
+							Utils.flash.alert('Um erro inesperado aconteceu.');
+						}
+					}
+				})
+			}.bind(this);
+			buttons.push((
+				React.createElement("li", null, 
+					React.createElement("button", {className: "save", onClick: save}, "Save")
+				)
+			));
+		}
+
+		return (
+			React.createElement("div", {className: "listToolbar"}, 
+				React.createElement("ul", null, 
+					React.createElement("li", {className: "selection"}, 
+						React.createElement(PrettyCheck, {model: this.getCollection()})
+					), 
+					buttons
+				), 
+				React.createElement("ul", {className: "right"}, 
+					React.createElement("li", null
+					)
+				)
+			)
+		);
+	},
+});
+
+var ListOrders = React.createBackboneClass({
+
+	render: function() {
+		var GenerateOrderList = function()  {
+			return this.getCollection().map(function(model) {
+				return (
+					React.createElement(OrderItem, {model: model})
+				);
+			});
+		}.bind(this);
+
+		return (
+			React.createElement("div", {className: "ListOrders"}, 
+				React.createElement("div", {className: "pageHeader"}, 
+					React.createElement("div", {className: "left"}, 
+						React.createElement("h1", null, 
+							"Pedidos"
+						)
+					), 
+					React.createElement("div", {className: "right"}, 
+						React.createElement("a", {className: "button newOrder", href: "/pedidos/novo"}, 
+							"Novo Pedido"
+						)
+					)
+				), 
+				React.createElement(Toolbar, {parent: this, collection: this.getCollection()}), 
+				React.createElement("div", {className: "orderList"}, 
+					GenerateOrderList()
+				)
+			)
+		);
+	}
+});
+
+module.exports = function(app) {
+	var collection = new Models.OrderList();
+
+	collection.fetch();
+	window.c = collection;
+
+	app.pushPage(React.createElement(ListOrders, {collection: collection}), 'list-orders', {
+		onClose: function() {
+		},
+		container: document.querySelector('#page-container'),
+		pageRoot: 'list-orders',
+	});
+};
+
+
+},{"../components/OrderView.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/OrderView.jsx","../components/PrettyCheck.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/PrettyCheck.jsx","../components/modal.jsx":"/home/felipe/Projects/fabrica/app/static/js/app/components/modal.jsx","../components/models.js":"/home/felipe/Projects/fabrica/app/static/js/app/components/models.js","react":"/home/felipe/Projects/fabrica/app/static/js/vendor/react-dev-0.12.1.js","react.backbone":"/home/felipe/Projects/fabrica/app/static/js/vendor/react.backbone.js","selectize":"/home/felipe/Projects/fabrica/app/static/js/vendor/selectize.js"}],"/home/felipe/Projects/fabrica/app/static/js/vendor/autosize-1.18.7.min.js":[function(require,module,exports){
 /*!
 Autosize v1.18.7 - 2014-04-13
 Automatically adjust textarea height based on user input.

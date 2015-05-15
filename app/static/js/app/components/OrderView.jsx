@@ -80,6 +80,31 @@ var OrderView = React.createBackboneClass({
         }
       };
 
+      var makeStatusSetter = (status) => {
+        return () => {
+          this.getModel().set('status', status);
+          this.getModel().save(null, {
+            success: (model, response) => {
+              Utils.flash.info("Salvo.");
+            },
+            error: (model, xhr, options) => {
+              if (data.error === 'ExistingUser') {
+                this._buildWarnings({ email: 'Esse email já está em uso.' });
+                return;
+              }
+              var data = xhr.responseJSON;
+              if (data && data.message) {
+                Utils.flash.alert(data.message);
+              } else {
+                Utils.flash.alert('Milton Friedman.');
+              }
+              // build warnings
+              // this._buildWarnings(data);
+            }
+          });
+        }
+      };
+
       return (
         <div className="field statusField">
           <label>
@@ -93,11 +118,24 @@ var OrderView = React.createBackboneClass({
               &nbsp;<span className="caret"></span>
             </button>
             <ul className="dropdown-menu" role="menu">
-              <li><a href="#">Action</a></li>
-              <li><a href="#">Another action</a></li>
-              <li><a href="#">Something else here</a></li>
-              <li className="divider"></li>
-              <li><a href="#">Separated link</a></li>
+              <li className="waiting">
+                <a href="#" onClick={makeStatusSetter("waiting")}>Esperando</a>
+              </li>
+              <li className="processing">
+                <a href="#" onClick={makeStatusSetter("processing")}>Processando</a>
+              </li>
+              <li className="cancelled">
+                <a href="#" onClick={makeStatusSetter("cancelled")}>Cancelado</a>
+              </li>
+              <li className="late">
+                <a href="#" onClick={makeStatusSetter("late")}>Atrasado</a>
+              </li>
+              <li className="shipping">
+                <a href="#" onClick={makeStatusSetter("shipping")}>Pronto</a>
+              </li>
+              <li className="done">
+                <a href="#" onClick={makeStatusSetter("done")}>Enviado</a>
+              </li>
             </ul>
           </div>
         </div>

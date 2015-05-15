@@ -16,8 +16,8 @@ var Pages = {
 	Login_Register: require('../pages/login_register.jsx'),
 	Login_Recover: require('../pages/login_recover.jsx'),
 	Login_Newpass: require('../pages/login_newpass.jsx'),
-	ListClients: require('../pages/listClients.jsx'),
-	ListOrders: require('../pages/listOrders.jsx'),
+	ClientsList: require('../pages/clientList.jsx'),
+	OrdersList: require('../pages/orderList.jsx'),
 	NewPartner: require('../pages/newPartner.jsx'),
 	NewClient: require('../pages/newClient.jsx'),
 	NewOrder: require('../pages/newOrder.jsx'),
@@ -429,11 +429,11 @@ var App = Router.extend({
 			},
 		'clientes':
 			function () {
-				Pages.ListClients(this);
+				Pages.ClientsList(this);
 			},
 		'pedidos':
 			function () {
-				Pages.ListOrders(this);
+				Pages.OrdersList(this);
 			},
 		'':
 			function () {

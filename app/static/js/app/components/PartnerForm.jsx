@@ -58,10 +58,6 @@ var PartnerForm = React.createBackboneClass({
         } else {
           Utils.flash.alert('Milton Friedman.');
         }
-        if (data.error === 'ExistingUser') {
-          this._buildWarnings({ email: 'Esse email já está em uso.' });
-          return;
-        }
         // build warnings
         // this._buildWarnings(data);
       }

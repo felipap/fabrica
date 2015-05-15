@@ -21,7 +21,7 @@
   padding: 30px;
 
   label {
-    color: #444;
+    color: #666;
     font-size: 13px;
     font-weight: 400;
     text-transform: uppercase;
@@ -39,8 +39,8 @@
       display: block;
       width: 100%;
       // font-size: 18px;
-      border: 1px solid rgba(0,0,0,.1);
-      background: #EEE;
+      border: 1px solid rgba(0,0,0,.07);
+      background: #FAFAFA;
       font-weight: 400;
       border-radius: 0;
       line-height: 1.5;
@@ -101,10 +101,8 @@
       }
 
       .btn-group {
-        width: 100%;
 
         & > button {
-          width: 100%;
           margin: 0;
           border: 0;
           text-align: left;
@@ -114,6 +112,9 @@
           border: 1px solid transparent;
           line-height: 1.5;
           color: white;
+          text-transform: capitalize;
+          font-weight: 700;
+          border: 1px solid rgba(0,0,0,.1);
 
           &[data-status=waiting] { background: darken(#666, 5%); }
           &[data-status=cancelled] { background: darken(@CRED, 5%); }
