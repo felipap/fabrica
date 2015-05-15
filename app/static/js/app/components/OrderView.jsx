@@ -161,6 +161,9 @@ var OrderView = React.createBackboneClass({
           <div className="col-md-5">
             <STLRenderer ref="renderer" file={this.getModel().get('file')}
               color={doc.color} />
+            <a className="button" target="_blank" href={this.getModel().get('file')}>
+              Baixar arquivo.
+            </a>
           </div>
         </div>
       </div>

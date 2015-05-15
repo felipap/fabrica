@@ -59,16 +59,18 @@ $(function () {
 /*
  * Organizes the allocatin and disposal of pages on the screen.
  */
-var PageStack = function (defaultClass) {
+var ComponentStack = function (defaultOptions) {
 	var pages = [];
 	var chopCounter = 0;
 
 	class Page {
 		constructor(component, opts) {
+			var opts = _.extend({}, defaultOptions, opts);
+
 			var makeContainer = (opts) => {
 				var el = document.createElement('div');
-				if (defaultClass) {
-					el.classList.add(defaultClass);
+				if (opts.defaultClass) {
+					el.classList.add(opts.defaultClass);
 				}
 				if (opts.class) {
 					el.classList.add(opts.class);
@@ -237,121 +239,6 @@ var PageStack = function (defaultClass) {
 	}
 };
 
-var ComponentStack = function () {
-	var pages = [];
-	var chopCounter = 0;
-
-	function chop () {
-		if (chopCounter === 0) {
-			$('body').addClass('chop');
-		}
-		++chopCounter;
-	}
-
-	function unchop () {
-		--chopCounter;
-		if (chopCounter === 0) {
-			$('body').removeClass('chop');
-		}
-	}
-
-	return {
-		push: function (component, dataPage, opts) {
-			var opts = Object.assign({
-				onClose: function () {}
-			}, opts || {});
-
-			var old = {
-				title: document.title,
-				pageRoot: document.body.dataset.root,
-			}
-
-			var e = document.createElement('div'),
-				destroyed = false,
-				changedTitle = false;
-
-			if (opts.pageRoot) {
-				var root = document.body.dataset.root;
-				$('[data-activate-root='+root+']').removeClass('active');
-				$('[data-activate-root='+opts.pageRoot+']').addClass('active');
-				document.body.dataset.root = opts.pageRoot;
-			}
-
-			// Adornate element and page.
-			$(e).addClass('component-container');
-			if (opts.class)
-				$(e).addClass(opts.class);
-			$(e).addClass('invisble');
-			if (dataPage)
-				e.dataset.page = dataPage;
-
-			var obj = {
-				target: e,
-				component: component,
-				setTitle: function (str) {
-					changedTitle = true;
-					document.title = str;
-				},
-				destroy: function (dismissOnClose) {
-					if (destroyed) {
-						console.warn("Destroy for page "+dataPage+" being called multiple times.");
-						return;
-					}
-					destroyed = true;
-					pages.splice(pages.indexOf(this), 1);
-					// $(e).addClass('invisible');
-					React.unmountComponentAtNode(e);
-					$(e).remove();
-
-					if (changedTitle) {
-						document.title = old.Title;
-					}
-
-					var root = document.body.dataset.root;
-					$('[data-activate-root='+root+']').removeClass('active');
-					$('[data-activate-root='+opts.pageRoot+']').addClass('active');
-					document.body.dataset.root = old.pageRoot;
-
-					if (opts.chop !== false) {
-						unchop();
-					}
-
-					opts.onClose && opts.onClose();
-				}.bind(this),
-			};
-			component.props.page = obj;
-			pages.push(obj);
-
-			$(e).hide().appendTo('body');
-
-			// Remove scrollbars?
-			if (opts.chop !== false) {
-				chop();
-			}
-
-			React.render(component, e, function () {
-				// $(e).removeClass('invisible');
-				$(e).show()
-			});
-
-			return obj;
-		},
-		getActive: function () {
-			return pages[pages.length-1];
-		},
-		pop: function () {
-			pages.pop().destroy();
-		},
-		closeAll: function () {
-			for (var i=0; i<pages.length; i++) {
-				pages[i].destroy();
-			}
-			pages = [];
-		},
-	}
-};
-
-
 /**
  * Customized Backbone Router, supporting triggering of components.
  */
@@ -359,8 +246,11 @@ var Router = Backbone.Router.extend({
 	initialize: function () {
 		this._bindComponentTriggers();
 		this._bindComponentCalls();
-		this._pages = new PageStack();
-		this._components = new ComponentStack('component-container');
+		this._pages = new ComponentStack();
+		this._components = new ComponentStack({
+			defaultClass: 'component-container',
+			chop: true,
+		});
 	},
 
 	_bindComponentTriggers: function () {
@@ -483,7 +373,7 @@ var BoxWrapper = React.createClass({
 
 	componentWillMount: function () {
 		if (this.props.model.getTitle) {
-			this.props.page.setTitle(this.props.model.getTitle());
+			this.props.page.title = this.props.model.getTitle();
 		}
 	},
 
@@ -583,11 +473,7 @@ var App = Router.extend({
 			var model = new Models.Order({id: data.id});
 			model.fetch({
 				success: (model, response) => {
-					this.pushComponent(<BoxWrapper rclass={Views.Order} model={model} />, 'order', {
-						onClose: function () {
-							// app.navigate(app.pageRoot, { trigger: false });
-						}
-					});
+					this.pushComponent(<BoxWrapper rclass={Views.Order} model={model} />, 'order');
 				},
 				error: (xhr) => {
 					var json = xhr.responseJSON;
