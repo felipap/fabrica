@@ -80,41 +80,17 @@ var OrderView = React.createBackboneClass({
 
     var GenStatusIcon = () => {
       if (doc.status === "shipping") {
-        return (
-          <div className="StatusIcon shipping" title="Pronto">
-            <i className="icon-send" />
-          </div>
-        );
+        return <i className="icon-send" />;
       } else if (doc.status === "waiting") {
-        return (
-          <div className="StatusIcon waiting" title="Esperando">
-            <i className="icon-timer" />
-          </div>
-        );
+        return <i className="icon-timer" />;
       } else if (doc.status === "processing") {
-        return (
-          <div className="StatusIcon processing" title="Processando">
-            <i className="icon-details" />
-          </div>
-        );
+        return <i className="icon-details" />;
       } else if (doc.status === "cancelled") {
-        return (
-          <div className="StatusIcon cancelled" title="Cancelado">
-            <i className="icon-close" />
-          </div>
-        );
+        return <i className="icon-close" />;
       } else if (doc.status === "late") {
-        return (
-          <div className="StatusIcon late" title="Atrasado">
-            <i className="icon-timer" />
-          </div>
-        );
+        return <i className="icon-timer" />;
       } else if (doc.status === "done") {
-        return (
-          <div className="StatusIcon done" title="Enviado">
-            <i className="icon-done-all" />
-          </div>
-        );
+        return <i className="icon-done-all" />;
       }
     };
 
@@ -146,23 +122,53 @@ var OrderView = React.createBackboneClass({
                   {doc._cor[0].toUpperCase()+doc._cor.slice(1)} · {doc._tipo}
                   </div>
               </div>
-              <div className="field">
-                <label>
-                  Status
-                </label>
-                {GenStatusIcon()}
+              <div className="row">
+                <div className="col-md-7">
+                  <div className="field">
+                    <label>
+                      Data
+                    </label>
+                    <div className="value">
+                      {formatOrderDate(doc.created_at)}
+                      (<span data-time-count={1*new Date(doc.created_at)} data-short="false" data-title={formatOrderDate(doc.created_at)}>
+                      {calcTimeFrom(doc.created_at)}
+                      </span>)
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-5">
+                  <div className="field statusField">
+                    <label>
+                      Status
+                    </label>
+                    <div className="value" data-status={doc.status}>
+                      {GenStatusIcon()} {doc._status.toUpperCase()}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="field userNClient">
-                {GenClientBlock()}
-                {GenVendorBlock()}
+              <div className="row">
+                <div className="col-md-6">
+                  <div className="field">
+                    {GenClientBlock()}
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="field">
+                    {GenVendorBlock()}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           <div className="col-md-5">
+            <h2>
+              visualização
+            </h2>
             <STLRenderer ref="renderer" file={this.getModel().get('file')}
               color={doc.color} />
-            <a className="button" target="_blank" href={this.getModel().get('file')}>
-              Baixar arquivo.
+            <a className="button download" target="_blank" href={this.getModel().get('file')}>
+              Acessar Arquivo
             </a>
           </div>
         </div>

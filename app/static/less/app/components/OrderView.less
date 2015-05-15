@@ -80,49 +80,57 @@
       }
     }
 
-    & > .field {
+    .field {
       & > label {
         margin-bottom: 5px;
       }
-      margin-bottom: 15px;
+      margin-bottom: 20px;
+
+      &.statusField {
+        .value {
+          font-weight: 500;
+          color: white;
+
+          i {
+            font-size: 20px;
+            vertical-align: middle;
+            margin-right: 5px;
+            margin-top: -2px;
+          }
+
+          &[data-status=waiting] { background: darken(#666, 5%); }
+          &[data-status=cancelled] { background: darken(@CRED, 5%); }
+          &[data-status=late] { background: darken(@CYELLOW, 5%); }
+          &[data-status=processing] { background: darken(@CBLUE, 5%); }
+          &[data-status=shipping] { background: darken(mix(@CGREEN, @CBLUE), 5%); }
+          &[data-status=done] { background: darken(@CGREEN, 5%); }
+        }
+      }
     }
   }
 
-  .userNClient {
-    width: 100%;
-    display: table;
-    clear: both;
+  .userDisplay {
+    label {
+      margin-bottom: 5px;
+    }
 
-    .userDisplay:nth-child(1) { padding-right: 10px; }
-    .userDisplay:nth-child(2) { padding-left: 10px; }
-
-    .userDisplay {
-      display: table;
+    .left {
       float: left;
-      width: 50%;
+    }
+    .right {
+      float: left;
+      margin-left: 10px;
+    }
 
-      label {
-        margin-bottom: 5px;
-      }
+    .user-avatar {
+      width: 50px;
+      border-radius: 50px;
+      height: 50px;
+    }
 
-      .left {
-        float: left;
-      }
-      .right {
-        float: left;
-        margin-left: 10px;
-      }
-
-      .user-avatar {
-        width: 50px;
-        border-radius: 50px;
-        height: 50px;
-      }
-
-      .name {
-        font-size: 15px;
-        font-weight: bold;
-      }
+    .name {
+      font-size: 15px;
+      font-weight: 500;
     }
   }
 
@@ -133,6 +141,12 @@
   button, .button {
     background: #EEE;
     margin: 10px 0;
+  }
+
+  .download {
+    .xbtn(white, @CBLUE);
+    font-size: 16px;
+    padding: 8px 15px;
   }
 
   .STLRenderer {

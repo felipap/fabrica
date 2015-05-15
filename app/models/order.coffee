@@ -39,6 +39,16 @@ OrderSchema.virtual('_cor').get ->
 		azul: 'azul',
 	}[@color]
 
+OrderSchema.virtual('_status').get ->
+	{
+		shipping: "pronto"
+		waiting: "esperando"
+		processing: "imprimindo"
+		cancelled: "cancelado"
+		late: "atrasado"
+		done: "enviado"
+	}[@status]
+
 OrderSchema.virtual('_tipo').get ->
 	'PLA'
 

@@ -39,7 +39,7 @@ var OrderItem = React.createBackboneClass({
 	      );
 			} else if (doc.status === "processing") {
 	      return (
-	      	<div className="StatusIcon processing" title="Processando">
+	      	<div className="StatusIcon processing" title="Imprimindo">
 	      		<i className="icon-details" />
 	      	</div>
 	      );
@@ -85,12 +85,12 @@ var OrderItem = React.createBackboneClass({
 						Impressão 3D · {doc._cor[0].toUpperCase()+doc._cor.slice(1)}/{doc._tipo}
 					</div>
 					<div className="client">
-						<strong>Cliente:</strong> <a href="#">Mauro Iezzi</a>, pela <a href="#">Gráfica do Catete</a>
+						<a href="#">Mauro Iezzi</a>, pela <a href="#">Gráfica do Catete</a>
 					</div>
 				</div>
 				<div className="right">
 					<div className="date">
-						<span data-time-count={1*new Date(doc.created_at)} data-long="true" data-title={formatOrderDate(doc.created_at)}>
+						<span data-time-count={1*new Date(doc.created_at)} data-short="false" data-title={formatOrderDate(doc.created_at)}>
 							{calcTimeFrom(doc.created_at)}
 						</span>
 					</div>

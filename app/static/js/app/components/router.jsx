@@ -107,17 +107,11 @@ var ComponentStack = function (defaultOptions) {
 			if (opts.pageRoot) { // Save body[data-root] and replace by new
 				// Cacilds!
 				var root = document.body.dataset.root;
-				this.old.pageRoot = document.body.dataset.root;
+				this.old.pageRoot = root;
 				if (root) {
-					var olds = document.querySelectorAll('[data-activate-root='+root+']');
-					for (var i=0; i<olds.length; ++i) {
-						olds[i].classList.remove('active');
-					}
+					$('[data-activate-root='+root+']').removeClass('active');
 				}
-				var news = document.querySelectorAll('[data-activate-root='+opts.pageRoot+']');
-				for (var i=0; i<news.length; ++i) {
-					news[i].classList.add('active');
-				}
+				$('[data-activate-root='+opts.pageRoot+']').addClass('active');
 				document.body.dataset.root = opts.pageRoot;
 			}
 
@@ -134,11 +128,10 @@ var ComponentStack = function (defaultOptions) {
 			this.destroyed = true;
 
 			pages.splice(pages.indexOf(this), 1);
-			// $(e).addClass('invisible');
 			React.unmountComponentAtNode(this.el);
 			$(this.el).remove();
 
-			this._cleanUp()
+			this._cleanUp();
 
 			if (this.onClose) {
 				this.onClose(this, this.el);
@@ -152,19 +145,9 @@ var ComponentStack = function (defaultOptions) {
 			if (this.old.title) {
 				document.title = this.old.title;
 			}
-			if (this.old.pageRoot !== null) {
-				var olds = document.querySelectorAll('[data-activate-root='+
-					document.body.dataset.root+']');
-				for (var i=0; i<olds.length; ++i) {
-					olds[i].classList.remove('active');
-				}
-				if (this.old.pageRoot !== '') {
-					var news = document.querySelectorAll('[data-activate-root='+
-						this.old.pageRoot+']');
-					for (var i=0; i<news.length; ++i) {
-						news[i].classList.add('active');
-					}
-				}
+			if (this.old.pageRoot) {
+				$('[data-activate-root='+document.body.dataset.root+']').removeClass('active');
+				$('[data-activate-root='+this.old.pageRoot+']').addClass('active');
 				document.body.dataset.root = this.old.pageRoot;
 			}
 		}
@@ -452,10 +435,6 @@ var App = Router.extend({
 			function () {
 				Pages.ListOrders(this);
 			},
-		// 'pedidos/:code':
-		// 	function () {
-		// 		Views.Order(this);
-		// 	},
 		'':
 			function () {
 				Pages.Home(this);
@@ -473,7 +452,10 @@ var App = Router.extend({
 			var model = new Models.Order({id: data.id});
 			model.fetch({
 				success: (model, response) => {
-					this.pushComponent(<BoxWrapper rclass={Views.Order} model={model} />, 'order');
+					this.pushComponent(<BoxWrapper rclass={Views.Order} model={model} />,
+						'order', {
+							// pageRoot: 'list-orders',
+						});
 				},
 				error: (xhr) => {
 					var json = xhr.responseJSON;

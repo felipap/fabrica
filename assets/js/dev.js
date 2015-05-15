@@ -239,41 +239,17 @@ var OrderView = React.createBackboneClass({
 
     var GenStatusIcon = function()  {
       if (doc.status === "shipping") {
-        return (
-          React.createElement("div", {className: "StatusIcon shipping", title: "Pronto"}, 
-            React.createElement("i", {className: "icon-send"})
-          )
-        );
+        return React.createElement("i", {className: "icon-send"});
       } else if (doc.status === "waiting") {
-        return (
-          React.createElement("div", {className: "StatusIcon waiting", title: "Esperando"}, 
-            React.createElement("i", {className: "icon-timer"})
-          )
-        );
+        return React.createElement("i", {className: "icon-timer"});
       } else if (doc.status === "processing") {
-        return (
-          React.createElement("div", {className: "StatusIcon processing", title: "Processando"}, 
-            React.createElement("i", {className: "icon-details"})
-          )
-        );
+        return React.createElement("i", {className: "icon-details"});
       } else if (doc.status === "cancelled") {
-        return (
-          React.createElement("div", {className: "StatusIcon cancelled", title: "Cancelado"}, 
-            React.createElement("i", {className: "icon-close"})
-          )
-        );
+        return React.createElement("i", {className: "icon-close"});
       } else if (doc.status === "late") {
-        return (
-          React.createElement("div", {className: "StatusIcon late", title: "Atrasado"}, 
-            React.createElement("i", {className: "icon-timer"})
-          )
-        );
+        return React.createElement("i", {className: "icon-timer"});
       } else if (doc.status === "done") {
-        return (
-          React.createElement("div", {className: "StatusIcon done", title: "Enviado"}, 
-            React.createElement("i", {className: "icon-done-all"})
-          )
-        );
+        return React.createElement("i", {className: "icon-done-all"});
       }
     };
 
@@ -305,23 +281,53 @@ var OrderView = React.createBackboneClass({
                   doc._cor[0].toUpperCase()+doc._cor.slice(1), " · ", doc._tipo
                   )
               ), 
-              React.createElement("div", {className: "field"}, 
-                React.createElement("label", null, 
-                  "Status"
+              React.createElement("div", {className: "row"}, 
+                React.createElement("div", {className: "col-md-7"}, 
+                  React.createElement("div", {className: "field"}, 
+                    React.createElement("label", null, 
+                      "Data"
+                    ), 
+                    React.createElement("div", {className: "value"}, 
+                      formatOrderDate(doc.created_at), 
+                      "(", React.createElement("span", {"data-time-count": 1*new Date(doc.created_at), "data-short": "false", "data-title": formatOrderDate(doc.created_at)}, 
+                      calcTimeFrom(doc.created_at)
+                      ), ")"
+                    )
+                  )
                 ), 
-                GenStatusIcon()
+                React.createElement("div", {className: "col-md-5"}, 
+                  React.createElement("div", {className: "field statusField"}, 
+                    React.createElement("label", null, 
+                      "Status"
+                    ), 
+                    React.createElement("div", {className: "value", "data-status": doc.status}, 
+                      GenStatusIcon(), " ", doc._status.toUpperCase()
+                    )
+                  )
+                )
               ), 
-              React.createElement("div", {className: "field userNClient"}, 
-                GenClientBlock(), 
-                GenVendorBlock()
+              React.createElement("div", {className: "row"}, 
+                React.createElement("div", {className: "col-md-6"}, 
+                  React.createElement("div", {className: "field"}, 
+                    GenClientBlock()
+                  )
+                ), 
+                React.createElement("div", {className: "col-md-6"}, 
+                  React.createElement("div", {className: "field"}, 
+                    GenVendorBlock()
+                  )
+                )
               )
             )
           ), 
           React.createElement("div", {className: "col-md-5"}, 
+            React.createElement("h2", null, 
+              "visualização"
+            ), 
             React.createElement(STLRenderer, {ref: "renderer", file: this.getModel().get('file'), 
               color: doc.color}), 
-            React.createElement("a", {className: "button", target: "_blank", href: this.getModel().get('file')}, 
-              "Baixar arquivo."
+            React.createElement("a", {className: "button download", target: "_blank", href: this.getModel().get('file')}, 
+              "Acessar Arquivo"
             )
           )
         )
@@ -1229,17 +1235,11 @@ var ComponentStack = function (defaultOptions) {
 			if (opts.pageRoot) { // Save body[data-root] and replace by new
 				// Cacilds!
 				var root = document.body.dataset.root;
-				this.old.pageRoot = document.body.dataset.root;
+				this.old.pageRoot = root;
 				if (root) {
-					var olds = document.querySelectorAll('[data-activate-root='+root+']');
-					for (var i=0; i<olds.length; ++i) {
-						olds[i].classList.remove('active');
-					}
+					$('[data-activate-root='+root+']').removeClass('active');
 				}
-				var news = document.querySelectorAll('[data-activate-root='+opts.pageRoot+']');
-				for (var i=0; i<news.length; ++i) {
-					news[i].classList.add('active');
-				}
+				$('[data-activate-root='+opts.pageRoot+']').addClass('active');
 				document.body.dataset.root = opts.pageRoot;
 			}
 
@@ -1256,11 +1256,10 @@ var ComponentStack = function (defaultOptions) {
 			this.destroyed = true;
 
 			pages.splice(pages.indexOf(this), 1);
-			// $(e).addClass('invisible');
 			React.unmountComponentAtNode(this.el);
 			$(this.el).remove();
 
-			this.$Page_cleanUp()
+			this.$Page_cleanUp();
 
 			if (this.onClose) {
 				this.onClose(this, this.el);
@@ -1274,19 +1273,9 @@ var ComponentStack = function (defaultOptions) {
 			if (this.old.title) {
 				document.title = this.old.title;
 			}
-			if (this.old.pageRoot !== null) {
-				var olds = document.querySelectorAll('[data-activate-root='+
-					document.body.dataset.root+']');
-				for (var i=0; i<olds.length; ++i) {
-					olds[i].classList.remove('active');
-				}
-				if (this.old.pageRoot !== '') {
-					var news = document.querySelectorAll('[data-activate-root='+
-						this.old.pageRoot+']');
-					for (var i=0; i<news.length; ++i) {
-						news[i].classList.add('active');
-					}
-				}
+			if (this.old.pageRoot) {
+				$('[data-activate-root='+document.body.dataset.root+']').removeClass('active');
+				$('[data-activate-root='+this.old.pageRoot+']').addClass('active');
 				document.body.dataset.root = this.old.pageRoot;
 			}
 		}});
@@ -1574,10 +1563,6 @@ var App = Router.extend({
 			function () {
 				Pages.ListOrders(this);
 			},
-		// 'pedidos/:code':
-		// 	function () {
-		// 		Views.Order(this);
-		// 	},
 		'':
 			function () {
 				Pages.Home(this);
@@ -1595,7 +1580,10 @@ var App = Router.extend({
 			var model = new Models.Order({id: data.id});
 			model.fetch({
 				success: function(model, response)  {
-					this.pushComponent(React.createElement(BoxWrapper, {rclass: Views.Order, model: model}), 'order');
+					this.pushComponent(React.createElement(BoxWrapper, {rclass: Views.Order, model: model}),
+						'order', {
+							// pageRoot: 'list-orders',
+						});
 				}.bind(this),
 				error: function(xhr)  {
 					var json = xhr.responseJSON;
@@ -1808,7 +1796,7 @@ var OrderItem = React.createBackboneClass({
 	      );
 			} else if (doc.status === "processing") {
 	      return (
-	      	React.createElement("div", {className: "StatusIcon processing", title: "Processando"}, 
+	      	React.createElement("div", {className: "StatusIcon processing", title: "Imprimindo"}, 
 	      		React.createElement("i", {className: "icon-details"})
 	      	)
 	      );
@@ -1854,12 +1842,12 @@ var OrderItem = React.createBackboneClass({
 						"Impressão 3D · ", doc._cor[0].toUpperCase()+doc._cor.slice(1), "/", doc._tipo
 					), 
 					React.createElement("div", {className: "client"}, 
-						React.createElement("strong", null, "Cliente:"), " ", React.createElement("a", {href: "#"}, "Mauro Iezzi"), ", pela ", React.createElement("a", {href: "#"}, "Gráfica do Catete")
+						React.createElement("a", {href: "#"}, "Mauro Iezzi"), ", pela ", React.createElement("a", {href: "#"}, "Gráfica do Catete")
 					)
 				), 
 				React.createElement("div", {className: "right"}, 
 					React.createElement("div", {className: "date"}, 
-						React.createElement("span", {"data-time-count": 1*new Date(doc.created_at), "data-long": "true", "data-title": formatOrderDate(doc.created_at)}, 
+						React.createElement("span", {"data-time-count": 1*new Date(doc.created_at), "data-short": "false", "data-title": formatOrderDate(doc.created_at)}, 
 							calcTimeFrom(doc.created_at)
 						)
 					), 
