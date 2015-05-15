@@ -26,7 +26,7 @@ html {
 	body.chop {
 		overflow: hidden;
 		height: 100%;
-		padding-right: 15px;
+		// padding-right: 15px;
 		// position: fixed;
 		width: 100%;
 		#navbar {
@@ -86,7 +86,7 @@ body {
 		position: fixed;
 		right: 31px;
 		top: 10px;
-		font-weight: bold;
+		font-weight: normal;
 	}
 
 	&.white {
@@ -342,56 +342,9 @@ body {
           margin-top: 5px;
         }
 
-        .statusIcon {
+        .StatusIcon {
           float: left;
           margin-left: 25px;
-
-          border-radius: 30px;
-          width: 40px;
-          height: 40px;
-          line-height: (40px - 3);
-          overflow: hidden;
-          text-align: center;
-
-          background: #AAA;
-          background: white;
-
-          i {
-            vertical-align: middle;
-            color: white;
-            font-size: 20px;
-          }
-
-          &.waiting {
-            .box-shadow(0, 0, 0, 2px, #666);
-            i {
-              color: #666;
-            }
-          }
-          &.cancelled {
-            background: @CRED;
-          }
-          &.late {
-            .box-shadow(0, 0, 0, 2px, @CYELLOW);
-            i {
-              color: @CYELLOW;
-            }
-          }
-          &.processing {
-            .box-shadow(0, 0, 0, 2px, @CBLUE);
-            i {
-              color: @CBLUE;
-            }
-          }
-          &.shipping {
-            .box-shadow(0, 0, 0, 2px, mix(@CGREEN, @CBLUE));
-            i {
-              color: mix(@CGREEN, @CBLUE);
-            }
-          }
-          &.done {
-            background: @CGREEN;
-          }
         }
       }
 
@@ -521,5 +474,55 @@ body {
     overflow: hidden;
     background-image: url(/static/images/mailchimp-checkmarks-sprite-2x.png);
     background-size: 24px 384px;
+  }
+}
+
+
+.StatusIcon {
+  border-radius: 30px;
+  width: 40px;
+  height: 40px;
+  line-height: (40px - 3);
+  overflow: hidden;
+  text-align: center;
+
+  background: #AAA;
+  background: white;
+
+  i {
+    vertical-align: middle;
+    color: white;
+    font-size: 20px;
+  }
+
+  &.waiting {
+    .box-shadow(0, 0, 0, 2px, #666);
+    i {
+      color: #666;
+    }
+  }
+  &.cancelled {
+    background: @CRED;
+  }
+  &.late {
+    .box-shadow(0, 0, 0, 2px, @CYELLOW);
+    i {
+      color: @CYELLOW;
+    }
+  }
+  &.processing {
+    .box-shadow(0, 0, 0, 2px, @CBLUE);
+    i {
+      color: @CBLUE;
+    }
+  }
+  &.shipping {
+    .box-shadow(0, 0, 0, 2px, mix(@CGREEN, @CBLUE));
+    i {
+      color: mix(@CGREEN, @CBLUE);
+    }
+  }
+  &.done {
+    background: @CGREEN;
   }
 }

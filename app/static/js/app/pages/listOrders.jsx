@@ -27,37 +27,37 @@ var OrderItem = React.createBackboneClass({
 		var GenStatusIcon = () => {
 			if (doc.status === "shipping") {
 	      return (
-	      	<div className="statusIcon shipping" title="Pronto">
+	      	<div className="StatusIcon shipping" title="Pronto">
 	      		<i className="icon-send" />
 	      	</div>
 	      );
 			} else if (doc.status === "waiting") {
 	      return (
-	      	<div className="statusIcon waiting" title="Esperando">
+	      	<div className="StatusIcon waiting" title="Esperando">
 	      		<i className="icon-timer" />
 	      	</div>
 	      );
 			} else if (doc.status === "processing") {
 	      return (
-	      	<div className="statusIcon processing" title="Processando">
+	      	<div className="StatusIcon processing" title="Processando">
 	      		<i className="icon-details" />
 	      	</div>
 	      );
 			} else if (doc.status === "cancelled") {
 	      return (
-	      	<div className="statusIcon cancelled" title="Cancelado">
+	      	<div className="StatusIcon cancelled" title="Cancelado">
 	      		<i className="icon-close" />
 	      	</div>
 	      );
 			} else if (doc.status === "late") {
 	      return (
-	      	<div className="statusIcon late" title="Atrasado">
+	      	<div className="StatusIcon late" title="Atrasado">
 	      		<i className="icon-timer" />
 	      	</div>
 	      );
 			} else if (doc.status === "done") {
 	      return (
-	      	<div className="statusIcon done" title="Enviado">
+	      	<div className="StatusIcon done" title="Enviado">
 	      		<i className="icon-done-all" />
 	      	</div>
 	      );

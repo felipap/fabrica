@@ -181,27 +181,26 @@ var OrderView = React.createBackboneClass({
       var client = doc.client;
       return (
         React.createElement("div", {className: "userDisplay"}, 
+          React.createElement("label", null, 
+            "Cliente"
+          ), 
           React.createElement("div", null, 
-            React.createElement("label", null, 
-              "Cliente"
-            )
-          ), 
-
-          React.createElement("div", {className: "left"}, 
-            React.createElement("div", {className: "user-avatar"}, 
-              React.createElement("div", {className: "avatar", 
-                style: {backgroundImage:'url('+client.picture+')'}})
-            )
-          ), 
-          React.createElement("div", {className: "right"}, 
-            React.createElement("div", {className: "name"}, 
-              client.name
+            React.createElement("div", {className: "left"}, 
+              React.createElement("div", {className: "user-avatar"}, 
+                React.createElement("div", {className: "avatar", 
+                  style: {backgroundImage:'url('+client.picture+')'}})
+              )
             ), 
-            React.createElement("div", {className: "email"}, 
-              client.email
-            ), 
-            React.createElement("div", {className: "phone"}, 
-              client.phone
+            React.createElement("div", {className: "right"}, 
+              React.createElement("div", {className: "name"}, 
+                client.name
+              ), 
+              React.createElement("div", {className: "email"}, 
+                client.email
+              ), 
+              React.createElement("div", {className: "phone"}, 
+                client.phone
+              )
             )
           )
         )
@@ -212,30 +211,70 @@ var OrderView = React.createBackboneClass({
       var vendor = doc.vendor;
       return (
         React.createElement("div", {className: "userDisplay"}, 
+          React.createElement("label", null, 
+            "Vendedor"
+          ), 
           React.createElement("div", null, 
-            React.createElement("label", null, 
-              "Vendedor"
-            )
-          ), 
-          React.createElement("div", {className: "left"}, 
-            React.createElement("div", {className: "user-avatar"}, 
-              React.createElement("div", {className: "avatar", 
-                style: {backgroundImage:'url('+vendor.picture+')'}})
-            )
-          ), 
-          React.createElement("div", {className: "right"}, 
-            React.createElement("div", {className: "name"}, 
-              vendor.name
+            React.createElement("div", {className: "left"}, 
+              React.createElement("div", {className: "user-avatar"}, 
+                React.createElement("div", {className: "avatar", 
+                  style: {backgroundImage:'url('+vendor.picture+')'}})
+              )
             ), 
-            React.createElement("div", {className: "email"}, 
-              vendor.email
-            ), 
-            React.createElement("div", {className: "phone"}, 
-              vendor.phone
+            React.createElement("div", {className: "right"}, 
+              React.createElement("div", {className: "name"}, 
+                vendor.name
+              ), 
+              React.createElement("div", {className: "email"}, 
+                vendor.email
+              ), 
+              React.createElement("div", {className: "phone"}, 
+                vendor.phone
+              )
             )
           )
         )
       );
+    };
+
+    var GenStatusIcon = function()  {
+      if (doc.status === "shipping") {
+        return (
+          React.createElement("div", {className: "StatusIcon shipping", title: "Pronto"}, 
+            React.createElement("i", {className: "icon-send"})
+          )
+        );
+      } else if (doc.status === "waiting") {
+        return (
+          React.createElement("div", {className: "StatusIcon waiting", title: "Esperando"}, 
+            React.createElement("i", {className: "icon-timer"})
+          )
+        );
+      } else if (doc.status === "processing") {
+        return (
+          React.createElement("div", {className: "StatusIcon processing", title: "Processando"}, 
+            React.createElement("i", {className: "icon-details"})
+          )
+        );
+      } else if (doc.status === "cancelled") {
+        return (
+          React.createElement("div", {className: "StatusIcon cancelled", title: "Cancelado"}, 
+            React.createElement("i", {className: "icon-close"})
+          )
+        );
+      } else if (doc.status === "late") {
+        return (
+          React.createElement("div", {className: "StatusIcon late", title: "Atrasado"}, 
+            React.createElement("i", {className: "icon-timer"})
+          )
+        );
+      } else if (doc.status === "done") {
+        return (
+          React.createElement("div", {className: "StatusIcon done", title: "Enviado"}, 
+            React.createElement("i", {className: "icon-done-all"})
+          )
+        );
+      }
     };
 
     return (
@@ -243,31 +282,44 @@ var OrderView = React.createBackboneClass({
         React.createElement("div", {className: "row"}, 
           React.createElement("div", {className: "col-md-7"}, 
             React.createElement("div", {className: "orderFields"}, 
-              React.createElement("form", null, 
-                React.createElement("div", {className: "form-group"}, 
-                  React.createElement("label", null, 
-                    "Nome"
-                  ), 
-                  React.createElement("input", {type: "text", name: "name", className: "name", 
-                    disabled: true, defaultValue: doc.name})
+              React.createElement("div", {className: "field"}, 
+                React.createElement("label", null, 
+                  "Nome"
                 ), 
-                React.createElement("div", {className: "form-group"}, 
-                  React.createElement("label", null, 
-                    "Comentário do Pedido"
-                  ), 
-                  React.createElement("textarea", {name: "comments", className: "comments", 
-                    disabled: true, defaultValue: doc.comments}
-                  )
+                React.createElement("input", {type: "text", name: "name", className: "value name", 
+                  disabled: true, defaultValue: doc.name})
+              ), 
+              React.createElement("div", {className: "field"}, 
+                React.createElement("label", null, 
+                  "Comentário do Pedido"
                 ), 
-                React.createElement("div", {className: "userNVendor"}, 
-                  GenClientBlock(), 
-                  GenVendorBlock()
+                React.createElement("textarea", {name: "comments", className: "value comments", 
+                  disabled: true, defaultValue: doc.comments}
                 )
+              ), 
+              React.createElement("div", {className: "field"}, 
+                React.createElement("label", null, 
+                  "Configuração"
+                ), 
+                React.createElement("div", {className: "value"}, 
+                  doc._cor[0].toUpperCase()+doc._cor.slice(1), " · ", doc._tipo
+                  )
+              ), 
+              React.createElement("div", {className: "field"}, 
+                React.createElement("label", null, 
+                  "Status"
+                ), 
+                GenStatusIcon()
+              ), 
+              React.createElement("div", {className: "field userNClient"}, 
+                GenClientBlock(), 
+                GenVendorBlock()
               )
             )
           ), 
           React.createElement("div", {className: "col-md-5"}, 
-            React.createElement(STLRenderer, {ref: "renderer", file: this.getModel().get('file')})
+            React.createElement(STLRenderer, {ref: "renderer", file: this.getModel().get('file'), 
+              color: doc.color})
           )
         )
       )
@@ -628,6 +680,12 @@ var Panel = React.createClass({displayName: "Panel",
 
 var STLRenderer = React.createClass({displayName: "STLRenderer",
 
+	getDefaultProps: function() {
+		return {
+			color: 0xff5533,
+		};
+	},
+
 	componentDidMount: function() {
 		if (this.props.stats) {
 			startStats();
@@ -675,7 +733,7 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(45, width/height, 1, 1000);
 		// this.camera.position.set(3, 0.15, 5);
-		this.camera.position.z = 5;
+		this.camera.position.z = 80;
 
 		// setup renderer
 		this.renderer = new THREE.WebGLRenderer({ antialias: false });
@@ -728,11 +786,11 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 						-(b.max.z + b.min.z)/4
 					)
 				);
-				plane.position.z = -(b.max.z - b.min.z)/2;
+				plane.position.z = -(b.max.z - b.min.z)/4;
 			}
 
 			this.normalMaterial = new THREE.MeshPhongMaterial({
-				color: 0xff5533,
+				color: this.props.color,
 				specular: 0x111111,
 				shininess: 200,
 			});
@@ -1848,37 +1906,37 @@ var OrderItem = React.createBackboneClass({
 		var GenStatusIcon = function()  {
 			if (doc.status === "shipping") {
 	      return (
-	      	React.createElement("div", {className: "statusIcon shipping", title: "Pronto"}, 
+	      	React.createElement("div", {className: "StatusIcon shipping", title: "Pronto"}, 
 	      		React.createElement("i", {className: "icon-send"})
 	      	)
 	      );
 			} else if (doc.status === "waiting") {
 	      return (
-	      	React.createElement("div", {className: "statusIcon waiting", title: "Esperando"}, 
+	      	React.createElement("div", {className: "StatusIcon waiting", title: "Esperando"}, 
 	      		React.createElement("i", {className: "icon-timer"})
 	      	)
 	      );
 			} else if (doc.status === "processing") {
 	      return (
-	      	React.createElement("div", {className: "statusIcon processing", title: "Processando"}, 
+	      	React.createElement("div", {className: "StatusIcon processing", title: "Processando"}, 
 	      		React.createElement("i", {className: "icon-details"})
 	      	)
 	      );
 			} else if (doc.status === "cancelled") {
 	      return (
-	      	React.createElement("div", {className: "statusIcon cancelled", title: "Cancelado"}, 
+	      	React.createElement("div", {className: "StatusIcon cancelled", title: "Cancelado"}, 
 	      		React.createElement("i", {className: "icon-close"})
 	      	)
 	      );
 			} else if (doc.status === "late") {
 	      return (
-	      	React.createElement("div", {className: "statusIcon late", title: "Atrasado"}, 
+	      	React.createElement("div", {className: "StatusIcon late", title: "Atrasado"}, 
 	      		React.createElement("i", {className: "icon-timer"})
 	      	)
 	      );
 			} else if (doc.status === "done") {
 	      return (
-	      	React.createElement("div", {className: "statusIcon done", title: "Enviado"}, 
+	      	React.createElement("div", {className: "StatusIcon done", title: "Enviado"}, 
 	      		React.createElement("i", {className: "icon-done-all"})
 	      	)
 	      );
@@ -2517,7 +2575,8 @@ var FormPart_Visualizer = React.createBackboneClass({
 						)
 					), 
 					React.createElement("div", {className: "col-md-8"}, 
-						React.createElement(STLRenderer, {ref: "renderer", stats: true, file: this.getModel().get('file')})
+						React.createElement(STLRenderer, {ref: "renderer", file: this.getModel().get('file'), 
+							stats: true, color: this.getModel().get('color') || 0xff5533})
 					)
 				)
 			)

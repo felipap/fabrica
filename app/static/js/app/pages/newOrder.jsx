@@ -109,7 +109,8 @@ var FormPart_Visualizer = React.createBackboneClass({
 						</button>
 					</div>
 					<div className="col-md-8">
-						<STLRenderer ref="renderer" stats={true} file={this.getModel().get('file')} />
+						<STLRenderer ref="renderer" file={this.getModel().get('file')}
+							stats={true} color={this.getModel().get('color') || 0xff5533}/>
 					</div>
 				</div>
 			</div>

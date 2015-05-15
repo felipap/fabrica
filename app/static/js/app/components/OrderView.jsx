@@ -22,27 +22,26 @@ var OrderView = React.createBackboneClass({
       var client = doc.client;
       return (
         <div className="userDisplay">
+          <label>
+            Cliente
+          </label>
           <div>
-            <label>
-              Cliente
-            </label>
-          </div>
-
-          <div className="left">
-            <div className="user-avatar">
-              <div className="avatar"
-                style={{backgroundImage:'url('+client.picture+')'}} />
+            <div className="left">
+              <div className="user-avatar">
+                <div className="avatar"
+                  style={{backgroundImage:'url('+client.picture+')'}} />
+              </div>
             </div>
-          </div>
-          <div className="right">
-            <div className="name">
-              {client.name}
-            </div>
-            <div className="email">
-              {client.email}
-            </div>
-            <div className="phone">
-              {client.phone}
+            <div className="right">
+              <div className="name">
+                {client.name}
+              </div>
+              <div className="email">
+                {client.email}
+              </div>
+              <div className="phone">
+                {client.phone}
+              </div>
             </div>
           </div>
         </div>
@@ -53,30 +52,70 @@ var OrderView = React.createBackboneClass({
       var vendor = doc.vendor;
       return (
         <div className="userDisplay">
+          <label>
+            Vendedor
+          </label>
           <div>
-            <label>
-              Vendedor
-            </label>
-          </div>
-          <div className="left">
-            <div className="user-avatar">
-              <div className="avatar"
-                style={{backgroundImage:'url('+vendor.picture+')'}} />
+            <div className="left">
+              <div className="user-avatar">
+                <div className="avatar"
+                  style={{backgroundImage:'url('+vendor.picture+')'}} />
+              </div>
             </div>
-          </div>
-          <div className="right">
-            <div className="name">
-              {vendor.name}
-            </div>
-            <div className="email">
-              {vendor.email}
-            </div>
-            <div className="phone">
-              {vendor.phone}
+            <div className="right">
+              <div className="name">
+                {vendor.name}
+              </div>
+              <div className="email">
+                {vendor.email}
+              </div>
+              <div className="phone">
+                {vendor.phone}
+              </div>
             </div>
           </div>
         </div>
       );
+    };
+
+    var GenStatusIcon = () => {
+      if (doc.status === "shipping") {
+        return (
+          <div className="StatusIcon shipping" title="Pronto">
+            <i className="icon-send" />
+          </div>
+        );
+      } else if (doc.status === "waiting") {
+        return (
+          <div className="StatusIcon waiting" title="Esperando">
+            <i className="icon-timer" />
+          </div>
+        );
+      } else if (doc.status === "processing") {
+        return (
+          <div className="StatusIcon processing" title="Processando">
+            <i className="icon-details" />
+          </div>
+        );
+      } else if (doc.status === "cancelled") {
+        return (
+          <div className="StatusIcon cancelled" title="Cancelado">
+            <i className="icon-close" />
+          </div>
+        );
+      } else if (doc.status === "late") {
+        return (
+          <div className="StatusIcon late" title="Atrasado">
+            <i className="icon-timer" />
+          </div>
+        );
+      } else if (doc.status === "done") {
+        return (
+          <div className="StatusIcon done" title="Enviado">
+            <i className="icon-done-all" />
+          </div>
+        );
+      }
     };
 
     return (
@@ -84,31 +123,44 @@ var OrderView = React.createBackboneClass({
         <div className="row">
           <div className="col-md-7">
             <div className="orderFields">
-              <form>
-                <div className="form-group">
-                  <label>
-                    Nome
-                  </label>
-                  <input type="text" name="name" className="name"
-                    disabled={true} defaultValue={doc.name} />
-                </div>
-                <div className="form-group">
-                  <label>
-                    Comentário do Pedido
-                  </label>
-                  <textarea name="comments" className="comments"
-                    disabled={true} defaultValue={doc.comments}>
-                  </textarea>
-                </div>
-                <div className="userNVendor">
-                  {GenClientBlock()}
-                  {GenVendorBlock()}
-                </div>
-              </form>
+              <div className="field">
+                <label>
+                  Nome
+                </label>
+                <input type="text" name="name" className="value name"
+                  disabled={true} defaultValue={doc.name} />
+              </div>
+              <div className="field">
+                <label>
+                  Comentário do Pedido
+                </label>
+                <textarea name="comments" className="value comments"
+                  disabled={true} defaultValue={doc.comments}>
+                </textarea>
+              </div>
+              <div className="field">
+                <label>
+                  Configuração
+                </label>
+                <div className="value">
+                  {doc._cor[0].toUpperCase()+doc._cor.slice(1)} · {doc._tipo}
+                  </div>
+              </div>
+              <div className="field">
+                <label>
+                  Status
+                </label>
+                {GenStatusIcon()}
+              </div>
+              <div className="field userNClient">
+                {GenClientBlock()}
+                {GenVendorBlock()}
+              </div>
             </div>
           </div>
           <div className="col-md-5">
-            <STLRenderer ref="renderer" file={this.getModel().get('file')} />
+            <STLRenderer ref="renderer" file={this.getModel().get('file')}
+              color={doc.color} />
           </div>
         </div>
       </div>

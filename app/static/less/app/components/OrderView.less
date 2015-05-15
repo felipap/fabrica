@@ -20,29 +20,31 @@
   background: #FFF;
   padding: 30px;
 
+  label {
+    color: #444;
+    font-size: 13px;
+    font-weight: 400;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
   .orderFields {
-    // .name {
-    //   font-size: 20px;
-    // }
 
     label {
-      color: #444;
-      font-weight: 500;
-      font-size: 1em;
-      margin-bottom: .4em;
+      margin-bottom: 0;
     }
 
-    input {
+    .value {
       font-size: 15px;
       display: block;
       width: 100%;
       // font-size: 18px;
       border: 1px solid transparent;
       background: #EEE;
-      font-weight: bold;
+      font-weight: 400;
       border-radius: 0;
       height: auto;
-      line-height: 1;
+      line-height: 1.5;
       padding: .5em .5em;
       font-size: 1.1em;
       font-family: museo-sans;
@@ -61,28 +63,7 @@
       }
     }
 
-    textarea {
-      display: block;
-      width: 100%;
-      // font-size: 18px;
-      border: 1px solid transparent;
-      background: #EEE;
-      font-weight: bold;
-      border-radius: 0;
-      height: auto;
-      padding: .5em;
-      font-size: 1.1em;
-      font-family: museo-sans;
-
-      color: #222;
-
-      &:focus {
-        .no-box-shadow;
-        .transition;
-        outline: 0;
-        border: 1px solid #DDD;
-      }
-
+    textarea.value {
       &.invalid {
         border-color: fadeout(@CRED, 30%);
       }
@@ -99,17 +80,30 @@
       }
     }
 
-    .userNClient {
-      width: 100%;
-      display: table;
-      clear: both;
+    & > .field {
+      & > label {
+        margin-bottom: 5px;
+      }
+      margin-bottom: 15px;
     }
+  }
+
+  .userNClient {
+    width: 100%;
+    display: table;
+    clear: both;
+
+    .userDisplay:nth-child(1) { padding-right: 10px; }
+    .userDisplay:nth-child(2) { padding-left: 10px; }
 
     .userDisplay {
       display: table;
-      padding: 10px;
       float: left;
-      // border: 1px solid #DDD;
+      width: 50%;
+
+      label {
+        margin-bottom: 5px;
+      }
 
       .left {
         float: left;
@@ -130,7 +124,6 @@
         font-weight: bold;
       }
     }
-
   }
 
   .fileView {

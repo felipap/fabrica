@@ -119,6 +119,12 @@ var Panel = React.createClass({
 
 var STLRenderer = React.createClass({
 
+	getDefaultProps: function() {
+		return {
+			color: 0xff5533,
+		};
+	},
+
 	componentDidMount: function() {
 		if (this.props.stats) {
 			startStats();
@@ -166,7 +172,7 @@ var STLRenderer = React.createClass({
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(45, width/height, 1, 1000);
 		// this.camera.position.set(3, 0.15, 5);
-		this.camera.position.z = 5;
+		this.camera.position.z = 80;
 
 		// setup renderer
 		this.renderer = new THREE.WebGLRenderer({ antialias: false });
@@ -219,11 +225,11 @@ var STLRenderer = React.createClass({
 						-(b.max.z + b.min.z)/4
 					)
 				);
-				plane.position.z = -(b.max.z - b.min.z)/2;
+				plane.position.z = -(b.max.z - b.min.z)/4;
 			}
 
 			this.normalMaterial = new THREE.MeshPhongMaterial({
-				color: 0xff5533,
+				color: this.props.color,
 				specular: 0x111111,
 				shininess: 200,
 			});
