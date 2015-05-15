@@ -133,6 +133,10 @@ var STLRenderer = React.createClass({
 		this._animate();
 	},
 
+	componentWillUnmount: function() {
+		window.removeEventListener('resize', this._onWindowResize, false);
+	},
+
 	_determineDimensions: function() {
 		var d = {
 			width: $(this.getDOMNode()).width(),

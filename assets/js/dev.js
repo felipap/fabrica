@@ -177,80 +177,133 @@ var OrderView = React.createBackboneClass({
   render: function() {
     var doc = this.getModel().attributes;
 
-    var GenClientBlock = function()  {
+    var GenClientField = function()  {
       var client = doc.client;
       return (
-        React.createElement("div", {className: "userDisplay"}, 
+        React.createElement("div", {className: "field userField"}, 
           React.createElement("label", null, 
             "Cliente"
           ), 
-          React.createElement("div", null, 
-            React.createElement("div", {className: "left"}, 
-              React.createElement("div", {className: "user-avatar"}, 
-                React.createElement("div", {className: "avatar", 
-                  style: {backgroundImage:'url('+client.picture+')'}})
-              )
+          React.createElement("div", {className: "value"}, 
+            React.createElement("div", {className: "name"}, 
+              client.name
             ), 
-            React.createElement("div", {className: "right"}, 
-              React.createElement("div", {className: "name"}, 
-                client.name
-              ), 
-              React.createElement("div", {className: "email"}, 
-                client.email
-              ), 
-              React.createElement("div", {className: "phone"}, 
-                client.phone
-              )
+            React.createElement("div", {className: "email"}, 
+              client.email
+            ), 
+            React.createElement("div", {className: "phone"}, 
+              client.phone
             )
           )
         )
       );
     };
 
-    var GenVendorBlock = function()  {
+    var GenVendorField = function()  {
       var vendor = doc.vendor;
       return (
-        React.createElement("div", {className: "userDisplay"}, 
+        React.createElement("div", {className: "field userField"}, 
           React.createElement("label", null, 
             "Vendedor"
           ), 
-          React.createElement("div", null, 
-            React.createElement("div", {className: "left"}, 
-              React.createElement("div", {className: "user-avatar"}, 
-                React.createElement("div", {className: "avatar", 
-                  style: {backgroundImage:'url('+vendor.picture+')'}})
-              )
+          React.createElement("div", {className: "value"}, 
+            React.createElement("div", {className: "name"}, 
+              vendor.name
             ), 
-            React.createElement("div", {className: "right"}, 
-              React.createElement("div", {className: "name"}, 
-                vendor.name
-              ), 
-              React.createElement("div", {className: "email"}, 
-                vendor.email
-              ), 
-              React.createElement("div", {className: "phone"}, 
-                vendor.phone
-              )
+            React.createElement("div", {className: "email"}, 
+              vendor.email
+            ), 
+            React.createElement("div", {className: "phone"}, 
+              vendor.phone
             )
           )
         )
       );
     };
 
-    var GenStatusIcon = function()  {
-      if (doc.status === "shipping") {
-        return React.createElement("i", {className: "icon-send"});
-      } else if (doc.status === "waiting") {
-        return React.createElement("i", {className: "icon-timer"});
-      } else if (doc.status === "processing") {
-        return React.createElement("i", {className: "icon-details"});
-      } else if (doc.status === "cancelled") {
-        return React.createElement("i", {className: "icon-close"});
-      } else if (doc.status === "late") {
-        return React.createElement("i", {className: "icon-timer"});
-      } else if (doc.status === "done") {
-        return React.createElement("i", {className: "icon-done-all"});
+
+    var GenStatusField = function()  {
+      var GenStatusIcon = function()  {
+        if (doc.status === "shipping") {
+          return React.createElement("i", {className: "icon-send"});
+        } else if (doc.status === "waiting") {
+          return React.createElement("i", {className: "icon-timer"});
+        } else if (doc.status === "processing") {
+          return React.createElement("i", {className: "icon-details"});
+        } else if (doc.status === "cancelled") {
+          return React.createElement("i", {className: "icon-close"});
+        } else if (doc.status === "late") {
+          return React.createElement("i", {className: "icon-timer"});
+        } else if (doc.status === "done") {
+          return React.createElement("i", {className: "icon-done-all"});
+        }
+      };
+
+      return (
+        React.createElement("div", {className: "field statusField"}, 
+          React.createElement("label", null, 
+            "Status"
+          ), 
+          React.createElement("div", {className: "btn-group"}, 
+            React.createElement("button", {type: "button", className: "btn btn-default dropdown-toggle", 
+              "data-status": doc.status, 
+              "data-toggle": "dropdown", "aria-expanded": "false"}, 
+              GenStatusIcon(), " ", doc._status, 
+              " ", React.createElement("span", {className: "caret"})
+            ), 
+            React.createElement("ul", {className: "dropdown-menu", role: "menu"}, 
+              React.createElement("li", null, React.createElement("a", {href: "#"}, "Action")), 
+              React.createElement("li", null, React.createElement("a", {href: "#"}, "Another action")), 
+              React.createElement("li", null, React.createElement("a", {href: "#"}, "Something else here")), 
+              React.createElement("li", {className: "divider"}), 
+              React.createElement("li", null, React.createElement("a", {href: "#"}, "Separated link"))
+            )
+          )
+        )
+      );
+    };
+
+    var GenTypeField = function()  {
+      return (
+        React.createElement("div", {className: "field"}, 
+          React.createElement("label", null, 
+            "Configuração"
+          ), 
+          React.createElement("div", {className: "value"}, 
+            doc._cor[0].toUpperCase()+doc._cor.slice(1), " / ", doc._tipo
+            )
+        )
+      )
+    };
+
+    var GenCommentField = function()  {
+      if (!doc.comments || doc.comments.match(/^\s*$/)) {
+        return null;
       }
+
+      return (
+        React.createElement("div", {className: "field"}, 
+          React.createElement("label", null, 
+            "Comentário do Pedido"
+          ), 
+          React.createElement("textarea", {name: "comments", className: "value comments", 
+            disabled: true, defaultValue: doc.comments}
+          )
+        )
+      )
+    };
+
+    var GenDateField = function()  {
+      return (
+        React.createElement("div", {className: "field"}, 
+          React.createElement("label", null, 
+            "Data"
+          ), 
+          React.createElement("div", {className: "value"}, 
+            formatOrderDate(doc.created_at)
+          )
+        )
+      )
     };
 
     return (
@@ -265,70 +318,35 @@ var OrderView = React.createBackboneClass({
                 React.createElement("input", {type: "text", name: "name", className: "value name", 
                   disabled: true, defaultValue: doc.name})
               ), 
-              React.createElement("div", {className: "field"}, 
-                React.createElement("label", null, 
-                  "Comentário do Pedido"
-                ), 
-                React.createElement("textarea", {name: "comments", className: "value comments", 
-                  disabled: true, defaultValue: doc.comments}
-                )
-              ), 
-              React.createElement("div", {className: "field"}, 
-                React.createElement("label", null, 
-                  "Configuração"
-                ), 
-                React.createElement("div", {className: "value"}, 
-                  doc._cor[0].toUpperCase()+doc._cor.slice(1), " · ", doc._tipo
-                  )
-              ), 
+              GenCommentField(), 
+              GenTypeField(), 
               React.createElement("div", {className: "row"}, 
-                React.createElement("div", {className: "col-md-7"}, 
-                  React.createElement("div", {className: "field"}, 
-                    React.createElement("label", null, 
-                      "Data"
-                    ), 
-                    React.createElement("div", {className: "value"}, 
-                      formatOrderDate(doc.created_at), 
-                      "(", React.createElement("span", {"data-time-count": 1*new Date(doc.created_at), "data-short": "false", "data-title": formatOrderDate(doc.created_at)}, 
-                      calcTimeFrom(doc.created_at)
-                      ), ")"
-                    )
-                  )
+                React.createElement("div", {className: "col-md-6"}, 
+                  GenDateField()
                 ), 
-                React.createElement("div", {className: "col-md-5"}, 
-                  React.createElement("div", {className: "field statusField"}, 
-                    React.createElement("label", null, 
-                      "Status"
-                    ), 
-                    React.createElement("div", {className: "value", "data-status": doc.status}, 
-                      GenStatusIcon(), " ", doc._status.toUpperCase()
-                    )
-                  )
+                React.createElement("div", {className: "col-md-4"}, 
+                  GenStatusField()
                 )
               ), 
               React.createElement("div", {className: "row"}, 
                 React.createElement("div", {className: "col-md-6"}, 
-                  React.createElement("div", {className: "field"}, 
-                    GenClientBlock()
-                  )
+                  GenClientField()
                 ), 
                 React.createElement("div", {className: "col-md-6"}, 
-                  React.createElement("div", {className: "field"}, 
-                    GenVendorBlock()
-                  )
+                  GenVendorField()
                 )
               )
-            )
-          ), 
-          React.createElement("div", {className: "col-md-5"}, 
-            React.createElement("h2", null, 
-              "visualização"
             ), 
-            React.createElement(STLRenderer, {ref: "renderer", file: this.getModel().get('file'), 
-              color: doc.color}), 
             React.createElement("a", {className: "button download", target: "_blank", href: this.getModel().get('file')}, 
               "Acessar Arquivo"
             )
+          ), 
+          React.createElement("div", {className: "col-md-5"}, 
+            React.createElement("label", null, 
+              "visualização"
+            ), 
+            React.createElement(STLRenderer, {ref: "renderer", file: this.getModel().get('file'), 
+              color: doc.color})
           )
         )
       )
@@ -701,6 +719,10 @@ var STLRenderer = React.createClass({displayName: "STLRenderer",
 		}
 		this._init();
 		this._animate();
+	},
+
+	componentWillUnmount: function() {
+		window.removeEventListener('resize', this._onWindowResize, false);
 	},
 
 	_determineDimensions: function() {
@@ -1846,11 +1868,6 @@ var OrderItem = React.createBackboneClass({
 					)
 				), 
 				React.createElement("div", {className: "right"}, 
-					React.createElement("div", {className: "date"}, 
-						React.createElement("span", {"data-time-count": 1*new Date(doc.created_at), "data-short": "false", "data-title": formatOrderDate(doc.created_at)}, 
-							calcTimeFrom(doc.created_at)
-						)
-					), 
 					React.createElement("div", {className: "buttons"}, 
 						React.createElement("button", null, 
 							"Editar"
@@ -2235,14 +2252,14 @@ var NewClientForm = React.createBackboneClass({
 			},
 			error: function(model, xhr, options)  {
 				var data = xhr.responseJSON;
+				if (data.name === 'ExistingUser') {
+					this._buildWarnings({ email: 'Esse email já está em uso.' });
+					return;
+				}
 				if (data && data.message) {
 					Utils.flash.alert(data.message);
 				} else {
 					Utils.flash.alert('Milton Friedman.');
-				}
-				if (data.error === 'ExistingUser') {
-					this._buildWarnings({ email: 'Esse email já está em uso.' });
-					return;
 				}
 				// build warnings
 				// this._buildWarnings(data);
@@ -2719,7 +2736,7 @@ var FormPart_ChooseClient = React.createBackboneClass({
 		return (
 			React.createElement("div", {className: "formPart chooseClient"}, 
 				React.createElement("h1", null, "Selecione um cliente ", React.createElement("div", {className: "position"}, "passo ", this.props.step, " de ", this.props.totalSteps-1)), 
-				React.createElement("p", null, "Registre um pedido de um cliente cadastrado entrando com o seu email. ", React.createElement("a", {href: "/clientes/novo"}, "Clique aqui para fazer o seu cadastro.")), 
+				React.createElement("p", null, "Registre um pedido entrando o email do cliente cadastrado. ", React.createElement("a", {href: "/clientes/novo"}, "Clique aqui para cadastrar um comprador.")), 
 				React.createElement("form", {onSubmit: this._send, className: "form-horizontal"}, 
 					React.createElement("div", {className: "form-group"}, 
 						React.createElement("div", {className: "col-md-4"}, 
@@ -2801,7 +2818,7 @@ var FormParts = [
 var OrderForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
-			formPosition: 2,
+			formPosition: 0,
 		}
 	},
 
@@ -2895,12 +2912,6 @@ function undoLeaveWarning() {
 
 module.exports = function(app) {
 	var printJob = new Models.Order({
-		client: {
-			name: 'Felipe',
-			picture: 'http://localhost:3000/static/images/lavatars/F.png',
-			email: 'pires.a.felipe@gmail.com',
-			id: '5519997fec4783e8608bf9df',
-		},
 		color: 'red',
 		file: 'https://deltathinkers.s3.amazonaws.com/jobs/15256c45-34f8-4ff6-b3af-13d32ad27151',
 	});

@@ -6,7 +6,7 @@ _ = require 'lodash'
 Status = ["shipping", "waiting", "processing", "cancelled", "late", "done"]
 
 OrderSchema = new mongoose.Schema {
-	status:			{ type: String, enum: Status, default: Status.Requested }
+	status:			{ type: String, enum: Status, required: true }
 	comments: 	{ type: String, required: false }
 	name: 			{ type: String, required: true }
 	code: 			{ type: String, required: true }

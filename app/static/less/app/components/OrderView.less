@@ -39,11 +39,10 @@
       display: block;
       width: 100%;
       // font-size: 18px;
-      border: 1px solid transparent;
+      border: 1px solid rgba(0,0,0,.1);
       background: #EEE;
       font-weight: 400;
       border-radius: 0;
-      height: auto;
       line-height: 1.5;
       padding: .5em .5em;
       font-size: 1.1em;
@@ -83,20 +82,38 @@
     .field {
       & > label {
         margin-bottom: 5px;
+        display: block;
       }
       margin-bottom: 20px;
+    }
 
-      &.statusField {
-        .value {
-          font-weight: 500;
+    .field.statusField {
+      .value {
+        font-weight: 500;
+        color: white;
+
+        i {
+          font-size: 20px;
+          vertical-align: middle;
+          margin-right: 5px;
+          margin-top: -2px;
+        }
+      }
+
+      .btn-group {
+        width: 100%;
+
+        & > button {
+          width: 100%;
+          margin: 0;
+          border: 0;
+          text-align: left;
+          border-radius: 0;
+          padding: .5em;
+          font-size: 1.1em;
+          border: 1px solid transparent;
+          line-height: 1.5;
           color: white;
-
-          i {
-            font-size: 20px;
-            vertical-align: middle;
-            margin-right: 5px;
-            margin-top: -2px;
-          }
 
           &[data-status=waiting] { background: darken(#666, 5%); }
           &[data-status=cancelled] { background: darken(@CRED, 5%); }
@@ -104,33 +121,16 @@
           &[data-status=processing] { background: darken(@CBLUE, 5%); }
           &[data-status=shipping] { background: darken(mix(@CGREEN, @CBLUE), 5%); }
           &[data-status=done] { background: darken(@CGREEN, 5%); }
+
+          & > .caret {
+            margin-left: 5px;
+          }
         }
       }
-    }
-  }
 
-  .userDisplay {
-    label {
-      margin-bottom: 5px;
     }
 
-    .left {
-      float: left;
-    }
-    .right {
-      float: left;
-      margin-left: 10px;
-    }
-
-    .user-avatar {
-      width: 50px;
-      border-radius: 50px;
-      height: 50px;
-    }
-
-    .name {
-      font-size: 15px;
-      font-weight: 500;
+    .field.userField {
     }
   }
 

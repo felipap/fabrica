@@ -54,14 +54,14 @@ var NewClientForm = React.createBackboneClass({
 			},
 			error: (model, xhr, options) => {
 				var data = xhr.responseJSON;
+				if (data.name === 'ExistingUser') {
+					this._buildWarnings({ email: 'Esse email já está em uso.' });
+					return;
+				}
 				if (data && data.message) {
 					Utils.flash.alert(data.message);
 				} else {
 					Utils.flash.alert('Milton Friedman.');
-				}
-				if (data.error === 'ExistingUser') {
-					this._buildWarnings({ email: 'Esse email já está em uso.' });
-					return;
 				}
 				// build warnings
 				// this._buildWarnings(data);

@@ -38,6 +38,7 @@ module.exports.place = function (seller, client, data, cb) {
 	var order = new Order({
 		comments: data.comments,
 		name: data.name,
+		status: "processing",
 		client: data.client.id,
 		color: data.color,
 		vendor: seller._id,

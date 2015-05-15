@@ -375,7 +375,7 @@ var FormPart_ChooseClient = React.createBackboneClass({
 		return (
 			<div className="formPart chooseClient">
 				<h1>Selecione um cliente <div className="position">passo {this.props.step} de {this.props.totalSteps-1}</div></h1>
-				<p>Registre um pedido de um cliente cadastrado entrando com o seu email. <a href="/clientes/novo">Clique aqui para fazer o seu cadastro.</a></p>
+				<p>Registre um pedido entrando o email do cliente cadastrado. <a href="/clientes/novo">Clique aqui para cadastrar um comprador.</a></p>
 				<form onSubmit={this._send} className="form-horizontal">
 					<div className="form-group">
 						<div className="col-md-4">
@@ -457,7 +457,7 @@ var FormParts = [
 var OrderForm = React.createBackboneClass({
 	getInitialState: function() {
 		return {
-			formPosition: 2,
+			formPosition: 0,
 		}
 	},
 
@@ -551,12 +551,6 @@ function undoLeaveWarning() {
 
 module.exports = function(app) {
 	var printJob = new Models.Order({
-		client: {
-			name: 'Felipe',
-			picture: 'http://localhost:3000/static/images/lavatars/F.png',
-			email: 'pires.a.felipe@gmail.com',
-			id: '5519997fec4783e8608bf9df',
-		},
 		color: 'red',
 		file: 'https://deltathinkers.s3.amazonaws.com/jobs/15256c45-34f8-4ff6-b3af-13d32ad27151',
 	});

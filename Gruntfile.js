@@ -122,15 +122,15 @@ module.exports = function (grunt) {
 				},
 			]
 		},
-		deployAvatars: {
+		deployImages: {
 			options: {
 				encodePaths: false,
 				maxOperations: 20,
 			},
 			upload: [
 				{
-					src: 'assets/images/lavatars/*',
-					dest: 'static/images/lavatars/',
+					src: 'assets/images/*',
+					dest: 'static/images/',
 				},
 			]
 		},
@@ -197,4 +197,5 @@ module.exports = function (grunt) {
 	grunt.registerTask('serve', ['nodemon:server']);
 	grunt.registerTask('build', ['uglify:js']);
 	grunt.registerTask('deploy', ['s3:deploy']);
+	grunt.registerTask('deployIcons', ['s3:deploy']);
 };

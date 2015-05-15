@@ -18,80 +18,133 @@ var OrderView = React.createBackboneClass({
   render: function() {
     var doc = this.getModel().attributes;
 
-    var GenClientBlock = () => {
+    var GenClientField = () => {
       var client = doc.client;
       return (
-        <div className="userDisplay">
+        <div className="field userField">
           <label>
             Cliente
           </label>
-          <div>
-            <div className="left">
-              <div className="user-avatar">
-                <div className="avatar"
-                  style={{backgroundImage:'url('+client.picture+')'}} />
-              </div>
+          <div className="value">
+            <div className="name">
+              {client.name}
             </div>
-            <div className="right">
-              <div className="name">
-                {client.name}
-              </div>
-              <div className="email">
-                {client.email}
-              </div>
-              <div className="phone">
-                {client.phone}
-              </div>
+            <div className="email">
+              {client.email}
+            </div>
+            <div className="phone">
+              {client.phone}
             </div>
           </div>
         </div>
       );
     };
 
-    var GenVendorBlock = () => {
+    var GenVendorField = () => {
       var vendor = doc.vendor;
       return (
-        <div className="userDisplay">
+        <div className="field userField">
           <label>
             Vendedor
           </label>
-          <div>
-            <div className="left">
-              <div className="user-avatar">
-                <div className="avatar"
-                  style={{backgroundImage:'url('+vendor.picture+')'}} />
-              </div>
+          <div className="value">
+            <div className="name">
+              {vendor.name}
             </div>
-            <div className="right">
-              <div className="name">
-                {vendor.name}
-              </div>
-              <div className="email">
-                {vendor.email}
-              </div>
-              <div className="phone">
-                {vendor.phone}
-              </div>
+            <div className="email">
+              {vendor.email}
+            </div>
+            <div className="phone">
+              {vendor.phone}
             </div>
           </div>
         </div>
       );
     };
 
-    var GenStatusIcon = () => {
-      if (doc.status === "shipping") {
-        return <i className="icon-send" />;
-      } else if (doc.status === "waiting") {
-        return <i className="icon-timer" />;
-      } else if (doc.status === "processing") {
-        return <i className="icon-details" />;
-      } else if (doc.status === "cancelled") {
-        return <i className="icon-close" />;
-      } else if (doc.status === "late") {
-        return <i className="icon-timer" />;
-      } else if (doc.status === "done") {
-        return <i className="icon-done-all" />;
+
+    var GenStatusField = () => {
+      var GenStatusIcon = () => {
+        if (doc.status === "shipping") {
+          return <i className="icon-send" />;
+        } else if (doc.status === "waiting") {
+          return <i className="icon-timer" />;
+        } else if (doc.status === "processing") {
+          return <i className="icon-details" />;
+        } else if (doc.status === "cancelled") {
+          return <i className="icon-close" />;
+        } else if (doc.status === "late") {
+          return <i className="icon-timer" />;
+        } else if (doc.status === "done") {
+          return <i className="icon-done-all" />;
+        }
+      };
+
+      return (
+        <div className="field statusField">
+          <label>
+            Status
+          </label>
+          <div className="btn-group">
+            <button type="button" className="btn btn-default dropdown-toggle"
+              data-status={doc.status}
+              data-toggle="dropdown" aria-expanded="false">
+              {GenStatusIcon()} {doc._status}
+              &nbsp;<span className="caret"></span>
+            </button>
+            <ul className="dropdown-menu" role="menu">
+              <li><a href="#">Action</a></li>
+              <li><a href="#">Another action</a></li>
+              <li><a href="#">Something else here</a></li>
+              <li className="divider"></li>
+              <li><a href="#">Separated link</a></li>
+            </ul>
+          </div>
+        </div>
+      );
+    };
+
+    var GenTypeField = () => {
+      return (
+        <div className="field">
+          <label>
+            Configuração
+          </label>
+          <div className="value">
+            {doc._cor[0].toUpperCase()+doc._cor.slice(1)} / {doc._tipo}
+            </div>
+        </div>
+      )
+    };
+
+    var GenCommentField = () => {
+      if (!doc.comments || doc.comments.match(/^\s*$/)) {
+        return null;
       }
+
+      return (
+        <div className="field">
+          <label>
+            Comentário do Pedido
+          </label>
+          <textarea name="comments" className="value comments"
+            disabled={true} defaultValue={doc.comments}>
+          </textarea>
+        </div>
+      )
+    };
+
+    var GenDateField = () => {
+      return (
+        <div className="field">
+          <label>
+            Data
+          </label>
+          <div className="value">
+            {formatOrderDate(doc.created_at)}
+          </div>
+        </div>
+      )
     };
 
     return (
@@ -106,70 +159,35 @@ var OrderView = React.createBackboneClass({
                 <input type="text" name="name" className="value name"
                   disabled={true} defaultValue={doc.name} />
               </div>
-              <div className="field">
-                <label>
-                  Comentário do Pedido
-                </label>
-                <textarea name="comments" className="value comments"
-                  disabled={true} defaultValue={doc.comments}>
-                </textarea>
-              </div>
-              <div className="field">
-                <label>
-                  Configuração
-                </label>
-                <div className="value">
-                  {doc._cor[0].toUpperCase()+doc._cor.slice(1)} · {doc._tipo}
-                  </div>
-              </div>
+              {GenCommentField()}
+              {GenTypeField()}
               <div className="row">
-                <div className="col-md-7">
-                  <div className="field">
-                    <label>
-                      Data
-                    </label>
-                    <div className="value">
-                      {formatOrderDate(doc.created_at)}
-                      (<span data-time-count={1*new Date(doc.created_at)} data-short="false" data-title={formatOrderDate(doc.created_at)}>
-                      {calcTimeFrom(doc.created_at)}
-                      </span>)
-                    </div>
-                  </div>
+                <div className="col-md-6">
+                  {GenDateField()}
                 </div>
-                <div className="col-md-5">
-                  <div className="field statusField">
-                    <label>
-                      Status
-                    </label>
-                    <div className="value" data-status={doc.status}>
-                      {GenStatusIcon()} {doc._status.toUpperCase()}
-                    </div>
-                  </div>
+                <div className="col-md-4">
+                  {GenStatusField()}
                 </div>
               </div>
               <div className="row">
                 <div className="col-md-6">
-                  <div className="field">
-                    {GenClientBlock()}
-                  </div>
+                  {GenClientField()}
                 </div>
                 <div className="col-md-6">
-                  <div className="field">
-                    {GenVendorBlock()}
-                  </div>
+                  {GenVendorField()}
                 </div>
               </div>
             </div>
-          </div>
-          <div className="col-md-5">
-            <h2>
-              visualização
-            </h2>
-            <STLRenderer ref="renderer" file={this.getModel().get('file')}
-              color={doc.color} />
             <a className="button download" target="_blank" href={this.getModel().get('file')}>
               Acessar Arquivo
             </a>
+          </div>
+          <div className="col-md-5">
+            <label>
+              visualização
+            </label>
+            <STLRenderer ref="renderer" file={this.getModel().get('file')}
+              color={doc.color} />
           </div>
         </div>
       </div>

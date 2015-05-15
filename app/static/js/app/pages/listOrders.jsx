@@ -89,11 +89,6 @@ var OrderItem = React.createBackboneClass({
 					</div>
 				</div>
 				<div className="right">
-					<div className="date">
-						<span data-time-count={1*new Date(doc.created_at)} data-short="false" data-title={formatOrderDate(doc.created_at)}>
-							{calcTimeFrom(doc.created_at)}
-						</span>
-					</div>
 					<div className="buttons">
 						<button>
 							Editar

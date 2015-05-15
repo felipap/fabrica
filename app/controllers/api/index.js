@@ -160,8 +160,8 @@ module.exports = function(app) {
 
   api.post('/clients', unspam.limit(2*1000), function(req, res, next) {
     req.parse(User.ClientRegisterParseRules, function(reqbody) {
-      console.log(reqbody);
-      userActions.registerClient(req.user, reqbody, function(err, client) {
+      userActions.register(req.user, reqbody, function(err, client) {
+        console.log(reqbody);
         if (err) {
           next(err);
           return;
@@ -183,6 +183,7 @@ module.exports = function(app) {
 
     User.findOne({ email: req.query.email }, req.handleErr404(function(user) {
       res.endJSON({
+        id: user._id,
         name: user.name,
         email: user.email,
         picture: user.picture,
