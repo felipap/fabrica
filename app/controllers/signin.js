@@ -153,19 +153,15 @@ module.exports = function(app) {
 
 	router.post('/signup', unspam.limit(2*1000), function(req, res, next) {
 		req.parse(User.SingupParseRules, (body) => {
-      console.log(body)
 			User.findOne({ email: body.email }, req.handleErr((doc) => {
-        console.log("asdf", doc)
 				if (doc) {
 					req.flash('error', 'Este email já está em uso. Você já tem uma conta?')
 					return res.redirect('/signup')
 				}
-        console.log("asdf")
 				if (body.password1 !== req.body.password2) {
 					req.flash('error', 'As duas senhas não correspondem.')
 					return res.redirect('/signup')
 				}
-        console.log("asdf")
 				// userActions.registerSeller({
 				// 	name: body.name,
 				// 	email: body.email,
@@ -176,12 +172,10 @@ module.exports = function(app) {
 					email: body.email,
 					password: body.password1,
 				})
-        console.log(123)
 				u.save((err, user) => {
 					if (err) {
 						return next(err)
 					}
-          console.log("created", user)
 					req.flash('info', 'Bem-vindo, '+user.name)
 					req.logIn(user, (err) => {
 						if (err) {
