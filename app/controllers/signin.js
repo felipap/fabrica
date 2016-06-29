@@ -147,46 +147,52 @@ module.exports = function(app) {
 		res.render('app/login_recover')
 	})
 
-	// router.get('/signup', function(req, res) {
-	// 	res.render('app/login_register')
-	// })
+	router.get('/signup', function(req, res) {
+		res.render('app/login_register')
+	})
 
-	// router.post('/signup', unspam.limit(2*1000), function(req, res, next) {
-	// 	req.parse(User.SingupParseRules, (body) => {
-	// 		User.find({ email: body.email }, req.handleErr((doc) => {
-	// 			if (doc) {
-	// 				req.flash('error', 'Este email já está em uso. Você já tem uma conta?')
-	// 				return res.redirect('/signup')
-	// 			}
-	// 			if (body.password1 !== req.body.password2) {
-	// 				req.flash('error', 'As duas senhas não correspondem.')
-	// 				return res.redirect('/signup')
-	// 			}
-	// 			// userActions.registerSeller({
-	// 			// 	name: body.name,
-	// 			// 	email: body.email,
-	// 			// 	password: body.password
-	// 			// })
-	// 			var u = new User({
-	// 				name: body.name,
-	// 				email: body.email,
-	// 				password: body.password1,
-	// 			})
-	// 			u.save((err, user) => {
-	// 				if (err) {
-	// 					return next(err)
-	// 				}
-	// 				req.flash('info', 'Bem-vindo, '+user.name)
-	// 				req.logIn(user, (err) => {
-	// 					if (err) {
-	// 						return next(err)
-	// 					}
-	// 					res.redirect('/')
-	// 				})
-	// 			})
-	// 		}))
-	// 	})
-	// })
+	router.post('/signup', unspam.limit(2*1000), function(req, res, next) {
+		req.parse(User.SingupParseRules, (body) => {
+      console.log(body)
+			User.findOne({ email: body.email }, req.handleErr((doc) => {
+        console.log("asdf", doc)
+				if (doc) {
+					req.flash('error', 'Este email já está em uso. Você já tem uma conta?')
+					return res.redirect('/signup')
+				}
+        console.log("asdf")
+				if (body.password1 !== req.body.password2) {
+					req.flash('error', 'As duas senhas não correspondem.')
+					return res.redirect('/signup')
+				}
+        console.log("asdf")
+				// userActions.registerSeller({
+				// 	name: body.name,
+				// 	email: body.email,
+				// 	password: body.password
+				// })
+				var u = new User({
+					name: body.name,
+					email: body.email,
+					password: body.password1,
+				})
+        console.log(123)
+				u.save((err, user) => {
+					if (err) {
+						return next(err)
+					}
+          console.log("created", user)
+					req.flash('info', 'Bem-vindo, '+user.name)
+					req.logIn(user, (err) => {
+						if (err) {
+							return next(err)
+						}
+						res.redirect('/')
+					})
+				})
+			}))
+		})
+	})
 
 	return router
 }

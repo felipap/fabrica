@@ -30,8 +30,7 @@ var Views = {
 }
 
 $(function () {
-
-  if (window.__flash_messages && window.__flash_messages.length) {
+  if (window.__flash_messages) {
   	var wrapper = document.getElementById('flash-messages');
   	if (!wrapper) {
   		console.warn('We had flash messages to show here...'+
@@ -65,7 +64,7 @@ var ComponentStack = function (defaultOptions) {
 
 	class Page {
 		constructor(component, opts) {
-			var opts = _.extend({}, defaultOptions, opts);
+			opts = _.extend({}, defaultOptions, opts);
 
 			var makeContainer = (opts) => {
 				var el = document.createElement('div');
@@ -476,3 +475,4 @@ module.exports = {
 		Backbone.history.start({ pushState:true, hashChange: false });
 	},
 };
+
